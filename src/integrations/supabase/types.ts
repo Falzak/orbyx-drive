@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      files: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          file_path: string
+          filename: string
+          id: string
+          is_favorite: boolean | null
+          size: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          file_path: string
+          filename: string
+          id?: string
+          is_favorite?: boolean | null
+          size?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          file_path?: string
+          filename?: string
+          id?: string
+          is_favorite?: boolean | null
+          size?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -33,12 +69,59 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_files: {
+        Row: {
+          created_at: string
+          custom_url: string | null
+          expires_at: string | null
+          file_path: string | null
+          id: string
+          is_public: boolean | null
+          password: string | null
+          shared_by: string
+          shared_with: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_url?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          id?: string
+          is_public?: boolean | null
+          password?: string | null
+          shared_by: string
+          shared_with?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_url?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          id?: string
+          is_public?: boolean | null
+          password?: string | null
+          shared_by?: string
+          shared_with?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_files_file_path_fkey"
+            columns: ["file_path"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["file_path"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_shares: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
