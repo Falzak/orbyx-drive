@@ -1,9 +1,12 @@
-
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Lock, Clock, Eye, Shield } from 'lucide-react';
+import { Upload, Lock, Clock, Eye, Shield, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/App';
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -12,6 +15,21 @@ interface FileWithPreview extends File {
 const Index = () => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { session } = useAuth();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out.",
+      });
+    } else {
+      navigate('/auth');
+    }
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles.map(file => Object.assign(file, {
@@ -37,24 +55,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
+        <div className="flex justify-between items-center mb-12">
           <motion.h1 
-            className="text-4xl font-bold mb-4"
+            className="text-4xl font-bold"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
             Secure File Sharing
           </motion.h1>
-          <motion.p 
-            className="text-muted-foreground text-lg mb-8"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="flex items-center gap-2"
           >
-            Share files with end-to-end encryption and complete privacy
-          </motion.p>
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
         </div>
+
+        <motion.p 
+          className="text-muted-foreground text-lg mb-8 text-center"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          Welcome, {session?.user.email}! Share files with end-to-end encryption and complete privacy
+        </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <motion.div 
