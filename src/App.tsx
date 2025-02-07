@@ -9,6 +9,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "./integrations/supabase/client";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Share from "./pages/Share";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/s/:id" element={<Share />} />
               <Route
                 path="/"
                 element={
@@ -83,3 +85,4 @@ const App = () => {
 };
 
 export default App;
+

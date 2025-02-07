@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/App';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import MediaPreview from '@/components/MediaPreview';
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,7 @@ const Index = () => {
   const [shareSettings, setShareSettings] = useState<ShareSettings>({
     is_public: false,
   });
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -185,6 +187,21 @@ const Index = () => {
         title: "Erro",
         description: "Falha ao compartilhar arquivo: " + error.message,
       });
+    },
+  });
+
+  // Toggle favorite mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async ({ id, is_favorite }: { id: string, is_favorite: boolean }) => {
+      const { error } = await supabase
+        .from('files')
+        .update({ is_favorite })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
     },
   });
 
@@ -367,7 +384,16 @@ const Index = () => {
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       {getFileIcon(file.content_type)}
-                      {file.filename}
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto"
+                        onClick={() => {
+                          setSelectedFile(file);
+                          setPreviewDialogOpen(true);
+                        }}
+                      >
+                        {file.filename}
+                      </Button>
                     </div>
                   </TableCell>
                   <TableCell>{file.content_type}</TableCell>
@@ -375,6 +401,20 @@ const Index = () => {
                   <TableCell>{new Date(file.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          toggleFavoriteMutation.mutate({
+                            id: file.id,
+                            is_favorite: !file.is_favorite,
+                          });
+                        }}
+                      >
+                        <Star
+                          className={`h-4 w-4 ${file.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                        />
+                      </Button>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -466,9 +506,29 @@ const Index = () => {
             </TableBody>
           </Table>
         </motion.div>
+
+        <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedFile?.filename}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedFile && (
+              <div className="mt-4">
+                <MediaPreview
+                  contentType={selectedFile.content_type}
+                  url={supabase.storage.from('files').getPublicUrl(selectedFile.file_path).data.publicUrl}
+                  filename={selectedFile.filename}
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
 };
 
 export default Index;
+
