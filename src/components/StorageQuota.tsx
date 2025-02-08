@@ -42,8 +42,7 @@ const StorageQuota = () => {
       </div>
       <Progress
         value={usedPercentage}
-        className="h-2"
-        indicatorClassName={usedPercentage > 90 ? "bg-destructive" : "bg-primary"}
+        className={`h-2 ${usedPercentage > 90 ? "bg-destructive" : "bg-primary"}`}
       />
     </div>
   );

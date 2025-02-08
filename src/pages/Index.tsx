@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Lock, Clock, Eye, Shield, LogOut, Sun, Moon, Share2, Trash2, Star } from 'lucide-react';
+import { Upload, Lock, Clock, Eye, Shield, LogOut, Sun, Moon, Share2, Trash2, Star, File, FileText, Video, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -65,106 +65,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [isDarkMode]);
-
-  const { data: userFiles, isLoading } = useQuery({
-    queryKey: ['files', selectedCategory],
-    queryFn: async () => {
-      let query = supabase
-        .from('files')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (selectedCategory) {
-        query = query.eq('category', selectedCategory);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      return data as FileData[];
-    },
-  });
-
-  const { data: categories } = useQuery({
-    queryKey: ['file-categories'],
-    queryFn: async () => {
-      const { data: files, error } = await supabase
-        .from('files')
-        .select('category');
-      
-      if (error) throw error;
-
-      const counts = files.reduce((acc: Record<string, number>, file) => {
-        const category = file.category || 'other';
-        acc[category] = (acc[category] || 0) + 1;
-        return acc;
-      }, {});
-
-      return Object.entries(counts).map(([name, count]) => ({
-        name,
-        count,
-      }));
-    },
-  });
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles(acceptedFiles.map(file => Object.assign(file, {
-      preview: URL.createObjectURL(file)
-    })));
-    
-    acceptedFiles.forEach(file => {
-      uploadMutation.mutate(file);
-    });
-  }, [uploadMutation]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': [],
-      'video/*': [],
-      'audio/*': [],
-      'application/pdf': [],
-      'application/msword': [],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
-    }
-  });
-
-  const getFileIcon = (contentType: string) => {
-    if (contentType.startsWith('video')) return <Video className="h-6 w-6" />;
-    if (contentType.startsWith('audio')) return <Music className="h-6 w-6" />;
-    if (contentType.startsWith('image')) return <Eye className="h-6 w-6" />;
-    return <File className="h-6 w-6" />;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log out.",
-      });
-    } else {
-      navigate('/auth');
-    }
-  };
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -279,6 +179,106 @@ const Index = () => {
       queryClient.invalidateQueries({ queryKey: ['files'] });
     },
   });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const { data: userFiles, isLoading } = useQuery({
+    queryKey: ['files', selectedCategory],
+    queryFn: async () => {
+      let query = supabase
+        .from('files')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (selectedCategory) {
+        query = query.eq('category', selectedCategory);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data as FileData[];
+    },
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ['file-categories'],
+    queryFn: async () => {
+      const { data: files, error } = await supabase
+        .from('files')
+        .select('category');
+      
+      if (error) throw error;
+
+      const counts = files.reduce((acc: Record<string, number>, file) => {
+        const category = file.category || 'other';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      }, {});
+
+      return Object.entries(counts).map(([name, count]) => ({
+        name,
+        count,
+      }));
+    },
+  });
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFiles(acceptedFiles.map(file => Object.assign(file, {
+      preview: URL.createObjectURL(file)
+    })));
+    
+    acceptedFiles.forEach(file => {
+      uploadMutation.mutate(file);
+    });
+  }, [uploadMutation]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': [],
+      'video/*': [],
+      'audio/*': [],
+      'application/pdf': [],
+      'application/msword': [],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
+    }
+  });
+
+  const getFileIcon = (contentType: string) => {
+    if (contentType.startsWith('video')) return <Video className="h-6 w-6" />;
+    if (contentType.startsWith('audio')) return <Music className="h-6 w-6" />;
+    if (contentType.startsWith('image')) return <Eye className="h-6 w-6" />;
+    return <FileText className="h-6 w-6" />;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out.",
+      });
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
