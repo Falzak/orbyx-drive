@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       files: {
         Row: {
+          category: string | null
           content_type: string | null
           created_at: string
           file_path: string
@@ -22,6 +23,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string | null
           content_type?: string | null
           created_at?: string
           file_path: string
@@ -33,6 +35,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string | null
           content_type?: string | null
           created_at?: string
           file_path?: string
@@ -112,6 +115,30 @@ export type Database = {
             referencedColumns: ["file_path"]
           },
         ]
+      }
+      storage_quotas: {
+        Row: {
+          created_at: string
+          total_quota: number
+          updated_at: string
+          used_quota: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          total_quota?: number
+          updated_at?: string
+          used_quota?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          total_quota?: number
+          updated_at?: string
+          used_quota?: number
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
