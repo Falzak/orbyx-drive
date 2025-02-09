@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Eye, File, Music, Video } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MediaPreviewProps {
   contentType: string;
@@ -13,7 +14,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
 
   if (contentType.startsWith('image/')) {
     return (
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted/50 backdrop-blur-sm">
         <img
           src={url}
           alt={filename}
@@ -25,7 +26,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
 
   if (contentType.startsWith('video/')) {
     return (
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted/50 backdrop-blur-sm">
         <video
           src={url}
           controls
@@ -39,7 +40,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
 
   if (contentType.startsWith('audio/')) {
     return (
-      <div className="relative rounded-lg overflow-hidden bg-muted p-4">
+      <div className="relative rounded-lg overflow-hidden bg-muted/50 backdrop-blur-sm p-4">
         <div className="flex items-center gap-4">
           <Music className="h-8 w-8 text-primary animate-pulse" />
           <audio
@@ -56,7 +57,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
 
   // Default preview for other file types
   return (
-    <div className="relative rounded-lg overflow-hidden bg-muted p-8">
+    <div className="relative rounded-lg overflow-hidden bg-muted/50 backdrop-blur-sm p-8">
       <div className="flex flex-col items-center gap-4">
         <File className="h-12 w-12 text-primary" />
         <p className="text-sm text-muted-foreground text-center break-all">
@@ -64,10 +65,13 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
         </p>
         <a
           href={url}
+          target="_blank"
+          rel="noopener noreferrer"
           download={filename}
-          className="text-sm text-primary hover:underline"
+          className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
         >
-          Download
+          <Eye className="h-4 w-4" />
+          Preview & Download
         </a>
       </div>
     </div>
