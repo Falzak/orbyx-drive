@@ -5,6 +5,8 @@ import {
   MotionStyle,
   Transition,
   Variants,
+  AnimatePresence,
+  motion,
 } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,6 +94,21 @@ export function FileExplorer() {
       return filesWithUrls;
     },
   });
+
+  // Atualiza o selectedFile quando os arquivos são atualizados
+  useEffect(() => {
+    if (selectedFile) {
+      const updatedFile = files.find((file) => file.id === selectedFile.id);
+      if (!updatedFile) {
+        setSelectedFile(null);
+      } else if (updatedFile && previewUrls[updatedFile.id]) {
+        setSelectedFile({
+          ...updatedFile,
+          url: previewUrls[updatedFile.id],
+        });
+      }
+    }
+  }, [files, previewUrls, selectedFile]);
 
   // Handle download
   const handleDownload = useCallback(
@@ -191,6 +208,11 @@ export function FileExplorer() {
   };
 
   const handleDelete = async (file: FileData) => {
+    // Se o arquivo a ser deletado é o selecionado, fecha o preview primeiro
+    if (selectedFile?.id === file.id) {
+      setSelectedFile(null);
+    }
+
     const { error: storageError } = await supabase.storage
       .from("files")
       .remove([file.file_path]);
@@ -217,6 +239,13 @@ export function FileExplorer() {
       });
       return;
     }
+
+    // Remove a URL do preview do estado
+    setPreviewUrls((prev) => {
+      const newUrls = { ...prev };
+      delete newUrls[file.id];
+      return newUrls;
+    });
 
     queryClient.invalidateQueries({ queryKey: ["files"] });
     toast({
@@ -267,20 +296,29 @@ export function FileExplorer() {
       <ContextMenuTrigger asChild>
         <div ref={ref}>{children}</div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-48">
-        <ContextMenuItem onClick={() => handlePreview(file)}>
+      <ContextMenuContent className="w-48 bg-black/20 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+        <ContextMenuItem
+          onClick={() => handlePreview(file)}
+          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+        >
           <FileIcon className="h-4 w-4 mr-2" />
           Preview
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => handleDownload(file)}>
+        <ContextMenuItem
+          onClick={() => handleDownload(file)}
+          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+        >
           <Download className="h-4 w-4 mr-2" />
           Download
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => navigate(`/share/${file.id}`)}>
+        <ContextMenuItem
+          onClick={() => navigate(`/share/${file.id}`)}
+          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+        >
           <Share2 className="h-4 w-4 mr-2" />
           Share
         </ContextMenuItem>
-        <ContextMenuSeparator />
+        <ContextMenuSeparator className="bg-white/20" />
         <ContextMenuItem
           onClick={async () => {
             const { error } = await supabase
@@ -291,6 +329,7 @@ export function FileExplorer() {
               queryClient.invalidateQueries({ queryKey: ["files"] });
             }
           }}
+          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
         >
           <Star
             className={cn(
@@ -307,14 +346,15 @@ export function FileExplorer() {
               handleRename(file, newName);
             }
           }}
+          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
         >
           <Edit className="h-4 w-4 mr-2" />
           Rename
         </ContextMenuItem>
-        <ContextMenuSeparator />
+        <ContextMenuSeparator className="bg-white/20" />
         <ContextMenuItem
           onClick={() => handleDelete(file)}
-          className="text-destructive focus:text-destructive"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive !cursor-pointer transition-colors"
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
@@ -325,58 +365,72 @@ export function FileExplorer() {
   FileContextMenu.displayName = "FileContextMenu";
 
   const renderGridView = (files: FileData[]) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-      {files.map((file) => (
-        <FileContextMenu key={file.id} file={file}>
-          <div>
-            <Card
-              className="overflow-hidden cursor-pointer border transition-shadow duration-200 hover:shadow-lg"
-              onClick={() => handlePreview(file)}
-            >
-              <div className="aspect-square relative bg-gradient-to-b from-muted/5 to-muted/20">
-                {file.content_type?.startsWith("image/") ? (
-                  <div className="w-full h-full">
-                    {previewUrls[file.id] ? (
-                      <img
-                        src={previewUrls[file.id]}
-                        alt={file.filename}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.src = "/placeholder.svg";
-                        }}
-                      />
+    <motion.div
+      layout
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4"
+    >
+      <AnimatePresence mode="popLayout">
+        {files.map((file) => (
+          <motion.div
+            key={file.id}
+            layout
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <FileContextMenu file={file}>
+              <div>
+                <Card
+                  className="overflow-hidden cursor-pointer border transition-shadow duration-200 hover:shadow-lg"
+                  onClick={() => handlePreview(file)}
+                >
+                  <div className="aspect-square relative bg-gradient-to-b from-muted/5 to-muted/20">
+                    {file.content_type?.startsWith("image/") ? (
+                      <div className="w-full h-full">
+                        {previewUrls[file.id] ? (
+                          <img
+                            src={previewUrls[file.id]}
+                            alt={file.filename}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <span className="text-4xl">
+                          {getFileIcon(file.content_type)}
+                        </span>
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-4xl">
-                      {getFileIcon(file.content_type)}
-                    </span>
+                  <div className="p-3 bg-card border-t">
+                    <p className="font-medium truncate text-sm">
+                      {file.filename}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatFileSize(file.size)}
+                    </p>
                   </div>
-                )}
+                </Card>
               </div>
-              <div className="p-3 bg-card border-t">
-                <p className="font-medium truncate text-sm">
-                  {file.filename}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatFileSize(file.size)}
-                </p>
-              </div>
-            </Card>
-          </div>
-        </FileContextMenu>
-      ))}
-    </div>
+            </FileContextMenu>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 
   const renderListView = (files: FileData[]) => (
-    <div className="p-2">
+    <motion.div layout className="p-2">
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
@@ -388,9 +442,15 @@ export function FileExplorer() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {files.map((file) => (
-              <FileContextMenu key={file.id} file={file}>
-                <tr
+            <AnimatePresence mode="popLayout">
+              {files.map((file) => (
+                <motion.tr
+                  key={file.id}
+                  layout
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.2 }}
                   onClick={() => handlePreview(file)}
                   className="cursor-pointer transition-colors hover:bg-muted/5"
                 >
@@ -434,13 +494,13 @@ export function FileExplorer() {
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDate(file.created_at)}
                   </TableCell>
-                </tr>
-              </FileContextMenu>
-            ))}
+                </motion.tr>
+              ))}
+            </AnimatePresence>
           </TableBody>
         </Table>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (

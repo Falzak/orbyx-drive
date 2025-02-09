@@ -53,34 +53,34 @@ export default function MediaPreview({
 
   // Reset states when file changes
   useEffect(() => {
-    setIsLoading(true);
-    setLoadError(false);
-    setScale(1);
-    setRotation(0);
+    if (file.url) {
+      setIsLoading(true);
+      setLoadError(false);
+      setScale(1);
+      setRotation(0);
+    }
   }, [file.url]);
 
   return (
     <AlertDialog open={true} onOpenChange={() => onClose()}>
       <AlertDialogContent className="max-w-none w-screen h-screen p-0 gap-0 bg-transparent border-none shadow-none">
         <motion.div
-          className="fixed inset-0 flex flex-col items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
+          className="fixed inset-0 bg-black/50"
+        />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="relative w-full h-full flex items-center justify-center"
         >
-          {/* Overlay com blur */}
-          <motion.div
-            className="absolute inset-0 bg-black/50 backdrop-blur-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-
-          {/* Container do conteúdo */}
-          <div className="relative w-full h-full flex flex-col items-center justify-center">
-            {/* Barra de ferramentas */}
-            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 rounded-full bg-white/5 backdrop-blur-lg border border-white/10 shadow-glass">
+          {/* Barra de ferramentas */}
+          <div className="fixed top-6 inset-x-0 z-30 flex items-center justify-center">
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
               {file.content_type?.startsWith("image/") && !loadError && (
                 <>
                   <Button
@@ -124,7 +124,7 @@ export default function MediaPreview({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="center"
-                  className="bg-white/5 backdrop-blur-lg border border-white/10 shadow-glass"
+                  className="bg-white/5 backdrop-blur-lg border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
                 >
                   {onDownload && (
                     <DropdownMenuItem
@@ -177,137 +177,142 @@ export default function MediaPreview({
                 <X className="h-4 w-4" />
               </Button>
             </div>
+          </div>
 
-            {/* Nome do arquivo */}
-            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 px-4 py-2.5 rounded-full bg-black/40 backdrop-blur-md text-sm font-medium text-white/90 border border-white/20 shadow-glass">
+          {/* Nome do arquivo */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-6 inset-x-0 z-30 flex items-center justify-center"
+          >
+            <div className="px-4 py-2.5 rounded-full bg-black/30 backdrop-blur-xl text-sm font-medium text-white/90 border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
               <span className="drop-shadow-sm">{file.filename}</span>
             </div>
+          </motion.div>
 
-            {/* Área de conteúdo */}
-            <div className="relative flex items-center justify-center w-full h-full">
-              <AnimatePresence mode="wait">
-                {isLoading && (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  </motion.div>
-                )}
+          {/* Área de conteúdo */}
+          <AnimatePresence mode="wait">
+            {isLoading && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              </motion.div>
+            )}
 
-                {file.content_type?.startsWith("image/") && file.url ? (
-                  <motion.div
-                    key="image-container"
-                    className="relative flex items-center justify-center"
-                    initial={false}
-                    style={{
-                      scale,
-                      transform: `rotate(${rotation}deg)`,
-                      transformOrigin: "center",
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <motion.img
-                      key="image"
-                      src={file.url}
-                      alt={file.filename}
-                      className={cn(
-                        "max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-lg select-none shadow-2xl",
-                        isLoading && "opacity-0"
-                      )}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: isLoading ? 0 : 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      onLoad={() => {
-                        setIsLoading(false);
-                        setLoadError(false);
-                      }}
-                      onError={() => {
-                        setIsLoading(false);
-                        setLoadError(true);
-                      }}
-                      draggable={false}
-                    />
-                  </motion.div>
-                ) : file.content_type?.startsWith("video/") && file.url ? (
-                  <motion.video
-                    key="video"
-                    src={file.url}
-                    controls
-                    className="max-w-[90vw] max-h-[85vh] rounded-lg shadow-2xl"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.3 }}
-                    onLoadedData={() => setIsLoading(false)}
-                    onError={() => {
-                      setIsLoading(false);
-                      setLoadError(true);
-                    }}
-                  />
-                ) : file.content_type?.startsWith("audio/") && file.url ? (
-                  <motion.div
-                    key="audio"
-                    className="w-full max-w-md p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Music className="w-16 h-16 mx-auto mb-4 text-white" />
-                    <audio
-                      src={file.url}
-                      controls
-                      className="w-full"
-                      onLoadedData={() => setIsLoading(false)}
-                      onError={() => {
-                        setIsLoading(false);
-                        setLoadError(true);
-                      }}
-                    />
-                  </motion.div>
-                ) : loadError ? (
-                  <motion.div
-                    key="error"
-                    className="text-center p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <FileIcon className="w-16 h-16 mx-auto mb-4 text-red-400" />
-                    <p className="text-lg font-medium text-red-400">
-                      Falha ao carregar preview
-                    </p>
-                    <p className="text-sm text-white/80">
-                      O arquivo pode estar indisponível ou requer autenticação
-                    </p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="file"
-                    className="text-center p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <FileIcon className="w-16 h-16 mx-auto mb-4 text-white" />
-                    <p className="text-lg font-medium text-white">
-                      {file.filename}
-                    </p>
-                    <p className="text-sm text-white/80">
-                      Este tipo de arquivo não pode ser visualizado
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+            {loadError ? (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center gap-4 p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20"
+              >
+                <FileIcon className="w-12 h-12 text-white/90" />
+                <p className="text-white/90 text-sm">
+                  Erro ao carregar o arquivo
+                </p>
+              </motion.div>
+            ) : file.content_type?.startsWith("image/") && file.url ? (
+              <motion.div
+                key="image-container"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative"
+                style={{
+                  transform: `scale(${scale}) rotate(${rotation}deg)`,
+                  transition: "transform 0.3s ease-out",
+                }}
+              >
+                <motion.img
+                  key={`image-${file.id}`}
+                  src={file.url}
+                  alt={file.filename}
+                  className={cn(
+                    "max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-lg select-none shadow-2xl",
+                    isLoading && "opacity-0"
+                  )}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isLoading ? 0 : 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  onLoad={() => {
+                    setIsLoading(false);
+                    setLoadError(false);
+                  }}
+                  onError={() => {
+                    setIsLoading(false);
+                    setLoadError(true);
+                  }}
+                  draggable={false}
+                />
+              </motion.div>
+            ) : file.content_type?.startsWith("video/") && file.url ? (
+              <motion.video
+                key="video"
+                src={file.url}
+                controls
+                className="max-w-[90vw] max-h-[85vh] rounded-lg shadow-2xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+                onLoadedData={() => setIsLoading(false)}
+                onError={() => {
+                  setIsLoading(false);
+                  setLoadError(true);
+                }}
+              />
+            ) : file.content_type?.startsWith("audio/") && file.url ? (
+              <motion.div
+                key="audio"
+                className="w-full max-w-md p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Music className="w-16 h-16 mx-auto mb-4 text-white" />
+                <audio
+                  src={file.url}
+                  controls
+                  className="w-full"
+                  onLoadedData={() => setIsLoading(false)}
+                  onError={() => {
+                    setIsLoading(false);
+                    setLoadError(true);
+                  }}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="file"
+                className="text-center p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <FileIcon className="w-16 h-16 mx-auto mb-4 text-white" />
+                <p className="text-lg font-medium text-white">
+                  {file.filename}
+                </p>
+                <p className="text-sm text-white/80">
+                  Este tipo de arquivo não pode ser visualizado
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </AlertDialogContent>
     </AlertDialog>
@@ -350,12 +355,3 @@ function Music(props: React.ComponentProps<"svg">) {
     </svg>
   );
 }
-
-<style jsx global>{`
-  .shadow-glass {
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  }
-  .transition-all {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-`}</style>;
