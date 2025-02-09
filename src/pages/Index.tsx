@@ -1,331 +1,254 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Upload, Lock, Clock, Eye, Shield, LogOut, Sun, Moon, Share2, Trash2, Star, File, FileText, Video, Music } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/App';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import MediaPreview from '@/components/MediaPreview';
-import StorageQuota from '@/components/StorageQuota';
-import { AppSidebar } from '@/components/AppSidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-interface FileWithPreview extends File {
-  preview?: string;
-}
-
-interface FileData {
-  id: string;
-  filename: string;
-  content_type: string;
-  size: number;
-  is_favorite: boolean;
-  file_path: string;
-  created_at: string;
-  category: string;
-}
-
-interface ShareSettings {
-  is_public: boolean;
-  custom_url?: string;
-  password?: string;
-  expires_at?: string;
-}
+import React, { useState, useCallback, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
+import { useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/App";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import StorageQuota from "@/components/StorageQuota";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { FileExplorer } from "@/components/FileExplorer";
+import { Upload } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { FileWithPreview } from "@/types";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
-  const [files, setFiles] = useState<FileWithPreview[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
-  const [shareSettings, setShareSettings] = useState<ShareSettings>({
-    is_public: false,
-  });
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { session } = useAuth();
   const queryClient = useQueryClient();
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
-        .from('files')
-        .upload(filePath, file);
-      
+        .from("files")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase
-        .from('files')
-        .insert({
-          filename: file.name,
-          file_path: filePath,
-          content_type: file.type,
-          size: file.size,
-          user_id: session?.user.id,
-        });
-      
+      const { error: dbError } = await supabase.from("files").insert({
+        filename: file.name,
+        file_path: filePath,
+        content_type: file.type,
+        size: file.size,
+        user_id: session?.user.id,
+      });
+
       if (dbError) throw dbError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['files'] });
+      queryClient.invalidateQueries({ queryKey: ["files"] });
       toast({
         title: "Success",
         description: "File uploaded successfully",
+        duration: 3000,
       });
+      // Definir 100% e então limpar após a animação
+      setUploadProgress(100);
+      setTimeout(() => setUploadProgress(null), 1000);
     },
     onError: (error) => {
+      setUploadProgress(null);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to upload file: " + error.message,
+        duration: 5000,
       });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (fileData: FileData) => {
-      const { error: storageError } = await supabase.storage
-        .from('files')
-        .remove([fileData.file_path]);
-      
-      if (storageError) throw storageError;
-
-      const { error: dbError } = await supabase
-        .from('files')
-        .delete()
-        .eq('id', fileData.id);
-      
-      if (dbError) throw dbError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['files'] });
-      toast({
-        title: "Success",
-        description: "File deleted successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete file: " + error.message,
-      });
-    },
-  });
-
-  const shareMutation = useMutation({
-    mutationFn: async ({ fileData, settings }: { fileData: FileData, settings: ShareSettings }) => {
-      const { error } = await supabase
-        .from('shared_files')
-        .insert({
-          file_path: fileData.file_path,
-          shared_by: session?.user.id,
-          is_public: settings.is_public,
-          custom_url: settings.custom_url,
-          password: settings.password,
-          expires_at: settings.expires_at,
-        });
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "File shared successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to share file: " + error.message,
-      });
-    },
-  });
-
-  const toggleFavoriteMutation = useMutation({
-    mutationFn: async ({ id, is_favorite }: { id: string, is_favorite: boolean }) => {
-      const { error } = await supabase
-        .from('files')
-        .update({ is_favorite })
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['files'] });
     },
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
+    let progressInterval: number | undefined;
+    let cleanupTimeout: number | undefined;
+
+    if (uploadMutation.isPending) {
+      setUploadProgress(0);
+      progressInterval = window.setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev === null || prev >= 90) return prev;
+          const increment = Math.max(1, 10 * (1 - prev / 90));
+          return prev + increment;
+        });
+      }, 200);
+    } else if (uploadMutation.isSuccess) {
+      setUploadProgress(100);
+      cleanupTimeout = window.setTimeout(() => {
+        setUploadProgress(null);
+      }, 1500);
+    } else if (uploadMutation.isError || !uploadMutation.isPending) {
+      cleanupTimeout = window.setTimeout(() => {
+        setUploadProgress(null);
+      }, 500);
     }
-  }, [isDarkMode]);
 
-  const { data: userFiles, isLoading } = useQuery({
-    queryKey: ['files', selectedCategory],
-    queryFn: async () => {
-      let query = supabase
-        .from('files')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (selectedCategory) {
-        query = query.eq('category', selectedCategory);
+    return () => {
+      if (progressInterval) clearInterval(progressInterval);
+      if (cleanupTimeout) clearTimeout(cleanupTimeout);
+    };
+  }, [
+    uploadMutation.isPending,
+    uploadMutation.isSuccess,
+    uploadMutation.isError,
+  ]);
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (uploadProgress !== null) {
+        // Se já houver um upload em progresso, avise o usuário
+        toast({
+          title: "Upload in progress",
+          description: "Please wait for the current upload to finish",
+          duration: 3000,
+        });
+        return;
       }
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      return data as FileData[];
+      acceptedFiles.forEach((file) => {
+        uploadMutation.mutate(file);
+      });
     },
-  });
-
-  const { data: categories } = useQuery({
-    queryKey: ['file-categories'],
-    queryFn: async () => {
-      const { data: files, error } = await supabase
-        .from('files')
-        .select('category');
-      
-      if (error) throw error;
-
-      const counts = files.reduce((acc: Record<string, number>, file) => {
-        const category = file.category || 'other';
-        acc[category] = (acc[category] || 0) + 1;
-        return acc;
-      }, {});
-
-      return Object.entries(counts).map(([name, count]) => ({
-        name,
-        count,
-      }));
-    },
-  });
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles(acceptedFiles.map(file => Object.assign(file, {
-      preview: URL.createObjectURL(file)
-    })));
-    
-    acceptedFiles.forEach(file => {
-      uploadMutation.mutate(file);
-    });
-  }, [uploadMutation]);
+    [uploadMutation, uploadProgress, toast]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': [],
-      'video/*': [],
-      'audio/*': [],
-      'application/pdf': [],
-      'application/msword': [],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
-    }
+      "image/*": [],
+      "video/*": [],
+      "audio/*": [],
+      "application/pdf": [],
+      "application/msword": [],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [],
+    },
   });
-
-  const getFileIcon = (contentType: string) => {
-    if (contentType.startsWith('video')) return <Video className="h-6 w-6" />;
-    if (contentType.startsWith('audio')) return <Music className="h-6 w-6" />;
-    if (contentType.startsWith('image')) return <Eye className="h-6 w-6" />;
-    return <FileText className="h-6 w-6" />;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log out.",
-      });
-    } else {
-      navigate('/auth');
-    }
-  };
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-muted">
+      <motion.div
+        className="flex min-h-screen bg-gradient-to-br from-background via-background to-muted"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <AppSidebar />
-        <div className="flex-1 p-8 space-y-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-card/50 backdrop-blur-sm rounded-lg p-6 border border-border">
-            <div className="space-y-2">
-              <motion.h1 
-                className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                Secure Cloud Storage
-              </motion.h1>
-              <p className="text-muted-foreground">
-                Welcome, {session?.user.email}
-              </p>
+        <motion.main
+          className="flex-1 flex flex-col"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
+        >
+          <motion.div
+            className="p-6 flex-1 flex flex-col"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
+          >
+            <motion.div
+              className="flex items-center justify-between mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.3 }}
+            >
+              <div className="space-y-1">
+                <h1 className="text-3xl font-bold">
+                  Welcome back, {session?.user.email?.split("@")[0]}
+                </h1>
+                <p className="text-muted-foreground">
+                  Drag files to the upload area or browse
+                </p>
+              </div>
               <StorageQuota />
-            </div>
-          </div>
+            </motion.div>
 
-          <FileExplorer />
-
-          <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {getFileIcon(selectedFile?.content_type || '')}
-                  {selectedFile?.filename}
-                </DialogTitle>
-              </DialogHeader>
-              {selectedFile && (
-                <div className="mt-4">
-                  <MediaPreview
-                    contentType={selectedFile.content_type}
-                    url={supabase.storage.from('files').getPublicUrl(selectedFile.file_path).data.publicUrl}
-                    filename={selectedFile.filename}
-                  />
+            <motion.div
+              className="grid gap-6 grid-cols-1"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.4 }}
+            >
+              <div
+                {...getRootProps()}
+                className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
+              >
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <Upload className="h-8 w-8" />
+                  <p className="text-sm font-medium">
+                    Drop files here or click to select
+                  </p>
+                  <p className="text-xs">
+                    Supports images, videos, audio, and documents
+                  </p>
                 </div>
+              </div>
+
+              {isDragActive && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center pointer-events-none"
+                >
+                  <div className="p-8 rounded-lg border-2 border-dashed border-primary flex flex-col items-center gap-4">
+                    <Upload className="h-12 w-12 text-primary animate-bounce" />
+                    <p className="text-lg font-medium">
+                      Drop files here to upload
+                    </p>
+                  </div>
+                </motion.div>
               )}
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+
+              {uploadProgress !== null && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key="upload-progress"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed bottom-4 right-4 w-80 p-4 bg-card rounded-lg shadow-lg border z-50"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">
+                        {uploadProgress >= 100 ? (
+                          <span className="text-primary">Upload complete!</span>
+                        ) : (
+                          "Uploading..."
+                        )}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {Math.round(uploadProgress)}%
+                      </span>
+                    </div>
+                    <Progress
+                      value={uploadProgress}
+                      className={cn(
+                        "h-2 transition-colors",
+                        uploadProgress >= 100 && "bg-primary/10"
+                      )}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              )}
+
+              <FileExplorer />
+            </motion.div>
+          </motion.div>
+        </motion.main>
+      </motion.div>
     </SidebarProvider>
   );
 };

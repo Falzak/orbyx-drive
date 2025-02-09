@@ -1,20 +1,26 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Check, X } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff, Check, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -79,7 +85,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateSignUp()) return;
-    
+
     try {
       setLoading(true);
       const { error } = await supabase.auth.signUp({
@@ -97,11 +103,12 @@ const Auth = () => {
         title: "Success!",
         description: "Check your email for the confirmation link.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description:
+          error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setLoading(false);
@@ -112,17 +119,27 @@ const Auth = () => {
     e.preventDefault();
     try {
       setLoading(true);
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      // Store the remember me preference in localStorage
+      if (rememberMe) {
+        localStorage.setItem("remember_me", "true");
+      } else {
+        localStorage.removeItem("remember_me");
+      }
+
       if (error) throw error;
-      navigate('/');
-    } catch (error: any) {
+      navigate("/");
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description:
+          error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setLoading(false);
@@ -134,7 +151,9 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Welcome</CardTitle>
-          <CardDescription>Sign in or create an account to continue</CardDescription>
+          <CardDescription>
+            Sign in or create an account to continue
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
@@ -167,7 +186,11 @@ const Auth = () => {
                       className="absolute right-2 top-1/2 -translate-y-1/2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -179,12 +202,15 @@ const Auth = () => {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
-                  <label htmlFor="remember-me" className="text-sm text-muted-foreground">
+                  <label
+                    htmlFor="remember-me"
+                    className="text-sm text-muted-foreground"
+                  >
                     Remember me
                   </label>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Loading...' : 'Sign In'}
+                  {loading ? "Loading..." : "Sign In"}
                 </Button>
               </form>
             </TabsContent>
@@ -229,10 +255,17 @@ const Auth = () => {
                         className="absolute right-2 top-1/2 -translate-y-1/2"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
-                    <Progress value={passwordStrength} className={`h-1 ${getPasswordStrengthColor()}`} />
+                    <Progress
+                      value={passwordStrength}
+                      className={`h-1 ${getPasswordStrengthColor()}`}
+                    />
                     <div className="text-xs space-y-1 mt-1">
                       <div className="flex items-center space-x-1">
                         {password.length >= 8 ? (
@@ -240,7 +273,9 @@ const Auth = () => {
                         ) : (
                           <X className="h-3 w-3 text-destructive" />
                         )}
-                        <span className="text-muted-foreground">At least 8 characters</span>
+                        <span className="text-muted-foreground">
+                          At least 8 characters
+                        </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         {password.match(/[A-Z]/) ? (
@@ -248,7 +283,9 @@ const Auth = () => {
                         ) : (
                           <X className="h-3 w-3 text-destructive" />
                         )}
-                        <span className="text-muted-foreground">One uppercase letter</span>
+                        <span className="text-muted-foreground">
+                          One uppercase letter
+                        </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         {password.match(/[0-9]/) ? (
@@ -256,7 +293,9 @@ const Auth = () => {
                         ) : (
                           <X className="h-3 w-3 text-destructive" />
                         )}
-                        <span className="text-muted-foreground">One number</span>
+                        <span className="text-muted-foreground">
+                          One number
+                        </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         {password.match(/[^A-Za-z0-9]/) ? (
@@ -264,7 +303,9 @@ const Auth = () => {
                         ) : (
                           <X className="h-3 w-3 text-destructive" />
                         )}
-                        <span className="text-muted-foreground">One special character</span>
+                        <span className="text-muted-foreground">
+                          One special character
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -281,14 +322,20 @@ const Auth = () => {
                       variant="ghost"
                       size="icon"
                       className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Loading...' : 'Sign Up'}
+                  {loading ? "Loading..." : "Sign Up"}
                 </Button>
               </form>
             </TabsContent>

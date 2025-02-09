@@ -1,225 +1,512 @@
-
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from '@/components/ui/button';
+  HTMLMotionProps,
+  MotionStyle,
+  Transition,
+  Variants,
+} from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FileData, ViewMode } from "@/types";
+import MediaPreview from "./MediaPreview";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { FolderOpen, File, Grid, List as ListIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface Folder {
-  id: string;
-  name: string;
-  created_at: string;
-}
-
-interface FileItem {
-  id: string;
-  filename: string;
-  content_type: string;
-  created_at: string;
-  folder_id: string | null;
-}
+  FileIcon,
+  Grid,
+  List,
+  ChevronRight,
+  MoreHorizontal,
+  Download,
+  Share2,
+  Star,
+  Trash2,
+  Edit,
+  Copy,
+} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { toast } from "@/hooks/use-toast";
 
 export function FileExplorer() {
-  const [searchParams] = useSearchParams();
-  const viewMode = searchParams.get('view') || 'grid';
-  const currentFolder = searchParams.get('folder');
-  const { toast } = useToast();
-  const [isNewFolderDialogOpen, setIsNewFolderDialogOpen] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
+  const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { data: folders, isLoading: foldersLoading } = useQuery({
-    queryKey: ['folders', currentFolder],
+  // Memoized function to get signed URL
+  const getSignedUrl = useCallback(async (filePath: string) => {
+    const { data } = await supabase.storage
+      .from("files")
+      .createSignedUrl(filePath, 3600);
+    return data?.signedUrl;
+  }, []);
+
+  // Query with URL pre-fetching
+  const { data: files = [] } = useQuery<FileData[]>({
+    queryKey: ["files"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('folders')
-        .select('*')
-        .eq('parent_id', currentFolder)
-        .order('name');
-      
+        .from("files")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
-      return data as Folder[];
+
+      // Pre-fetch URLs for all files
+      const filesWithUrls = await Promise.all(
+        (data || []).map(async (file) => {
+          try {
+            const url = await getSignedUrl(file.file_path);
+            if (url) {
+              setPreviewUrls((prev) => ({
+                ...prev,
+                [file.id]: url,
+              }));
+            }
+          } catch (error) {
+            console.error("Failed to get signed URL for file:", file.id);
+          }
+          return file;
+        })
+      );
+
+      return filesWithUrls;
     },
   });
 
-  const { data: files, isLoading: filesLoading } = useQuery({
-    queryKey: ['files', currentFolder],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('files')
-        .select('*')
-        .eq('folder_id', currentFolder)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as FileItem[];
-    },
-  });
+  // Handle download
+  const handleDownload = useCallback(
+    async (file: FileData) => {
+      try {
+        let url = previewUrls[file.id];
+        if (!url) {
+          const signedUrl = await getSignedUrl(file.file_path);
+          if (signedUrl) {
+            url = signedUrl;
+            setPreviewUrls((prev) => ({
+              ...prev,
+              [file.id]: signedUrl,
+            }));
+          }
+        }
 
-  const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) {
+        if (url) {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = downloadUrl;
+          link.download = file.filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(downloadUrl);
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to download file",
+        });
+      }
+    },
+    [previewUrls, getSignedUrl]
+  );
+
+  // Handle preview
+  const handlePreview = useCallback(
+    async (file: FileData) => {
+      try {
+        let url = previewUrls[file.id];
+        if (!url) {
+          const signedUrl = await getSignedUrl(file.file_path);
+          if (signedUrl) {
+            url = signedUrl;
+            setPreviewUrls((prev) => ({
+              ...prev,
+              [file.id]: signedUrl,
+            }));
+          }
+        }
+
+        setSelectedFile({
+          ...file,
+          url,
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to preview file",
+        });
+      }
+    },
+    [previewUrls, getSignedUrl]
+  );
+
+  const getFileIcon = (contentType: string) => {
+    if (contentType.startsWith("image/")) return "🖼️";
+    if (contentType.startsWith("video/")) return "🎥";
+    if (contentType.startsWith("audio/")) return "🎵";
+    if (contentType.startsWith("application/pdf")) return "📄";
+    if (contentType.startsWith("application/msword")) return "📝";
+    return "📁";
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const formatDate = (date: string) => {
+    return new Intl.DateTimeFormat("pt-BR", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  const handleDelete = async (file: FileData) => {
+    const { error: storageError } = await supabase.storage
+      .from("files")
+      .remove([file.file_path]);
+
+    if (storageError) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please enter a folder name",
+        description: "Failed to delete file.",
       });
       return;
     }
 
-    const { error } = await supabase
-      .from('folders')
-      .insert({
-        name: newFolderName,
-        parent_id: currentFolder,
+    const { error: dbError } = await supabase
+      .from("files")
+      .delete()
+      .eq("id", file.id);
+
+    if (dbError) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete file record.",
       });
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["files"] });
+    toast({
+      title: "Success",
+      description: "File deleted successfully.",
+    });
+  };
+
+  const handleRename = async (file: FileData, newName: string) => {
+    const { error } = await supabase
+      .from("files")
+      .update({ filename: newName })
+      .eq("id", file.id);
 
     if (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create folder",
+        description: "Failed to rename file.",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Folder created successfully",
-      });
-      setIsNewFolderDialogOpen(false);
-      setNewFolderName('');
+      return;
     }
+
+    queryClient.invalidateQueries({ queryKey: ["files"] });
   };
 
-  if (foldersLoading || filesLoading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>;
+  // Motion table row component with forwardRef
+  interface MotionTableRowProps extends HTMLMotionProps<"tr"> {
+    layoutId?: string;
+    layout?: boolean;
   }
 
+  const MotionTableRow = React.forwardRef<
+    HTMLTableRowElement,
+    MotionTableRowProps
+  >((props, ref) => <motion.tr ref={ref} {...props} />);
+  MotionTableRow.displayName = "MotionTableRow";
+
+  // FileContextMenu with forwardRef
+  const FileContextMenu = React.forwardRef<
+    HTMLDivElement,
+    {
+      file: FileData;
+      children: React.ReactNode;
+    }
+  >(({ file, children }, ref) => (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div ref={ref}>{children}</div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
+        <ContextMenuItem onClick={() => handlePreview(file)}>
+          <FileIcon className="h-4 w-4 mr-2" />
+          Preview
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => handleDownload(file)}>
+          <Download className="h-4 w-4 mr-2" />
+          Download
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => navigate(`/share/${file.id}`)}>
+          <Share2 className="h-4 w-4 mr-2" />
+          Share
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onClick={async () => {
+            const { error } = await supabase
+              .from("files")
+              .update({ is_favorite: !file.is_favorite })
+              .eq("id", file.id);
+            if (!error) {
+              queryClient.invalidateQueries({ queryKey: ["files"] });
+            }
+          }}
+        >
+          <Star
+            className={cn(
+              "h-4 w-4 mr-2",
+              file.is_favorite && "fill-yellow-400"
+            )}
+          />
+          {file.is_favorite ? "Remove from favorites" : "Add to favorites"}
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => {
+            const newName = prompt("Enter new name", file.filename);
+            if (newName && newName !== file.filename) {
+              handleRename(file, newName);
+            }
+          }}
+        >
+          <Edit className="h-4 w-4 mr-2" />
+          Rename
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onClick={() => handleDelete(file)}
+          className="text-destructive focus:text-destructive"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  ));
+  FileContextMenu.displayName = "FileContextMenu";
+
+  const renderGridView = (files: FileData[]) => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+      {files.map((file) => (
+        <FileContextMenu key={file.id} file={file}>
+          <div>
+            <Card
+              className="overflow-hidden cursor-pointer border transition-shadow duration-200 hover:shadow-lg"
+              onClick={() => handlePreview(file)}
+            >
+              <div className="aspect-square relative bg-gradient-to-b from-muted/5 to-muted/20">
+                {file.content_type?.startsWith("image/") ? (
+                  <div className="w-full h-full">
+                    {previewUrls[file.id] ? (
+                      <img
+                        src={previewUrls[file.id]}
+                        alt={file.filename}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-4xl">
+                      {getFileIcon(file.content_type)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="p-3 bg-card border-t">
+                <p className="font-medium truncate text-sm">
+                  {file.filename}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatFileSize(file.size)}
+                </p>
+              </div>
+            </Card>
+          </div>
+        </FileContextMenu>
+      ))}
+    </div>
+  );
+
+  const renderListView = (files: FileData[]) => (
+    <div className="p-2">
+      <div className="rounded-md border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-[45%]">Name</TableHead>
+              <TableHead className="w-[15%]">Size</TableHead>
+              <TableHead className="w-[15%]">Type</TableHead>
+              <TableHead className="w-[25%]">Modified</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {files.map((file) => (
+              <FileContextMenu key={file.id} file={file}>
+                <tr
+                  onClick={() => handlePreview(file)}
+                  className="cursor-pointer transition-colors hover:bg-muted/5"
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-md bg-gradient-to-b from-muted/5 to-muted/20 flex items-center justify-center shrink-0">
+                        {file.content_type?.startsWith("image/") &&
+                        previewUrls[file.id] ? (
+                          <img
+                            src={previewUrls[file.id]}
+                            alt={file.filename}
+                            className="w-full h-full object-cover rounded-md"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg";
+                            }}
+                          />
+                        ) : (
+                          <span className="text-2xl">
+                            {getFileIcon(file.content_type)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-medium truncate text-sm">
+                          {file.filename}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Added {formatDate(file.created_at)}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatFileSize(file.size)}
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center rounded-md bg-muted/30 px-2 py-1 text-xs font-medium ring-1 ring-inset ring-muted">
+                      {file.content_type.split("/").pop()?.toUpperCase()}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(file.created_at)}
+                  </TableCell>
+                </tr>
+              </FileContextMenu>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Files and Folders</h2>
-        <div className="flex gap-2">
+    <div className="h-full flex flex-col prevent-flicker">
+      <div className="flex items-center justify-between px-4 h-14 border-b">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <span>All Files</span>
+          <ChevronRight className="h-4 w-4" />
+          <span>Documents</span>
+        </div>
+        <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsNewFolderDialogOpen(true)}
-          >
-            <FolderOpen className="h-4 w-4 mr-2" />
-            New Folder
-          </Button>
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
             size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              const params = new URLSearchParams(searchParams);
-              params.set('view', 'grid');
-              window.history.pushState({}, '', `?${params.toString()}`);
-            }}
+            onClick={() => setViewMode("grid")}
           >
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === "list" ? "secondary" : "ghost"}
             size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              const params = new URLSearchParams(searchParams);
-              params.set('view', 'list');
-              window.history.pushState({}, '', `?${params.toString()}`);
-            }}
+            onClick={() => setViewMode("list")}
           >
-            <ListIcon className="h-4 w-4" />
+            <List className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className={cn(
-        "grid gap-4",
-        viewMode === 'grid' ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"
-      )}>
-        {folders?.map((folder) => (
-          <Card key={folder.id} className={cn(
-            "group hover:border-primary transition-colors",
-            viewMode === 'list' && "flex items-center"
-          )}>
-            <CardHeader className={cn(viewMode === 'list' && "flex-1")}>
-              <CardTitle className="flex items-center gap-2">
-                <FolderOpen className="h-5 w-5 text-blue-500" />
-                {folder.name}
-              </CardTitle>
-            </CardHeader>
-            {viewMode === 'grid' && (
-              <CardFooter className="text-sm text-muted-foreground">
-                Created {new Date(folder.created_at).toLocaleDateString()}
-              </CardFooter>
-            )}
-          </Card>
-        ))}
+      <ScrollArea className="flex-1">
+        {viewMode === "grid" ? renderGridView(files) : renderListView(files)}
+      </ScrollArea>
 
-        {files?.map((file) => (
-          <Card key={file.id} className={cn(
-            "group hover:border-primary transition-colors",
-            viewMode === 'list' && "flex items-center"
-          )}>
-            <CardHeader className={cn(viewMode === 'list' && "flex-1")}>
-              <CardTitle className="flex items-center gap-2">
-                <File className="h-5 w-5 text-gray-500" />
-                {file.filename}
-              </CardTitle>
-            </CardHeader>
-            {viewMode === 'grid' && (
-              <CardFooter className="text-sm text-muted-foreground">
-                Created {new Date(file.created_at).toLocaleDateString()}
-              </CardFooter>
-            )}
-          </Card>
-        ))}
-      </div>
+      {selectedFile && (
+        <MediaPreview
+          file={{
+            ...selectedFile,
+            url: selectedFile.url || undefined,
+          }}
+          onClose={() => {
+            setSelectedFile(null);
+          }}
+          onDownload={async () => {
+            if (selectedFile.url) {
+              window.open(selectedFile.url, "_blank");
+            }
+          }}
+          onShare={() => {
+            navigate(`/share/${selectedFile.id}`);
+          }}
+          onToggleFavorite={async () => {
+            const { error } = await supabase
+              .from("files")
+              .update({
+                is_favorite: !selectedFile.is_favorite,
+              })
+              .eq("id", selectedFile.id);
 
-      <Dialog open={isNewFolderDialogOpen} onOpenChange={setIsNewFolderDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Folder</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Folder Name</Label>
-              <Input
-                id="name"
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                placeholder="Enter folder name"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNewFolderDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateFolder}>
-              Create
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            if (!error) {
+              setSelectedFile({
+                ...selectedFile,
+                is_favorite: !selectedFile.is_favorite,
+              });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
