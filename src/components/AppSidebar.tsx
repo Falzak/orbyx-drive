@@ -43,6 +43,7 @@ export function AppSidebar() {
   const { toast } = useToast();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -151,11 +152,15 @@ export function AppSidebar() {
   return (
     <Sidebar className={cn(
       "border-r border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-      isCollapsed ? "w-[70px]" : "w-[240px]"
+      isCollapsed ? "w-[70px]" : "w-[240px]",
+      "transition-all duration-300"
     )}>
       <SidebarContent>
         <div className="flex items-center justify-between px-4 py-2">
-          <h2 className={cn("font-semibold text-primary", isCollapsed && "hidden")}>
+          <h2 className={cn(
+            "font-semibold text-primary transition-opacity duration-200",
+            isCollapsed ? "opacity-0 w-0" : "opacity-100"
+          )}>
             Cloud Drive
           </h2>
           <Button
@@ -180,7 +185,14 @@ export function AppSidebar() {
           </div>
         )}
 
-        <SidebarGroup>
+        <SidebarGroup
+          onMouseEnter={() => setHoveredGroup('files')}
+          onMouseLeave={() => setHoveredGroup(null)}
+          className={cn(
+            "transition-colors duration-200",
+            hoveredGroup === 'files' && "bg-muted/50"
+          )}
+        >
           <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>Files</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -188,7 +200,12 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton onClick={item.action} className="w-full">
                     <item.icon className="h-4 w-4 mr-2" />
-                    <span className={cn("flex-1", isCollapsed && "hidden")}>{item.title}</span>
+                    <span className={cn(
+                      "flex-1 transition-opacity duration-200",
+                      isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                    )}>
+                      {item.title}
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -196,7 +213,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup
+          onMouseEnter={() => setHoveredGroup('quick')}
+          onMouseLeave={() => setHoveredGroup(null)}
+          className={cn(
+            "transition-colors duration-200",
+            hoveredGroup === 'quick' && "bg-muted/50"
+          )}
+        >
           <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>Quick Access</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -204,7 +228,12 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton onClick={item.action} className="w-full">
                     <item.icon className="h-4 w-4 mr-2" />
-                    <span className={cn("flex-1", isCollapsed && "hidden")}>{item.title}</span>
+                    <span className={cn(
+                      "flex-1 transition-opacity duration-200",
+                      isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                    )}>
+                      {item.title}
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -212,7 +241,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup
+          onMouseEnter={() => setHoveredGroup('tools')}
+          onMouseLeave={() => setHoveredGroup(null)}
+          className={cn(
+            "transition-colors duration-200",
+            hoveredGroup === 'tools' && "bg-muted/50"
+          )}
+        >
           <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -220,7 +256,12 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton onClick={item.action} className="w-full">
                     <item.icon className="h-4 w-4 mr-2" />
-                    <span className={cn("flex-1", isCollapsed && "hidden")}>{item.title}</span>
+                    <span className={cn(
+                      "flex-1 transition-opacity duration-200",
+                      isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                    )}>
+                      {item.title}
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -234,7 +275,12 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout} className="w-full text-destructive hover:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
-                  <span className={cn("flex-1", isCollapsed && "hidden")}>Logout</span>
+                  <span className={cn(
+                    "flex-1 transition-opacity duration-200",
+                    isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                  )}>
+                    Logout
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

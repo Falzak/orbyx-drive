@@ -17,7 +17,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
         <img
           src={url}
           alt={filename}
-          className="object-contain w-full h-full"
+          className="object-contain w-full h-full hover:scale-105 transition-transform duration-300"
         />
       </div>
     );
@@ -41,7 +41,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
     return (
       <div className="relative rounded-lg overflow-hidden bg-muted p-4">
         <div className="flex items-center gap-4">
-          <Music className="h-8 w-8 text-primary" />
+          <Music className="h-8 w-8 text-primary animate-pulse" />
           <audio
             src={url}
             controls
@@ -62,6 +62,13 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
         <p className="text-sm text-muted-foreground text-center break-all">
           {filename}
         </p>
+        <a
+          href={url}
+          download={filename}
+          className="text-sm text-primary hover:underline"
+        >
+          Download
+        </a>
       </div>
     </div>
   );
