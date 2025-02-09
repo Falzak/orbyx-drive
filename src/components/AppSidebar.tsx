@@ -57,6 +57,13 @@ export function AppSidebar() {
     }
   };
 
+  const handleUpload = () => {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   const mainItems = [
     {
       title: "All Files",
@@ -112,7 +119,7 @@ export function AppSidebar() {
     {
       title: "Upload",
       icon: Upload,
-      action: () => document.querySelector('input[type="file"]')?.click(),
+      action: handleUpload,
     },
     {
       title: "Filter",

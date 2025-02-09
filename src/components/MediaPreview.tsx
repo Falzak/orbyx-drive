@@ -17,7 +17,7 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
         <img
           src={url}
           alt={filename}
-          className="object-cover w-full h-full"
+          className="object-contain w-full h-full"
         />
       </div>
     );
@@ -68,4 +68,3 @@ const MediaPreview = ({ contentType, url, filename }: MediaPreviewProps) => {
 };
 
 export default MediaPreview;
-
