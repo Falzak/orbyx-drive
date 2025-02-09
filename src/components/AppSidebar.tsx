@@ -18,7 +18,10 @@ import {
   Users,
   Share2,
   Shield,
-  Trash2
+  Trash2,
+  FolderPlus,
+  Grid,
+  List
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,18 +61,26 @@ export function AppSidebar() {
     }
   };
 
-  const handleUpload = () => {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
-  };
-
   const mainItems = [
     {
       title: "All Files",
       icon: FolderOpen,
       action: () => navigate('/'),
+    },
+    {
+      title: "New Folder",
+      icon: FolderPlus,
+      action: () => navigate('/?action=new-folder'),
+    },
+    {
+      title: "Grid View",
+      icon: Grid,
+      action: () => navigate('/?view=grid'),
+    },
+    {
+      title: "List View",
+      icon: List,
+      action: () => navigate('/?view=list'),
     },
     {
       title: "Images",
@@ -120,7 +131,7 @@ export function AppSidebar() {
     {
       title: "Upload",
       icon: Upload,
-      action: handleUpload,
+      action: () => document.querySelector('input[type="file"]')?.click(),
     },
     {
       title: "Filter",
