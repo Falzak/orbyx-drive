@@ -131,7 +131,10 @@ export function AppSidebar() {
     {
       title: "Upload",
       icon: Upload,
-      action: () => document.querySelector('input[type="file"]')?.click(),
+      action: () => {
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.click();
+      },
     },
     {
       title: "Filter",

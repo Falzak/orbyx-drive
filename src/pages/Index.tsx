@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, Lock, Clock, Eye, Shield, LogOut, Sun, Moon, Share2, Trash2, Star, File, FileText, Video, Music } from 'lucide-react';
@@ -302,247 +301,30 @@ const Index = () => {
               </p>
               <StorageQuota />
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="rounded-full"
-              >
-                {isDarkMode ? 
-                  <Sun className="h-5 w-5 text-yellow-500" /> : 
-                  <Moon className="h-5 w-5" />
-                }
-              </Button>
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            <motion.div 
-              className="p-6 rounded-lg bg-card/50 backdrop-blur-sm border border-border shadow-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <div 
-                {...getRootProps()} 
-                className={`
-                  p-8 border-2 border-dashed rounded-lg 
-                  transition-all duration-300 ease-in-out
-                  ${isDragActive ? 'border-primary bg-primary/10 scale-105' : 'border-border'}
-                  hover:border-primary hover:bg-primary/5
-                  cursor-pointer group
-                `}
-              >
-                <input {...getInputProps()} />
-                <div className="text-center">
-                  <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4 group-hover:text-primary transition-colors" />
-                  <p className="text-lg font-medium mb-2">
-                    {isDragActive ? 
-                      "Drop files here..." : 
-                      "Drag files or click to select"
-                    }
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Supports images, videos, audio and documents
-                  </p>
+          <FileExplorer />
+
+          <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {getFileIcon(selectedFile?.content_type || '')}
+                  {selectedFile?.filename}
+                </DialogTitle>
+              </DialogHeader>
+              {selectedFile && (
+                <div className="mt-4">
+                  <MediaPreview
+                    contentType={selectedFile.content_type}
+                    url={supabase.storage.from('files').getPublicUrl(selectedFile.file_path).data.publicUrl}
+                    filename={selectedFile.filename}
+                  />
                 </div>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="rounded-lg bg-card/50 backdrop-blur-sm border border-border p-6 shadow-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <h2 className="text-xl font-semibold mb-4">Your Files</h2>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Filename</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Tamanho</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                            <span className="text-muted-foreground">Loading...</span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : userFiles?.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          No files found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      userFiles?.map((file) => (
-                        <TableRow key={file.id} className="group hover:bg-muted/50">
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              {getFileIcon(file.content_type)}
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto hover:no-underline"
-                                onClick={() => {
-                                  setSelectedFile(file);
-                                  setPreviewDialogOpen(true);
-                                }}
-                              >
-                                {file.filename}
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">{file.category}</TableCell>
-                          <TableCell className="text-muted-foreground">{file.content_type}</TableCell>
-                          <TableCell className="text-muted-foreground">{formatFileSize(file.size)}</TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {new Date(file.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => {
-                                  toggleFavoriteMutation.mutate({
-                                    id: file.id,
-                                    is_favorite: !file.is_favorite,
-                                  });
-                                }}
-                              >
-                                <Star
-                                  className={`h-4 w-4 ${file.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
-                                />
-                              </Button>
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => {
-                                      setSelectedFile(file);
-                                      setShareSettings({ is_public: false });
-                                    }}
-                                  >
-                                    <Share2 className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Share File</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-4 py-4">
-                                    <div className="flex items-center justify-between">
-                                      <Label htmlFor="public">Public</Label>
-                                      <Switch
-                                        id="public"
-                                        checked={shareSettings.is_public}
-                                        onCheckedChange={(checked) => 
-                                          setShareSettings(prev => ({ ...prev, is_public: checked }))
-                                        }
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="custom-url">Custom URL</Label>
-                                      <Input
-                                        id="custom-url"
-                                        placeholder="custom-url"
-                                        value={shareSettings.custom_url || ''}
-                                        onChange={(e) => 
-                                          setShareSettings(prev => ({ ...prev, custom_url: e.target.value }))
-                                        }
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="password">Password (optional)</Label>
-                                      <Input
-                                        id="password"
-                                        type="password"
-                                        value={shareSettings.password || ''}
-                                        onChange={(e) => 
-                                          setShareSettings(prev => ({ ...prev, password: e.target.value }))
-                                        }
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="expires">Expiration Date</Label>
-                                      <Input
-                                        id="expires"
-                                        type="datetime-local"
-                                        value={shareSettings.expires_at || ''}
-                                        onChange={(e) => 
-                                          setShareSettings(prev => ({ ...prev, expires_at: e.target.value }))
-                                        }
-                                      />
-                                    </div>
-                                    <Button
-                                      className="w-full"
-                                      onClick={() => {
-                                        if (selectedFile) {
-                                          shareMutation.mutate({
-                                            fileData: selectedFile,
-                                            settings: shareSettings,
-                                          });
-                                        }
-                                      }}
-                                    >
-                                      Share
-                                    </Button>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-                                onClick={() => deleteMutation.mutate(file)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </motion.div>
-          </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
-
-        <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {getFileIcon(selectedFile?.content_type || '')}
-                {selectedFile?.filename}
-              </DialogTitle>
-            </DialogHeader>
-            {selectedFile && (
-              <div className="mt-4">
-                <MediaPreview
-                  contentType={selectedFile.content_type}
-                  url={supabase.storage.from('files').getPublicUrl(selectedFile.file_path).data.publicUrl}
-                  filename={selectedFile.filename}
-                />
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </SidebarProvider>
   );
