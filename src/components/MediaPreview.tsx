@@ -80,14 +80,14 @@ export default function MediaPreview({
         >
           {/* Barra de ferramentas */}
           <div className="fixed top-6 inset-x-0 z-30 flex items-center justify-center">
-            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-lg">
               {file.content_type?.startsWith("image/") && !loadError && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleZoomOut}
-                    className="hover:bg-white/10 active:bg-white/20 rounded-full text-white/90 hover:text-white transition-all"
+                    className="hover:bg-accent hover:text-accent-foreground active:bg-accent/80 rounded-full text-foreground/80 transition-all"
                   >
                     <ZoomOut className="h-4 w-4" />
                   </Button>
@@ -95,7 +95,7 @@ export default function MediaPreview({
                     variant="ghost"
                     size="icon"
                     onClick={handleZoomIn}
-                    className="hover:bg-white/10 active:bg-white/20 rounded-full text-white/90 hover:text-white transition-all"
+                    className="hover:bg-accent hover:text-accent-foreground active:bg-accent/80 rounded-full text-foreground/80 transition-all"
                   >
                     <ZoomIn className="h-4 w-4" />
                   </Button>
@@ -103,12 +103,12 @@ export default function MediaPreview({
                     variant="ghost"
                     size="icon"
                     onClick={handleRotate}
-                    className="hover:bg-white/10 active:bg-white/20 rounded-full text-white/90 hover:text-white transition-all"
+                    className="hover:bg-accent hover:text-accent-foreground active:bg-accent/80 rounded-full text-foreground/80 transition-all"
                   >
                     <RotateCw className="h-4 w-4" />
                   </Button>
 
-                  <div className="w-px h-4 bg-white/20" />
+                  <div className="w-px h-4 bg-border/50" />
                 </>
               )}
 
@@ -117,19 +117,19 @@ export default function MediaPreview({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-white/10 active:bg-white/20 rounded-full text-white/90 hover:text-white transition-all"
+                    className="hover:bg-accent hover:text-accent-foreground active:bg-accent/80 rounded-full text-foreground/80 transition-all"
                   >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="center"
-                  className="bg-white/5 backdrop-blur-lg border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+                  className="bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-lg rounded-lg"
                 >
                   {onDownload && (
                     <DropdownMenuItem
                       onClick={onDownload}
-                      className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+                      className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download
@@ -138,7 +138,7 @@ export default function MediaPreview({
                   {onShare && (
                     <DropdownMenuItem
                       onClick={onShare}
-                      className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+                      className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
                     >
                       <Share2 className="h-4 w-4 mr-2" />
                       Compartilhar
@@ -146,10 +146,10 @@ export default function MediaPreview({
                   )}
                   {onToggleFavorite && (
                     <>
-                      <DropdownMenuSeparator className="bg-white/20" />
+                      <DropdownMenuSeparator className="bg-border/50" />
                       <DropdownMenuItem
                         onClick={onToggleFavorite}
-                        className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+                        className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
                       >
                         <Star
                           className={cn(
@@ -166,13 +166,13 @@ export default function MediaPreview({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <div className="w-px h-4 bg-white/20" />
+              <div className="w-px h-4 bg-border/50" />
 
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="hover:bg-white/10 active:bg-white/20 rounded-full text-white/90 hover:text-white transition-all"
+                className="hover:bg-accent hover:text-accent-foreground active:bg-accent/80 rounded-full text-foreground/80 transition-all"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -187,7 +187,7 @@ export default function MediaPreview({
             transition={{ duration: 0.3 }}
             className="fixed bottom-6 inset-x-0 z-30 flex items-center justify-center"
           >
-            <div className="px-4 py-2.5 rounded-full bg-black/30 backdrop-blur-xl text-sm font-medium text-white/90 border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+            <div className="px-4 py-2.5 rounded-full bg-background/80 dark:bg-black/80 backdrop-blur-xl text-sm font-medium text-foreground/80 shadow-lg">
               <span className="drop-shadow-sm">{file.filename}</span>
             </div>
           </motion.div>
@@ -203,7 +203,7 @@ export default function MediaPreview({
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-border/50 border-t-foreground rounded-full animate-spin" />
               </motion.div>
             )}
 
@@ -214,10 +214,10 @@ export default function MediaPreview({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
-                className="flex flex-col items-center gap-4 p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20"
+                className="flex flex-col items-center gap-4 p-8 rounded-lg bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-lg"
               >
-                <FileIcon className="w-12 h-12 text-white/90" />
-                <p className="text-white/90 text-sm">
+                <FileIcon className="w-12 h-12 text-foreground/80" />
+                <p className="text-foreground/80 text-sm">
                   Erro ao carregar o arquivo
                 </p>
               </motion.div>
@@ -276,13 +276,13 @@ export default function MediaPreview({
             ) : file.content_type?.startsWith("audio/") && file.url ? (
               <motion.div
                 key="audio"
-                className="w-full max-w-md p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
+                className="w-full max-w-md p-8 rounded-lg bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-2xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
               >
-                <Music className="w-16 h-16 mx-auto mb-4 text-white" />
+                <Music className="w-16 h-16 mx-auto mb-4 text-foreground/80" />
                 <audio
                   src={file.url}
                   controls
@@ -297,17 +297,17 @@ export default function MediaPreview({
             ) : (
               <motion.div
                 key="file"
-                className="text-center p-8 rounded-lg bg-white/10 supports-[backdrop-filter]:backdrop-blur-xl border border-white/20 shadow-2xl"
+                className="text-center p-8 rounded-lg bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-2xl"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <FileIcon className="w-16 h-16 mx-auto mb-4 text-white" />
-                <p className="text-lg font-medium text-white">
+                <FileIcon className="w-16 h-16 mx-auto mb-4 text-foreground/80" />
+                <p className="text-lg font-medium text-foreground/80">
                   {file.filename}
                 </p>
-                <p className="text-sm text-white/80">
+                <p className="text-sm text-foreground/60">
                   Este tipo de arquivo não pode ser visualizado
                 </p>
               </motion.div>

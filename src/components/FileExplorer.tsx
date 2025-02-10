@@ -45,10 +45,17 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/App";
+import { FileViewOptions } from "@/components/FileViewOptions";
+import { FileGrid } from "@/components/FileGrid";
+import { FileList } from "@/components/FileList";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export function FileExplorer() {
+  const { session } = useAuth();
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [view, setView] = useLocalStorage<"grid" | "list">("file-view", "grid");
+  const [sortBy, setSortBy] = useLocalStorage<string>("file-sort", "date_desc");
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,13 +70,17 @@ export function FileExplorer() {
   }, []);
 
   // Query with URL pre-fetching
-  const { data: files = [] } = useQuery<FileData[]>({
-    queryKey: ["files"],
+  const { data: files = [], isLoading } = useQuery({
+    queryKey: ["files", sortBy],
     queryFn: async () => {
+      const [field, direction] = sortBy.split("_");
       const { data, error } = await supabase
         .from("files")
         .select("*")
-        .order("created_at", { ascending: false });
+        .eq("user_id", session?.user.id)
+        .order(field === "name" ? "filename" : "created_at", {
+          ascending: direction === "asc",
+        });
 
       if (error) throw error;
 
@@ -296,29 +307,29 @@ export function FileExplorer() {
       <ContextMenuTrigger asChild>
         <div ref={ref}>{children}</div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-48 bg-black/20 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      <ContextMenuContent className="min-w-[12rem] bg-background/80 dark:bg-black/80 backdrop-blur-xl border-border shadow-lg rounded-lg">
         <ContextMenuItem
           onClick={() => handlePreview(file)}
-          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+          className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
         >
           <FileIcon className="h-4 w-4 mr-2" />
           Preview
         </ContextMenuItem>
         <ContextMenuItem
           onClick={() => handleDownload(file)}
-          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+          className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
         >
           <Download className="h-4 w-4 mr-2" />
           Download
         </ContextMenuItem>
         <ContextMenuItem
           onClick={() => navigate(`/share/${file.id}`)}
-          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+          className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
         >
           <Share2 className="h-4 w-4 mr-2" />
           Share
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-white/20" />
+        <ContextMenuSeparator className="bg-border/50" />
         <ContextMenuItem
           onClick={async () => {
             const { error } = await supabase
@@ -329,7 +340,7 @@ export function FileExplorer() {
               queryClient.invalidateQueries({ queryKey: ["files"] });
             }
           }}
-          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+          className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
         >
           <Star
             className={cn(
@@ -346,12 +357,12 @@ export function FileExplorer() {
               handleRename(file, newName);
             }
           }}
-          className="text-white/90 hover:bg-white/10 hover:text-white !cursor-pointer transition-colors"
+          className="text-foreground/80 hover:bg-accent hover:text-accent-foreground !cursor-pointer transition-colors"
         >
           <Edit className="h-4 w-4 mr-2" />
           Rename
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-white/20" />
+        <ContextMenuSeparator className="bg-border/50" />
         <ContextMenuItem
           onClick={() => handleDelete(file)}
           className="text-destructive hover:bg-destructive/10 hover:text-destructive !cursor-pointer transition-colors"
@@ -364,174 +375,63 @@ export function FileExplorer() {
   ));
   FileContextMenu.displayName = "FileContextMenu";
 
-  const renderGridView = (files: FileData[]) => (
-    <motion.div
-      layout
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4"
-    >
-      <AnimatePresence mode="popLayout">
-        {files.map((file) => (
-          <motion.div
-            key={file.id}
-            layout
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2 }}
-          >
-            <FileContextMenu file={file}>
-              <div>
-                <Card
-                  className="overflow-hidden cursor-pointer border transition-shadow duration-200 hover:shadow-lg"
-                  onClick={() => handlePreview(file)}
-                >
-                  <div className="aspect-square relative bg-gradient-to-b from-muted/5 to-muted/20">
-                    {file.content_type?.startsWith("image/") ? (
-                      <div className="w-full h-full">
-                        {previewUrls[file.id] ? (
-                          <img
-                            src={previewUrls[file.id]}
-                            alt={file.filename}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg";
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-4xl">
-                          {getFileIcon(file.content_type)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-3 bg-card border-t">
-                    <p className="font-medium truncate text-sm">
-                      {file.filename}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatFileSize(file.size)}
-                    </p>
-                  </div>
-                </Card>
-              </div>
-            </FileContextMenu>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </motion.div>
-  );
-
-  const renderListView = (files: FileData[]) => (
-    <motion.div layout className="p-2">
-      <div className="rounded-md border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[45%]">Name</TableHead>
-              <TableHead className="w-[15%]">Size</TableHead>
-              <TableHead className="w-[15%]">Type</TableHead>
-              <TableHead className="w-[25%]">Modified</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <AnimatePresence mode="popLayout">
-              {files.map((file) => (
-                <motion.tr
-                  key={file.id}
-                  layout
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.2 }}
-                  onClick={() => handlePreview(file)}
-                  className="cursor-pointer transition-colors hover:bg-muted/5"
-                >
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-md bg-gradient-to-b from-muted/5 to-muted/20 flex items-center justify-center shrink-0">
-                        {file.content_type?.startsWith("image/") &&
-                        previewUrls[file.id] ? (
-                          <img
-                            src={previewUrls[file.id]}
-                            alt={file.filename}
-                            className="w-full h-full object-cover rounded-md"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg";
-                            }}
-                          />
-                        ) : (
-                          <span className="text-2xl">
-                            {getFileIcon(file.content_type)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-medium truncate text-sm">
-                          {file.filename}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          Added {formatDate(file.created_at)}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatFileSize(file.size)}
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-md bg-muted/30 px-2 py-1 text-xs font-medium ring-1 ring-inset ring-muted">
-                      {file.content_type.split("/").pop()?.toUpperCase()}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(file.created_at)}
-                  </TableCell>
-                </motion.tr>
-              ))}
-            </AnimatePresence>
-          </TableBody>
-        </Table>
-      </div>
-    </motion.div>
-  );
-
   return (
-    <div className="h-full flex flex-col prevent-flicker">
-      <div className="flex items-center justify-between px-4 h-14 border-b">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <span>All Files</span>
-          <ChevronRight className="h-4 w-4" />
-          <span>Documents</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("grid")}
-          >
-            <Grid className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("list")}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-4 w-full">
+      <FileViewOptions
+        view={view}
+        onViewChange={setView}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        totalFiles={files.length}
+      />
 
-      <ScrollArea className="flex-1">
-        {viewMode === "grid" ? renderGridView(files) : renderListView(files)}
-      </ScrollArea>
+      <div className="w-full">
+        {view === "grid" ? (
+          <FileGrid
+            files={files}
+            isLoading={isLoading}
+            onPreview={handlePreview}
+            onDownload={handleDownload}
+            onShare={(file) => navigate(`/share/${file.id}`)}
+            onDelete={handleDelete}
+            onRename={handleRename}
+            onToggleFavorite={async (file) => {
+              const { error } = await supabase
+                .from("files")
+                .update({
+                  is_favorite: !file.is_favorite,
+                })
+                .eq("id", file.id);
+
+              if (!error) {
+                queryClient.invalidateQueries({ queryKey: ["files"] });
+              }
+            }}
+          />
+        ) : (
+          <FileList
+            files={files}
+            isLoading={isLoading}
+            onPreview={handlePreview}
+            onDownload={handleDownload}
+            onShare={(file) => navigate(`/share/${file.id}`)}
+            onDelete={handleDelete}
+            onRename={handleRename}
+            onToggleFavorite={async (file) => {
+              const { error } = await supabase
+                .from("files")
+                .update({
+                  is_favorite: !file.is_favorite,
+                })
+                .eq("id", file.id);
+
+              if (!error) {
+                queryClient.invalidateQueries({ queryKey: ["files"] });
+              }
+            }}
+          />
+        )}
+      </div>
 
       {selectedFile && (
         <MediaPreview

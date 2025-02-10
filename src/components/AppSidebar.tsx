@@ -65,8 +65,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/components/ui/theme-provider";
+import { useTheme } from "next-themes";
 import { useAuth } from "@/App";
+import StorageQuota from "@/components/StorageQuota";
+import { useTranslation } from "react-i18next";
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -74,33 +76,20 @@ export function AppSidebar() {
   const { toast } = useToast();
   const { session } = useAuth();
   const { theme, setTheme } = useTheme();
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    // Recuperar o estado do localStorage
-    const saved = localStorage.getItem("sidebar-collapsed");
-    return saved ? JSON.parse(saved) : false;
-  });
+  const { state, toggleSidebar } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [recentFiles, setRecentFiles] = useState<string[]>([]);
-  const { setOpen } = useSidebar();
+  const isCollapsed = state === "collapsed";
+  const { t } = useTranslation();
 
   // Salvar o estado no localStorage quando mudar
   useEffect(() => {
     localStorage.setItem("sidebar-collapsed", JSON.stringify(isCollapsed));
-    setOpen(!isCollapsed);
-  }, [isCollapsed, setOpen]);
+  }, [isCollapsed]);
 
   const handleSidebarToggle = () => {
-    // Add smooth transition when opening/closing
-    document.documentElement.style.setProperty(
-      "--sidebar-transition",
-      "0.3s ease-in-out"
-    );
-    setIsCollapsed((prev) => !prev);
-    // Reset transition after animation
-    setTimeout(() => {
-      document.documentElement.style.setProperty("--sidebar-transition", "");
-    }, 300);
+    toggleSidebar();
   };
 
   const handleLogout = async () => {
@@ -118,23 +107,23 @@ export function AppSidebar() {
 
   const mainItems = [
     {
-      title: "All Files",
+      title: t("sidebar.mainItems.allFiles"),
       icon: FolderOpen,
       path: "/",
     },
     {
-      title: "Recent",
+      title: t("sidebar.mainItems.recent"),
       icon: Clock,
       path: "/?filter=recent",
       badge: recentFiles.length,
     },
     {
-      title: "Shared",
+      title: t("sidebar.mainItems.shared"),
       icon: Share2,
       path: "/?filter=shared",
     },
     {
-      title: "Favorites",
+      title: t("sidebar.mainItems.favorites"),
       icon: Star,
       path: "/?filter=favorites",
     },
@@ -142,12 +131,12 @@ export function AppSidebar() {
 
   const viewItems = [
     {
-      title: "Grid View",
+      title: t("sidebar.views.gridView"),
       icon: LayoutGrid,
       path: "/?view=grid",
     },
     {
-      title: "List View",
+      title: t("sidebar.views.listView"),
       icon: List,
       path: "/?view=list",
     },
@@ -155,22 +144,22 @@ export function AppSidebar() {
 
   const categoryItems = [
     {
-      title: "Images",
+      title: t("sidebar.categories.images"),
       icon: Image,
       path: "/?category=images",
     },
     {
-      title: "Documents",
+      title: t("sidebar.categories.documents"),
       icon: FileText,
       path: "/?category=documents",
     },
     {
-      title: "Videos",
+      title: t("sidebar.categories.videos"),
       icon: Video,
       path: "/?category=videos",
     },
     {
-      title: "Audio",
+      title: t("sidebar.categories.audio"),
       icon: Music,
       path: "/?category=audio",
     },
@@ -178,22 +167,22 @@ export function AppSidebar() {
 
   const toolItems = [
     {
-      title: "Upload Files",
+      title: t("sidebar.tools.uploadFiles"),
       icon: Upload,
       path: "/?action=upload",
     },
     {
-      title: "New Folder",
+      title: t("sidebar.tools.newFolder"),
       icon: FolderPlus,
       path: "/?action=new-folder",
     },
     {
-      title: "Bulk Actions",
+      title: t("sidebar.tools.bulkActions"),
       icon: Box,
       path: "/?action=bulk",
     },
     {
-      title: "Download All",
+      title: t("sidebar.tools.downloadAll"),
       icon: Download,
       path: "/?action=download-all",
     },
@@ -202,22 +191,19 @@ export function AppSidebar() {
   return (
     <Sidebar
       className={cn(
-        "border-r",
-        isCollapsed
-          ? "[--sidebar-width:var(--sidebar-width-icon)]"
-          : "[--sidebar-width:16rem]",
-        "transition-[width] duration-300"
+        "border-r border-border",
+        "transition-[width] duration-300 bg-background/20 dark:bg-black/20 backdrop-blur-xl"
       )}
       variant="sidebar"
       collapsible="icon"
     >
-      <SidebarHeader className="border-b p-4">
+      <SidebarHeader className="border-b border-border p-4">
         <motion.div layout className="flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary shrink-0" />
           <AnimatePresence>
             {!isCollapsed && (
               <motion.span
-                className="text-lg font-semibold overflow-hidden whitespace-nowrap"
+                className="text-lg font-semibold overflow-hidden whitespace-nowrap text-foreground"
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: "auto", opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
@@ -232,28 +218,6 @@ export function AppSidebar() {
 
       <SidebarContent>
         <ScrollArea className="h-[calc(100vh-8rem)]">
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="p-4"
-              >
-                <div className="relative">
-                  <Input
-                    placeholder="Search files..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-9 pl-9"
-                  />
-                  <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -284,7 +248,7 @@ export function AppSidebar() {
           <SidebarSeparator />
 
           <SidebarGroup>
-            <SidebarGroupLabel>Views</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("sidebar.views.title")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {viewItems.map((item) => (
@@ -310,7 +274,9 @@ export function AppSidebar() {
           <SidebarSeparator />
 
           <SidebarGroup>
-            <SidebarGroupLabel>Categories</SidebarGroupLabel>
+            <SidebarGroupLabel>
+              {t("sidebar.categories.title")}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {categoryItems.map((item) => (
@@ -336,7 +302,7 @@ export function AppSidebar() {
           <SidebarSeparator />
 
           <SidebarGroup>
-            <SidebarGroupLabel>Tools</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("sidebar.tools.title")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {toolItems.map((item) => (
@@ -358,89 +324,63 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          <SidebarSeparator />
+
+          <SidebarGroup>
+            <SidebarGroupLabel>{t("sidebar.system.title")}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className={cn("px-2", isCollapsed && "px-1")}>
+                <StorageQuota />
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <User className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuLabel>{session?.user?.email}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="text-destructive"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  {theme === "dark" ? (
-                    <Moon className="h-4 w-4" />
+      <SidebarFooter
+        className={cn("border-t border-border", isCollapsed ? "p-2" : "p-4")}
+      >
+        <div className="flex items-center justify-end">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSidebarToggle}
+                className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
+              >
+                <AnimatePresence mode="wait">
+                  {isCollapsed ? (
+                    <motion.div
+                      key="expand"
+                      initial={{ rotate: -180 }}
+                      animate={{ rotate: 0 }}
+                      exit={{ rotate: 180 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </motion.div>
                   ) : (
-                    <Sun className="h-4 w-4" />
+                    <motion.div
+                      key="collapse"
+                      initial={{ rotate: 180 }}
+                      animate={{ rotate: 0 }}
+                      exit={{ rotate: -180 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </motion.div>
                   )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Sun className="h-4 w-4 mr-2" />
-                  Light
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <Moon className="h-4 w-4 mr-2" />
-                  Dark
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSidebarToggle}
-            className="h-8 w-8"
-          >
-            <AnimatePresence mode="wait">
-              {isCollapsed ? (
-                <motion.div
-                  key="expand"
-                  initial={{ rotate: -180 }}
-                  animate={{ rotate: 0 }}
-                  exit={{ rotate: 180 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="collapse"
-                  initial={{ rotate: 180 }}
-                  animate={{ rotate: 0 }}
-                  exit={{ rotate: -180 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Button>
+                </AnimatePresence>
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right">
+                <p>{t("sidebar.expandSidebar")}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
       </SidebarFooter>
     </Sidebar>
