@@ -10,10 +10,33 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FileExplorer } from "@/components/FileExplorer";
-import { Upload } from "lucide-react";
+import {
+  Upload,
+  Settings,
+  LogOut,
+  Sun,
+  Moon,
+  User,
+  Search,
+  Globe,
+  Shield,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FileWithPreview } from "@/types";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 const Index = () => {
   const { toast } = useToast();
@@ -22,6 +45,7 @@ const Index = () => {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
 
   const handleLogout = async () => {
@@ -163,28 +187,176 @@ const Index = () => {
                   {t("dashboard.title")}
                 </h1>
                 <div className="relative flex-1 max-w-md">
-                  <input
+                  <Input
                     placeholder={t("common.search")}
                     className="h-9 pl-9 bg-background/20 dark:bg-black/20 border-border"
                   />
-                  <Upload className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
-                  onClick={handleLogout}
-                >
-                  <Upload className="h-4 w-4" />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      <Globe className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-48 bg-background/20 dark:bg-black/20 backdrop-blur-xl border-border"
+                  >
+                    <DropdownMenuLabel className="text-foreground">
+                      {t("common.language")}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem
+                      onClick={() => i18n.changeLanguage("pt-BR")}
+                      className={cn(
+                        "text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10 cursor-pointer",
+                        i18n.language === "pt-BR" && "bg-accent"
+                      )}
+                    >
+                      🇧🇷 Português
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => i18n.changeLanguage("en")}
+                      className={cn(
+                        "text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10 cursor-pointer",
+                        i18n.language === "en" && "bg-accent"
+                      )}
+                    >
+                      🇺🇸 English
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      {theme === "dark" ? (
+                        <Moon className="h-4 w-4" />
+                      ) : (
+                        <Sun className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="bg-background/20 dark:bg-black/20 backdrop-blur-xl border-border"
+                  >
+                    <DropdownMenuItem
+                      onClick={() => setTheme("light")}
+                      className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      <Sun className="h-4 w-4 mr-2" />
+                      {t("common.theme.light")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setTheme("dark")}
+                      className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      <Moon className="h-4 w-4 mr-2" />
+                      {t("common.theme.dark")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10 relative"
+                    >
+                      <div className="relative w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                        {session?.user?.user_metadata?.avatar_url ? (
+                          <img
+                            src={session.user.user_metadata.avatar_url}
+                            alt={session.user.email || ""}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-medium text-primary">
+                            {session?.user?.email?.[0].toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-56 bg-background/20 dark:bg-black/20 backdrop-blur-xl border-border"
+                  >
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="relative h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                        {session?.user?.user_metadata?.avatar_url ? (
+                          <img
+                            src={session.user.user_metadata.avatar_url}
+                            alt={session.user.email || ""}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-sm font-medium text-primary">
+                            {session?.user?.email?.[0].toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-foreground">
+                          {session?.user?.user_metadata?.full_name ||
+                            session?.user?.email?.split("@")[0]}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {session?.user?.email}
+                        </span>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem
+                      onClick={() => navigate("/settings/profile")}
+                      className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      {t("settings.sections.profile.title")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/settings/appearance")}
+                      className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      {t("settings.sections.appearance.title")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/settings/security")}
+                      className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      {t("settings.sections.security.title")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-destructive hover:bg-destructive/10"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {t("common.logout")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </motion.div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="p-6 w-full max-w-[1600px] mx-auto">
+            <div className="p-6">
               <motion.div
                 className="mb-8"
                 initial={{ opacity: 0, y: 10 }}
@@ -204,7 +376,7 @@ const Index = () => {
               </motion.div>
 
               <motion.div
-                className="space-y-6 w-full"
+                className="space-y-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut", delay: 0.4 }}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HTMLMotionProps,
@@ -61,25 +61,7 @@ export function FileExplorer() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const createFolder = async (name: string, parentId: string | null = null) => {
-    const { error } = await supabase.from("folders").insert({
-      name,
-      parent_id: parentId,
-      user_id: session?.user.id,
-    });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create folder",
-      });
-      return;
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["folders"] });
-  };
-
+  // Memoized function to get signed URL
   const getSignedUrl = useCallback(async (filePath: string) => {
     const { data } = await supabase.storage
       .from("files")
@@ -87,6 +69,7 @@ export function FileExplorer() {
     return data?.signedUrl;
   }, []);
 
+  // Query with URL pre-fetching
   const { data: files = [], isLoading } = useQuery({
     queryKey: ["files", sortBy],
     queryFn: async () => {
@@ -101,6 +84,7 @@ export function FileExplorer() {
 
       if (error) throw error;
 
+      // Pre-fetch URLs for all files
       const filesWithUrls = await Promise.all(
         (data || []).map(async (file) => {
           try {
@@ -122,6 +106,7 @@ export function FileExplorer() {
     },
   });
 
+  // Atualiza o selectedFile quando os arquivos são atualizados
   useEffect(() => {
     if (selectedFile) {
       const updatedFile = files.find((file) => file.id === selectedFile.id);
@@ -136,6 +121,7 @@ export function FileExplorer() {
     }
   }, [files, previewUrls, selectedFile]);
 
+  // Handle download
   const handleDownload = useCallback(
     async (file: FileData) => {
       try {
@@ -174,6 +160,7 @@ export function FileExplorer() {
     [previewUrls, getSignedUrl]
   );
 
+  // Handle preview
   const handlePreview = useCallback(
     async (file: FileData) => {
       try {
@@ -232,6 +219,7 @@ export function FileExplorer() {
   };
 
   const handleDelete = async (file: FileData) => {
+    // Se o arquivo a ser deletado é o selecionado, fecha o preview primeiro
     if (selectedFile?.id === file.id) {
       setSelectedFile(null);
     }
@@ -263,6 +251,7 @@ export function FileExplorer() {
       return;
     }
 
+    // Remove a URL do preview do estado
     setPreviewUrls((prev) => {
       const newUrls = { ...prev };
       delete newUrls[file.id];
@@ -294,12 +283,19 @@ export function FileExplorer() {
     queryClient.invalidateQueries({ queryKey: ["files"] });
   };
 
+  // Motion table row component with forwardRef
+  interface MotionTableRowProps extends HTMLMotionProps<"tr"> {
+    layoutId?: string;
+    layout?: boolean;
+  }
+
   const MotionTableRow = React.forwardRef<
     HTMLTableRowElement,
-    HTMLMotionProps<"tr">
+    MotionTableRowProps
   >((props, ref) => <motion.tr ref={ref} {...props} />);
   MotionTableRow.displayName = "MotionTableRow";
 
+  // FileContextMenu with forwardRef
   const FileContextMenu = React.forwardRef<
     HTMLDivElement,
     {
@@ -391,53 +387,49 @@ export function FileExplorer() {
 
       <div className="w-full">
         {view === "grid" ? (
-          <div className="min-h-[400px] w-full">
-            <FileGrid
-              files={files}
-              isLoading={isLoading}
-              onPreview={handlePreview}
-              onDownload={handleDownload}
-              onShare={(file) => navigate(`/share/${file.id}`)}
-              onDelete={handleDelete}
-              onRename={handleRename}
-              onToggleFavorite={async (file) => {
-                const { error } = await supabase
-                  .from("files")
-                  .update({
-                    is_favorite: !file.is_favorite,
-                  })
-                  .eq("id", file.id);
+          <FileGrid
+            files={files}
+            isLoading={isLoading}
+            onPreview={handlePreview}
+            onDownload={handleDownload}
+            onShare={(file) => navigate(`/share/${file.id}`)}
+            onDelete={handleDelete}
+            onRename={handleRename}
+            onToggleFavorite={async (file) => {
+              const { error } = await supabase
+                .from("files")
+                .update({
+                  is_favorite: !file.is_favorite,
+                })
+                .eq("id", file.id);
 
-                if (!error) {
-                  queryClient.invalidateQueries({ queryKey: ["files"] });
-                }
-              }}
-            />
-          </div>
+              if (!error) {
+                queryClient.invalidateQueries({ queryKey: ["files"] });
+              }
+            }}
+          />
         ) : (
-          <div className="min-h-[400px] w-full">
-            <FileList
-              files={files}
-              isLoading={isLoading}
-              onPreview={handlePreview}
-              onDownload={handleDownload}
-              onShare={(file) => navigate(`/share/${file.id}`)}
-              onDelete={handleDelete}
-              onRename={handleRename}
-              onToggleFavorite={async (file) => {
-                const { error } = await supabase
-                  .from("files")
-                  .update({
-                    is_favorite: !file.is_favorite,
-                  })
-                  .eq("id", file.id);
+          <FileList
+            files={files}
+            isLoading={isLoading}
+            onPreview={handlePreview}
+            onDownload={handleDownload}
+            onShare={(file) => navigate(`/share/${file.id}`)}
+            onDelete={handleDelete}
+            onRename={handleRename}
+            onToggleFavorite={async (file) => {
+              const { error } = await supabase
+                .from("files")
+                .update({
+                  is_favorite: !file.is_favorite,
+                })
+                .eq("id", file.id);
 
-                if (!error) {
-                  queryClient.invalidateQueries({ queryKey: ["files"] });
-                }
-              }}
-            />
-          </div>
+              if (!error) {
+                queryClient.invalidateQueries({ queryKey: ["files"] });
+              }
+            }}
+          />
         )}
       </div>
 
