@@ -177,15 +177,24 @@ export function FileGrid({
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3.5 w-3.5" />
-                    <span>Criado em {formatDate(file.created_at)}</span>
+                    <span>
+                      {t("fileExplorer.fileProperties.created")}:{" "}
+                      {formatDate(file.created_at)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <FileType className="h-3.5 w-3.5" />
-                    <span>{file.content_type}</span>
+                    <span>
+                      {t("fileExplorer.fileProperties.type")}:{" "}
+                      {file.content_type}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <HardDrive className="h-3.5 w-3.5" />
-                    <span>{formatFileSize(file.size)}</span>
+                    <span>
+                      {t("fileExplorer.fileProperties.size")}:{" "}
+                      {formatFileSize(file.size)}
+                    </span>
                   </div>
                 </div>
               </div>
