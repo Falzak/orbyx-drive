@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/App";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -39,14 +40,18 @@ import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 
 const Index = () => {
+  const session = useAuthRedirect();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { session } = useAuth();
   const queryClient = useQueryClient();
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
+
+  if (!session) {
+    return null; // Don't render anything while redirecting
+  }
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();

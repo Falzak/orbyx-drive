@@ -61,6 +61,13 @@ export function FileExplorer() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!session) {
+      navigate('/auth');
+    }
+  }, [session, navigate]);
+
   // Memoized function to get signed URL
   const getSignedUrl = useCallback(async (filePath: string) => {
     const { data } = await supabase.storage
