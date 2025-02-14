@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,12 @@ import {
   ZoomOut,
   RotateCw,
   MoreHorizontal,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,6 +26,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
+const mediaControlsClass = "group relative w-full max-w-[90vw] max-h-[85vh] rounded-lg shadow-2xl overflow-hidden";
+const controlsOverlayClass = "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/50 via-transparent to-black/50 pointer-events-none";
 
 interface MediaPreviewProps {
   file: {
@@ -46,10 +55,99 @@ export default function MediaPreview({
   const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioIsPlaying, setAudioIsPlaying] = useState(false);
+  const [audioIsMuted, setAudioIsMuted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.25, 3));
   const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.25, 0.5));
   const handleRotate = () => setRotation((prev) => prev + 90);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (videoRef.current) {
+      if (!document.fullscreenElement) {
+        videoRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
+
+  const toggleAudioPlay = () => {
+    if (audioRef.current) {
+      if (audioIsPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setAudioIsPlaying(!audioIsPlaying);
+    }
+  };
+
+  const toggleAudioMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioIsMuted;
+      setAudioIsMuted(!audioIsMuted);
+    }
+  };
+
+  const handleAudioTimeUpdate = () => {
+    if (audioRef.current) {
+      const progress = (audioRef.current.currentTime / audioRef.current.duration) * 100;
+      setAudioProgress(progress);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const progress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+      setProgress(progress);
+    }
+  };
+
+  const handleVideoSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (videoRef.current) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = x / rect.width;
+      videoRef.current.currentTime = percentage * videoRef.current.duration;
+    }
+  };
+
+  const handleAudioSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (audioRef.current) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = x / rect.width;
+      audioRef.current.currentTime = percentage * audioRef.current.duration;
+    }
+  };
 
   // Reset states when file changes
   useEffect(() => {
@@ -79,8 +177,8 @@ export default function MediaPreview({
           className="relative w-full h-full flex items-center justify-center"
         >
           {/* Barra de ferramentas */}
-          <div className="fixed top-6 inset-x-0 z-30 flex items-center justify-center">
-            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-lg">
+            <div className="fixed top-6 inset-x-0 z-30 flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity duration-300">
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-background/90 dark:bg-black/90 backdrop-blur-xl shadow-lg border border-border/50">
               {file.content_type?.startsWith("image/") && !loadError && (
                 <>
                   <Button
@@ -185,9 +283,9 @@ export default function MediaPreview({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-6 inset-x-0 z-30 flex items-center justify-center"
-          >
-            <div className="px-4 py-2.5 rounded-full bg-background/80 dark:bg-black/80 backdrop-blur-xl text-sm font-medium text-foreground/80 shadow-lg">
+            className="fixed bottom-6 inset-x-0 z-30 flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity duration-300"
+            >
+            <div className="px-4 py-2.5 rounded-full bg-background/90 dark:bg-black/90 backdrop-blur-xl text-sm font-medium text-foreground/90 shadow-lg border border-border/50">
               <span className="drop-shadow-sm">{file.filename}</span>
             </div>
           </motion.div>
@@ -258,42 +356,144 @@ export default function MediaPreview({
                 />
               </motion.div>
             ) : file.content_type?.startsWith("video/") && file.url ? (
-              <motion.video
-                key="video"
-                src={file.url}
-                controls
-                className="max-w-[90vw] max-h-[85vh] rounded-lg shadow-2xl"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3 }}
-                onLoadedData={() => setIsLoading(false)}
-                onError={() => {
-                  setIsLoading(false);
-                  setLoadError(true);
-                }}
-              />
-            ) : file.content_type?.startsWith("audio/") && file.url ? (
-              <motion.div
-                key="audio"
-                className="w-full max-w-md p-8 rounded-lg bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-2xl"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Music className="w-16 h-16 mx-auto mb-4 text-foreground/80" />
-                <audio
+                <motion.div
+                  key="video"
+                  className={mediaControlsClass}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <video
+                  ref={videoRef}
                   src={file.url}
-                  controls
-                  className="w-full"
+                  className="w-full h-full object-contain"
                   onLoadedData={() => setIsLoading(false)}
+                  onTimeUpdate={handleTimeUpdate}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
                   onError={() => {
                     setIsLoading(false);
                     setLoadError(true);
                   }}
-                />
-              </motion.div>
+                  />
+                  <div className={controlsOverlayClass} />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 opacity-30 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/80 to-transparent">
+                  <div className="flex flex-col gap-2">
+                    <div 
+                      className="w-full bg-white/20 rounded-full h-1 overflow-hidden cursor-pointer"
+                      onClick={handleVideoSeek}
+                    >
+                    <div 
+                      className="bg-primary h-full transition-all duration-150"
+                      style={{ width: `${progress}%` }}
+                    />
+                    </div>
+                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={togglePlay}
+                      className="h-8 w-8 rounded-full hover:bg-white/20"
+                      >
+                      {isPlaying ? (
+                        <Pause className="h-4 w-4 text-white" />
+                      ) : (
+                        <Play className="h-4 w-4 text-white" />
+                      )}
+                      </Button>
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleMute}
+                      className="h-8 w-8 rounded-full hover:bg-white/20"
+                      >
+                      {isMuted ? (
+                        <VolumeX className="h-4 w-4 text-white" />
+                      ) : (
+                        <Volume2 className="h-4 w-4 text-white" />
+                      )}
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleFullscreen}
+                      className="h-8 w-8 rounded-full hover:bg-white/20"
+                    >
+                      {isFullscreen ? (
+                      <Minimize className="h-4 w-4 text-white" />
+                      ) : (
+                      <Maximize className="h-4 w-4 text-white" />
+                      )}
+                    </Button>
+                    </div>
+                  </div>
+                  </div>
+                </motion.div>
+            ) : file.content_type?.startsWith("audio/") && file.url ? (
+                <motion.div
+                  key="audio"
+                    className="w-full max-w-md p-8 rounded-lg bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-2xl group opacity-70 hover:opacity-100 transition-opacity duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 0.7, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative">
+                  <Music className="w-16 h-16 mx-auto mb-4 text-foreground/80" />
+                  <audio
+                    ref={audioRef}
+                    src={file.url}
+                    className="hidden"
+                    onLoadedData={() => setIsLoading(false)}
+                    onTimeUpdate={handleAudioTimeUpdate}
+                    onPlay={() => setAudioIsPlaying(true)}
+                    onPause={() => setAudioIsPlaying(false)}
+                    onError={() => {
+                    setIsLoading(false);
+                    setLoadError(true);
+                    }}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <div className="w-full bg-foreground/20 rounded-full h-1 overflow-hidden">
+                    <div 
+                      className="bg-primary h-full transition-all duration-150"
+                      style={{ width: `${audioProgress}%` }}
+                    />
+                    </div>
+                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleAudioPlay}
+                      className="h-8 w-8 rounded-full hover:bg-foreground/20"
+                      >
+                      {audioIsPlaying ? (
+                        <Pause className="h-4 w-4" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                      </Button>
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleAudioMute}
+                      className="h-8 w-8 rounded-full hover:bg-foreground/20"
+                      >
+                      {audioIsMuted ? (
+                        <VolumeX className="h-4 w-4" />
+                      ) : (
+                        <Volume2 className="h-4 w-4" />
+                      )}
+                      </Button>
+                    </div>
+                    </div>
+                  </div>
+                  </div>
+                </motion.div>
             ) : (
               <motion.div
                 key="file"

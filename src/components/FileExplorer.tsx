@@ -64,7 +64,7 @@ export function FileExplorer() {
   // Redirect to auth if not authenticated
   useEffect(() => {
     if (!session) {
-      navigate('/auth');
+      navigate("/auth");
     }
   }, [session, navigate]);
 
@@ -96,21 +96,21 @@ export function FileExplorer() {
         (data || []).map(async (file) => {
           try {
             const url = await getSignedUrl(file.file_path);
-            if (url) {
-              setPreviewUrls((prev) => ({
-                ...prev,
-                [file.id]: url,
-              }));
-            }
+            return {
+              ...file,
+              url: url || undefined,
+            };
           } catch (error) {
             console.error("Failed to get signed URL for file:", file.id);
+            return file;
           }
-          return file;
         })
       );
 
       return filesWithUrls;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Atualiza o selectedFile quando os arquivos são atualizados

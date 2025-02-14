@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -177,11 +177,11 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen w-full overflow-hidden">
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+        <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
           <motion.div
-            className="bg-background/20 dark:bg-black/20 backdrop-blur-xl border-b border-border"
+            className="bg-background/20 dark:bg-black/20 backdrop-blur-xl"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
@@ -360,8 +360,8 @@ const Index = () => {
             </div>
           </motion.div>
 
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-6">
+          <div className="flex-1 overflow-y-auto w-full">
+            <div className="p-6 h-full">
               <motion.div
                 className="mb-8"
                 initial={{ opacity: 0, y: 10 }}
