@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -65,7 +65,14 @@ import {
   ContextMenuRadioItem,
 } from "@/components/ui/context-menu";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
 const Index = () => {
@@ -81,23 +88,8 @@ const Index = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-
-  if (!session) {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: t("common.logoutError"),
-      });
-    } else {
-      navigate("/auth");
-    }
-  };
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -121,6 +113,7 @@ const Index = () => {
         content_type: file.type,
         size: file.size,
         user_id: session.user.id,
+        folder_id: currentFolderId,
       });
 
       if (dbError) throw dbError;
@@ -128,7 +121,7 @@ const Index = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["files"] });
       toast({
-        title: "Success",
+        title: t("common.success"),
         description: t("dashboard.uploadSuccess"),
         duration: 3000,
       });
@@ -139,7 +132,7 @@ const Index = () => {
       setUploadProgress(null);
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: t("dashboard.uploadError", { error: error.message }),
         duration: 5000,
       });
@@ -210,6 +203,23 @@ const Index = () => {
     },
   });
 
+  if (!session) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: t("common.logoutError"),
+      });
+    } else {
+      navigate("/auth");
+    }
+  };
+
   const handleRefreshFiles = () => {
     queryClient.invalidateQueries({ queryKey: ["files"] });
     toast({
@@ -228,18 +238,16 @@ const Index = () => {
     }
 
     try {
-      const { error } = await supabase.from("files").insert({
-        filename: newFolderName,
-        file_path: `folders/${crypto.randomUUID()}`,
-        content_type: "folder",
-        size: 0,
+      const { error } = await supabase.from("folders").insert({
+        name: newFolderName.trim(),
         user_id: session.user.id,
-        is_folder: true,
+        parent_id: currentFolderId,
+        created_at: new Date().toISOString(),
       });
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ["files"] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
       toast({
         title: t("fileExplorer.actions.createFolderSuccess"),
         description: `${t("dashboard.folder.created")}: ${newFolderName}`,
@@ -256,7 +264,9 @@ const Index = () => {
   };
 
   const handleUploadClick = () => {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
     if (fileInput) {
       fileInput.click();
     }
@@ -613,7 +623,9 @@ const Index = () => {
                       </div>
                     </div>
 
-                    <FileExplorer />
+                    <div ref={ref}>
+                      <FileExplorer onFolderChange={setCurrentFolderId} />
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -707,22 +719,40 @@ const Index = () => {
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
             <ContextMenuRadioGroup value={view}>
-              <ContextMenuRadioItem onClick={() => handleSortFiles("nameAsc")} value="nameAsc">
+              <ContextMenuRadioItem
+                onClick={() => handleSortFiles("nameAsc")}
+                value="nameAsc"
+              >
                 {t("fileExplorer.sortBy.nameAsc")}
               </ContextMenuRadioItem>
-              <ContextMenuRadioItem onClick={() => handleSortFiles("nameDesc")} value="nameDesc">
+              <ContextMenuRadioItem
+                onClick={() => handleSortFiles("nameDesc")}
+                value="nameDesc"
+              >
                 {t("fileExplorer.sortBy.nameDesc")}
               </ContextMenuRadioItem>
-              <ContextMenuRadioItem onClick={() => handleSortFiles("dateDesc")} value="dateDesc">
+              <ContextMenuRadioItem
+                onClick={() => handleSortFiles("dateDesc")}
+                value="dateDesc"
+              >
                 {t("fileExplorer.sortBy.dateDesc")}
               </ContextMenuRadioItem>
-              <ContextMenuRadioItem onClick={() => handleSortFiles("dateAsc")} value="dateAsc">
+              <ContextMenuRadioItem
+                onClick={() => handleSortFiles("dateAsc")}
+                value="dateAsc"
+              >
                 {t("fileExplorer.sortBy.dateAsc")}
               </ContextMenuRadioItem>
-              <ContextMenuRadioItem onClick={() => handleSortFiles("sizeDesc")} value="sizeDesc">
+              <ContextMenuRadioItem
+                onClick={() => handleSortFiles("sizeDesc")}
+                value="sizeDesc"
+              >
                 {t("fileExplorer.sortBy.sizeDesc")}
               </ContextMenuRadioItem>
-              <ContextMenuRadioItem onClick={() => handleSortFiles("sizeAsc")} value="sizeAsc">
+              <ContextMenuRadioItem
+                onClick={() => handleSortFiles("sizeAsc")}
+                value="sizeAsc"
+              >
                 {t("fileExplorer.sortBy.sizeAsc")}
               </ContextMenuRadioItem>
             </ContextMenuRadioGroup>
@@ -730,16 +760,26 @@ const Index = () => {
         </ContextMenuSub>
         <ContextMenuSub>
           <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-            {view === "grid" ? <Grid className="h-4 w-4" /> : <List className="h-4 w-4" />}
+            {view === "grid" ? (
+              <Grid className="h-4 w-4" />
+            ) : (
+              <List className="h-4 w-4" />
+            )}
             {t("dashboard.contextMenu.view")}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
             <ContextMenuRadioGroup value={view}>
-              <ContextMenuRadioItem onClick={() => setView("grid")} value="grid">
+              <ContextMenuRadioItem
+                onClick={() => setView("grid")}
+                value="grid"
+              >
                 <Grid className="h-4 w-4 mr-2" />
                 {t("dashboard.contextMenu.gridView")}
               </ContextMenuRadioItem>
-              <ContextMenuRadioItem onClick={() => setView("list")} value="list">
+              <ContextMenuRadioItem
+                onClick={() => setView("list")}
+                value="list"
+              >
                 <List className="h-4 w-4 mr-2" />
                 {t("dashboard.contextMenu.listView")}
               </ContextMenuRadioItem>
@@ -795,7 +835,9 @@ const Index = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{t("fileExplorer.createFolder.name")}</Label>
+              <Label htmlFor="name">
+                {t("fileExplorer.createFolder.name")}
+              </Label>
               <Input
                 id="name"
                 placeholder={t("fileExplorer.createFolder.namePlaceholder")}
@@ -805,7 +847,10 @@ const Index = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateFolderOpen(false)}
+            >
               {t("common.cancel")}
             </Button>
             <Button onClick={handleCreateFolderSubmit}>

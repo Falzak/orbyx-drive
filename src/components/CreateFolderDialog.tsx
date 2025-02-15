@@ -37,34 +37,37 @@ export function CreateFolderDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!folderName.trim()) return;
+    if (!folderName.trim() || !userId) return;
 
     setIsLoading(true);
     try {
       // Criar a pasta no banco de dados
-      const { error } = await supabase.from("files").insert({
-        filename: folderName,
-        file_path: `${currentPath}${folderName}/`,
-        content_type: "folder",
-        size: 0,
+      const { error } = await supabase.from("folders").insert({
+        name: folderName.trim(),
         user_id: userId,
-        is_folder: true,
+        parent_id: null, // TODO: Adicionar suporte para subpastas no futuro
+        created_at: new Date().toISOString(),
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erro ao criar pasta:", error);
+        throw error;
+      }
 
       toast({
         title: t("common.success"),
         description: t("fileExplorer.actions.createFolderSuccess"),
       });
 
-      // Atualizar a lista de arquivos
+      // Atualizar a lista de arquivos e pastas
       queryClient.invalidateQueries({ queryKey: ["files"] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
 
       // Fechar o modal e limpar o estado
       onClose();
       setFolderName("");
     } catch (error) {
+      console.error("Erro detalhado:", error);
       toast({
         variant: "destructive",
         title: t("common.error"),

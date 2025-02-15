@@ -155,7 +155,14 @@
       "shareSuccess": "Link de compartilhamento copiado",
       "shareError": "Erro ao gerar link de compartilhamento",
       "createFolderSuccess": "Pasta criada com sucesso",
-      "createFolderError": "Erro ao criar pasta"
+      "createFolderError": "Erro ao criar pasta",
+      "deleteFolderSuccess": "Pasta excluída com sucesso",
+      "deleteFolderError": "Erro ao excluir pasta",
+      "renameFolderSuccess": "Pasta renomeada com sucesso",
+      "renameFolderError": "Erro ao renomear pasta"
+    },
+    "navigation": {
+      "back": "Voltar"
     }
   },
   "auth": {
