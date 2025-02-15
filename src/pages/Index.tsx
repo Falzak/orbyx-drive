@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FileExplorer } from "@/components/FileExplorer";
+import { formatDate, formatFileSize } from "@/lib/format";
 import {
   Upload,
   Settings,
@@ -80,6 +81,23 @@ const Index = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+
+  if (!session) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: t("common.logoutError"),
+      });
+    } else {
+      navigate("/auth");
+    }
+  };
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {

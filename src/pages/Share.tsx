@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -132,9 +131,9 @@ const Share = () => {
         </div>
 
         <MediaPreview
-          contentType={shareData.files.content_type}
-          url={signedUrl.publicUrl}
-          filename={shareData.files.filename}
+          type={shareData.files.content_type}
+          src={signedUrl.publicUrl}
+          name={shareData.files.filename}
         />
 
         <Button
@@ -151,4 +150,3 @@ const Share = () => {
 };
 
 export default Share;
-
