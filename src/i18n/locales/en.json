@@ -1,3 +1,4 @@
+
 {
   "common": {
     "search": "Search files...",
@@ -29,6 +30,11 @@
     "uploadWait": "Please wait for the current upload to finish",
     "uploadSuccess": "File uploaded successfully",
     "uploadError": "Failed to upload file: {{error}}",
+    "folder": {
+      "createSuccess": "Folder created",
+      "createDescription": "New folder has been created",
+      "created": "Folder created"
+    },
     "dropzone": {
       "title": "Drop files here or click to select",
       "subtitle": "Supports images, videos, audio, and documents",

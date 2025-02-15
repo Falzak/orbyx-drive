@@ -57,9 +57,15 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
 } from "@/components/ui/context-menu";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { formatFileSize, formatDate } from "@/lib/format";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const Index = () => {
   const session = useAuthRedirect();
@@ -73,6 +79,7 @@ const Index = () => {
   const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -185,23 +192,6 @@ const Index = () => {
     },
   });
 
-  if (!session) {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: t("common.logoutError"),
-      });
-    } else {
-      navigate("/auth");
-    }
-  };
-
   const handleRefreshFiles = () => {
     queryClient.invalidateQueries({ queryKey: ["files"] });
     toast({
@@ -212,6 +202,46 @@ const Index = () => {
 
   const handleCreateFolder = () => {
     setIsCreateFolderOpen(true);
+  };
+
+  const handleCreateFolderSubmit = async () => {
+    if (!newFolderName.trim() || !session.user.id) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("files").insert({
+        filename: newFolderName,
+        file_path: `folders/${crypto.randomUUID()}`,
+        content_type: "folder",
+        size: 0,
+        user_id: session.user.id,
+        is_folder: true,
+      });
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["files"] });
+      toast({
+        title: t("fileExplorer.actions.createFolderSuccess"),
+        description: `${t("dashboard.folder.created")}: ${newFolderName}`,
+      });
+      setIsCreateFolderOpen(false);
+      setNewFolderName("");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: t("fileExplorer.actions.createFolderError"),
+      });
+    }
+  };
+
+  const handleUploadClick = () => {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
   };
 
   const handleSelectAll = async () => {
@@ -227,26 +257,6 @@ const Index = () => {
         description: t("dashboard.selection.allSelected"),
       });
     }
-  };
-
-  const handleCopyPath = () => {
-    const currentPath = window.location.href;
-    navigator.clipboard.writeText(currentPath);
-    toast({
-      title: t("common.success"),
-      description: t("dashboard.clipboard.pathCopied"),
-    });
-  };
-
-  const handleOpenInNewTab = () => {
-    window.open(window.location.href, "_blank");
-  };
-
-  const handleKeyboardShortcuts = () => {
-    toast({
-      title: t("dashboard.contextMenu.shortcuts"),
-      description: t("dashboard.shortcuts.comingSoon"),
-    });
   };
 
   const handleSortFiles = async (sortBy: string) => {
@@ -291,8 +301,24 @@ const Index = () => {
     }
   };
 
-  const handleViewChange = (newView: "grid" | "list") => {
-    setView(newView);
+  const handleCopyPath = () => {
+    const currentPath = window.location.href;
+    navigator.clipboard.writeText(currentPath);
+    toast({
+      title: t("common.success"),
+      description: t("dashboard.clipboard.pathCopied"),
+    });
+  };
+
+  const handleOpenInNewTab = () => {
+    window.open(window.location.href, "_blank");
+  };
+
+  const handleKeyboardShortcuts = () => {
+    toast({
+      title: t("dashboard.contextMenu.shortcuts"),
+      description: t("dashboard.shortcuts.comingSoon"),
+    });
   };
 
   const handleHelp = () => {
@@ -301,6 +327,10 @@ const Index = () => {
 
   const handleFeedback = () => {
     window.open("/feedback", "_blank");
+  };
+
+  const handleViewChange = (newView: "grid" | "list") => {
+    setView(newView);
   };
 
   const handleFileProperties = async () => {
@@ -622,128 +652,150 @@ const Index = () => {
           </div>
         </SidebarProvider>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50 shadow-lg animate-in fade-in-0 zoom-in-95 duration-100">
+      <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
         <ContextMenuItem
           onClick={handleRefreshFiles}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
-          <RefreshCw className="h-4 w-4 group-hover:animate-spin" />
+          <RefreshCw className="h-4 w-4" />
           {t("dashboard.contextMenu.refresh")}
         </ContextMenuItem>
-
-        <ContextMenuSeparator className="bg-border/50 my-1" />
-
+        <ContextMenuSeparator className="bg-border/50" />
         <ContextMenuItem
           onClick={handleCreateFolder}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
-          <FolderPlus className="h-4 w-4 group-hover:scale-110 transition-transform" />
+          <FolderPlus className="h-4 w-4" />
           {t("dashboard.contextMenu.createFolder")}
         </ContextMenuItem>
-
+        <ContextMenuItem
+          onClick={handleUploadClick}
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+        >
+          <FileUp className="h-4 w-4" />
+          {t("dashboard.contextMenu.uploadFile")}
+        </ContextMenuItem>
         <ContextMenuItem
           onClick={handleSelectAll}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
           <MousePointerClick className="h-4 w-4" />
           {t("dashboard.contextMenu.selectAll")}
         </ContextMenuItem>
-
-        <ContextMenuSeparator className="bg-border/50 my-1" />
-
-        <ContextMenuItem
-          onClick={() => handleSortFiles("nameAsc")}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-          inset
-        >
-          <ArrowUpDown className="h-4 w-4" />
-          {t("fileExplorer.sortBy.nameAsc")}
-        </ContextMenuItem>
-
-        <ContextMenuItem
-          onClick={() => handleSortFiles("dateDesc")}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-          inset
-        >
-          <ArrowUpDown className="h-4 w-4" />
-          {t("fileExplorer.sortBy.dateDesc")}
-        </ContextMenuItem>
-
-        <ContextMenuItem
-          onClick={() => handleViewChange(view === "grid" ? "list" : "grid")}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-          inset
-        >
-          {view === "grid" ? (
-            <List className="h-4 w-4" />
-          ) : (
-            <Grid className="h-4 w-4" />
-          )}
-          {view === "grid"
-            ? t("dashboard.contextMenu.listView")
-            : t("dashboard.contextMenu.gridView")}
-        </ContextMenuItem>
-
-        <ContextMenuSeparator className="bg-border/50 my-1" />
-
+        <ContextMenuSub>
+          <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
+            <ArrowUpDown className="h-4 w-4" />
+            {t("dashboard.contextMenu.sortBy")}
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-48">
+            <ContextMenuRadioGroup value={view}>
+              <ContextMenuRadioItem onClick={() => handleSortFiles("nameAsc")} value="nameAsc">
+                {t("fileExplorer.sortBy.nameAsc")}
+              </ContextMenuRadioItem>
+              <ContextMenuRadioItem onClick={() => handleSortFiles("nameDesc")} value="nameDesc">
+                {t("fileExplorer.sortBy.nameDesc")}
+              </ContextMenuRadioItem>
+              <ContextMenuRadioItem onClick={() => handleSortFiles("dateDesc")} value="dateDesc">
+                {t("fileExplorer.sortBy.dateDesc")}
+              </ContextMenuRadioItem>
+              <ContextMenuRadioItem onClick={() => handleSortFiles("dateAsc")} value="dateAsc">
+                {t("fileExplorer.sortBy.dateAsc")}
+              </ContextMenuRadioItem>
+              <ContextMenuRadioItem onClick={() => handleSortFiles("sizeDesc")} value="sizeDesc">
+                {t("fileExplorer.sortBy.sizeDesc")}
+              </ContextMenuRadioItem>
+              <ContextMenuRadioItem onClick={() => handleSortFiles("sizeAsc")} value="sizeAsc">
+                {t("fileExplorer.sortBy.sizeAsc")}
+              </ContextMenuRadioItem>
+            </ContextMenuRadioGroup>
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+        <ContextMenuSub>
+          <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
+            {view === "grid" ? <Grid className="h-4 w-4" /> : <List className="h-4 w-4" />}
+            {t("dashboard.contextMenu.view")}
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-48">
+            <ContextMenuRadioGroup value={view}>
+              <ContextMenuRadioItem onClick={() => setView("grid")} value="grid">
+                <Grid className="h-4 w-4 mr-2" />
+                {t("dashboard.contextMenu.gridView")}
+              </ContextMenuRadioItem>
+              <ContextMenuRadioItem onClick={() => setView("list")} value="list">
+                <List className="h-4 w-4 mr-2" />
+                {t("dashboard.contextMenu.listView")}
+              </ContextMenuRadioItem>
+            </ContextMenuRadioGroup>
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+        <ContextMenuSeparator className="bg-border/50" />
         <ContextMenuItem
           onClick={handleOpenInNewTab}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
           <ExternalLink className="h-4 w-4" />
           {t("dashboard.contextMenu.newTab")}
         </ContextMenuItem>
-
         <ContextMenuItem
           onClick={handleCopyPath}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
           <Copy className="h-4 w-4" />
           {t("dashboard.contextMenu.copyPath")}
         </ContextMenuItem>
-
-        <ContextMenuItem
-          onClick={handleFileProperties}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-        >
-          <Info className="h-4 w-4" />
-          {t("dashboard.contextMenu.properties")}
-        </ContextMenuItem>
-
-        <ContextMenuSeparator className="bg-border/50 my-1" />
-
-        <ContextMenuItem
-          onClick={() => navigate("/settings")}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-        >
-          <Settings className="h-4 w-4" />
-          {t("dashboard.contextMenu.settings")}
-        </ContextMenuItem>
-
-        <ContextMenuItem
-          onClick={handleKeyboardShortcuts}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-        >
-          <Keyboard className="h-4 w-4" />
-          {t("dashboard.contextMenu.shortcuts")}
-        </ContextMenuItem>
-
+        <ContextMenuSeparator className="bg-border/50" />
         <ContextMenuItem
           onClick={handleHelp}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
           <HelpCircle className="h-4 w-4" />
           {t("dashboard.contextMenu.help")}
         </ContextMenuItem>
-
+        <ContextMenuItem
+          onClick={handleKeyboardShortcuts}
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+        >
+          <Keyboard className="h-4 w-4" />
+          {t("dashboard.contextMenu.shortcuts")}
+        </ContextMenuItem>
         <ContextMenuItem
           onClick={handleFeedback}
-          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
           <MessageSquarePlus className="h-4 w-4" />
           {t("dashboard.contextMenu.feedback")}
         </ContextMenuItem>
       </ContextMenuContent>
+
+      <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("fileExplorer.createFolder.title")}</DialogTitle>
+            <DialogDescription>
+              {t("fileExplorer.createFolder.description")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">{t("fileExplorer.createFolder.name")}</Label>
+              <Input
+                id="name"
+                placeholder={t("fileExplorer.createFolder.namePlaceholder")}
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleCreateFolderSubmit}>
+              {t("common.create")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ContextMenu>
   );
 };
