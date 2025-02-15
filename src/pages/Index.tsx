@@ -200,16 +200,10 @@ const Index = () => {
     });
   };
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: t("common.logoutError"),
-      });
-    } else {
-      navigate("/auth");
+  const handleUploadClick = () => {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
     }
   };
 
@@ -516,7 +510,7 @@ const Index = () => {
           {t("dashboard.contextMenu.createFolder")}
         </ContextMenuItem>
         <ContextMenuItem
-          onClick={() => document.querySelector('input[type="file"]')?.click()}
+          onClick={handleUploadClick}
           className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
         >
           <FileUp className="h-4 w-4" />
