@@ -5,13 +5,15 @@ export interface FileWithPreview extends File {
 export interface FileData {
   id: string;
   filename: string;
+  file_path: string;
   content_type: string;
   size: number;
-  is_favorite: boolean;
-  file_path: string;
   created_at: string;
-  category: string;
+  updated_at: string;
+  user_id: string;
+  is_favorite?: boolean;
   url?: string;
+  is_folder?: boolean;
 }
 
 export interface ShareSettings {

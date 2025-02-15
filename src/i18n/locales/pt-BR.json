@@ -17,7 +17,9 @@
     "delete": "Excluir",
     "edit": "Editar",
     "upload": "Enviar",
-    "logoutError": "Falha ao sair do sistema"
+    "logoutError": "Falha ao sair do sistema",
+    "create": "Criar",
+    "creating": "Criando..."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -106,6 +108,12 @@
       "selected": "{{count}} selecionado",
       "selected_plural": "{{count}} selecionados"
     },
+    "createFolder": {
+      "title": "Nova Pasta",
+      "description": "Crie uma nova pasta para organizar seus arquivos",
+      "name": "Nome da pasta",
+      "namePlaceholder": "Digite o nome da pasta"
+    },
     "actions": {
       "deleteConfirm": "Tem certeza que deseja excluir este arquivo?",
       "deleteSuccess": "Arquivo excluído com sucesso",
@@ -113,7 +121,9 @@
       "renameSuccess": "Arquivo renomeado com sucesso",
       "renameError": "Erro ao renomear arquivo",
       "shareSuccess": "Link de compartilhamento copiado",
-      "shareError": "Erro ao gerar link de compartilhamento"
+      "shareError": "Erro ao gerar link de compartilhamento",
+      "createFolderSuccess": "Pasta criada com sucesso",
+      "createFolderError": "Erro ao criar pasta"
     }
   },
   "auth": {

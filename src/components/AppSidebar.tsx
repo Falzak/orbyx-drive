@@ -69,6 +69,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/App";
 import StorageQuota from "@/components/StorageQuota";
 import { useTranslation } from "react-i18next";
+import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -82,6 +83,7 @@ export function AppSidebar() {
   const [recentFiles, setRecentFiles] = useState<string[]>([]);
   const isCollapsed = state === "collapsed";
   const { t } = useTranslation();
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 
   // Salvar o estado no localStorage quando mudar
   useEffect(() => {
@@ -174,7 +176,7 @@ export function AppSidebar() {
     {
       title: t("sidebar.tools.newFolder"),
       icon: FolderPlus,
-      path: "/?action=new-folder",
+      onClick: () => setIsCreateFolderOpen(true),
     },
     {
       title: t("sidebar.tools.bulkActions"),
@@ -189,200 +191,240 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar
-      className={cn(
-        "border-r border-border",
-        "transition-[width] duration-300 bg-background/20 dark:bg-black/20 backdrop-blur-xl"
-      )}
-      variant="sidebar"
-      collapsible="icon"
-    >
-      <SidebarHeader className="border-b border-border p-4">
-        <motion.div layout className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary shrink-0" />
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.span
-                className="text-lg font-semibold overflow-hidden whitespace-nowrap text-foreground"
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: "auto", opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                File Safari
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <ScrollArea className="h-[calc(100vh-8rem)]">
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {mainItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      className={cn(
-                        "w-full transition-colors",
-                        location.pathname + location.search === item.path &&
-                          "bg-accent"
-                      )}
-                      onClick={() => navigate(item.path)}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="flex-1 truncate">{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-auto">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarSeparator />
-
-          <SidebarGroup>
-            <SidebarGroupLabel>{t("sidebar.views.title")}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {viewItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      className={cn(
-                        "w-full transition-colors",
-                        location.pathname + location.search === item.path &&
-                          "bg-accent"
-                      )}
-                      onClick={() => navigate(item.path)}
-                      tooltip={item.title}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="flex-1 truncate">{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarSeparator />
-
-          <SidebarGroup>
-            <SidebarGroupLabel>
-              {t("sidebar.categories.title")}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {categoryItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      className={cn(
-                        "w-full transition-colors",
-                        location.pathname + location.search === item.path &&
-                          "bg-accent"
-                      )}
-                      onClick={() => navigate(item.path)}
-                      tooltip={item.title}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="flex-1 truncate">{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarSeparator />
-
-          <SidebarGroup>
-            <SidebarGroupLabel>{t("sidebar.tools.title")}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {toolItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      className={cn(
-                        "w-full transition-colors",
-                        location.pathname + location.search === item.path &&
-                          "bg-accent"
-                      )}
-                      onClick={() => navigate(item.path)}
-                      tooltip={item.title}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="flex-1 truncate">{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarSeparator />
-
-          <SidebarGroup>
-            <SidebarGroupLabel>{t("sidebar.system.title")}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <div className={cn("px-2", isCollapsed && "px-1")}>
-                <StorageQuota />
-              </div>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </ScrollArea>
-      </SidebarContent>
-
-      <SidebarFooter
-        className={cn("border-t border-border", isCollapsed ? "p-2" : "p-4")}
+    <>
+      <Sidebar
+        className={cn(
+          "border-r border-border/10",
+          "transition-[width] duration-300 bg-background/5 dark:bg-black/5 backdrop-blur-2xl",
+          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.1)] dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.1)]"
+        )}
+        variant="sidebar"
+        collapsible="icon"
       >
-        <div className="flex items-center justify-end">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleSidebarToggle}
-                className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
-              >
-                <AnimatePresence mode="wait">
-                  {isCollapsed ? (
-                    <motion.div
-                      key="expand"
-                      initial={{ rotate: -180 }}
-                      animate={{ rotate: 0 }}
-                      exit={{ rotate: 180 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="collapse"
-                      initial={{ rotate: 180 }}
-                      animate={{ rotate: 0 }}
-                      exit={{ rotate: -180 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </motion.div>
+        <SidebarHeader className="border-b border-border/10 p-4 bg-gradient-to-r from-background/50 to-background/10 dark:from-black/50 dark:to-black/10">
+          <motion.div layout className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary shrink-0 drop-shadow-[0_0_10px_rgba(var(--primary))]" />
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.span
+                  className="text-lg font-semibold overflow-hidden whitespace-nowrap text-foreground/90 drop-shadow-sm"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  File Safari
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </SidebarHeader>
+
+        <SidebarContent>
+          <ScrollArea className="h-[calc(100vh-8rem)]">
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {mainItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        className={cn(
+                          "w-full transition-all duration-200",
+                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
+                          "group relative overflow-hidden",
+                          location.pathname + location.search === item.path &&
+                            "bg-accent/40 text-accent-foreground font-medium"
+                        )}
+                        onClick={() => navigate(item.path)}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
+                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {item.badge && (
+                          <Badge
+                            variant="secondary"
+                            className="ml-auto bg-primary/10 text-primary hover:bg-primary/20"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 opacity-10" />
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+                {t("sidebar.views.title")}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {viewItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        className={cn(
+                          "w-full transition-all duration-200",
+                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
+                          "group relative overflow-hidden",
+                          location.pathname + location.search === item.path &&
+                            "bg-accent/40 text-accent-foreground font-medium"
+                        )}
+                        onClick={() => navigate(item.path)}
+                        tooltip={item.title}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
+                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 opacity-10" />
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+                {t("sidebar.categories.title")}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {categoryItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        className={cn(
+                          "w-full transition-all duration-200",
+                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
+                          "group relative overflow-hidden",
+                          location.pathname + location.search === item.path &&
+                            "bg-accent/40 text-accent-foreground font-medium"
+                        )}
+                        onClick={() => navigate(item.path)}
+                        tooltip={item.title}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
+                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 opacity-10" />
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+                {t("sidebar.tools.title")}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {toolItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        className={cn(
+                          "w-full transition-all duration-200",
+                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
+                          "group relative overflow-hidden",
+                          location.pathname + location.search === item.path &&
+                            "bg-accent/40 text-accent-foreground font-medium"
+                        )}
+                        onClick={
+                          item.onClick ||
+                          (item.path ? () => navigate(item.path) : undefined)
+                        }
+                        tooltip={item.title}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
+                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 opacity-10" />
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+                {t("sidebar.system.title")}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <div className={cn("px-2", isCollapsed && "px-1")}>
+                  <StorageQuota />
+                </div>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </ScrollArea>
+        </SidebarContent>
+
+        <SidebarFooter
+          className={cn(
+            "border-t border-border/10 bg-gradient-to-b from-background/50 to-background/10 dark:from-black/50 dark:to-black/10",
+            isCollapsed ? "p-2" : "p-4"
+          )}
+        >
+          <div className="flex items-center justify-end">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSidebarToggle}
+                  className={cn(
+                    "h-8 w-8 rounded-full",
+                    "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
+                    "transition-all duration-200"
                   )}
-                </AnimatePresence>
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && (
-              <TooltipContent side="right">
-                <p>{t("sidebar.expandSidebar")}</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+                >
+                  <AnimatePresence mode="wait">
+                    {isCollapsed ? (
+                      <motion.div
+                        key="expand"
+                        initial={{ rotate: -180 }}
+                        animate={{ rotate: 0 }}
+                        exit={{ rotate: 180 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="collapse"
+                        initial={{ rotate: 180 }}
+                        animate={{ rotate: 0 }}
+                        exit={{ rotate: -180 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent side="right">
+                  <p>{t("sidebar.expandSidebar")}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+
+      <CreateFolderDialog
+        isOpen={isCreateFolderOpen}
+        onClose={() => setIsCreateFolderOpen(false)}
+        userId={session?.user.id!}
+      />
+    </>
   );
 }
