@@ -33,6 +33,36 @@
       "title": "Drop files here or click to select",
       "subtitle": "Supports images, videos, audio, and documents",
       "dragActive": "Drop files here to upload"
+    },
+    "contextMenu": {
+      "refresh": "Refresh files",
+      "createFolder": "New folder",
+      "uploadFile": "Upload file",
+      "selectAll": "Select all",
+      "sortBy": "Sort by",
+      "view": "View",
+      "gridView": "Grid",
+      "listView": "List",
+      "settings": "Settings",
+      "newTab": "Open in new tab",
+      "copyPath": "Copy path",
+      "properties": "Properties",
+      "help": "Help",
+      "shortcuts": "Keyboard shortcuts",
+      "feedback": "Send feedback"
+    },
+    "refresh": {
+      "success": "Files refreshed",
+      "description": "File list updated successfully"
+    },
+    "selection": {
+      "allSelected": "All items selected"
+    },
+    "clipboard": {
+      "pathCopied": "Path copied to clipboard"
+    },
+    "shortcuts": {
+      "comingSoon": "Keyboard shortcuts coming soon"
     }
   },
   "sidebar": {

@@ -33,6 +33,38 @@
       "title": "Solte os arquivos aqui ou clique para selecionar",
       "subtitle": "Suporta imagens, vídeos, áudio e documentos",
       "dragActive": "Solte os arquivos aqui para fazer upload"
+    },
+    "contextMenu": {
+      "refresh": "Atualizar arquivos",
+      "createFolder": "Nova pasta",
+      "uploadFile": "Enviar arquivo",
+      "selectAll": "Selecionar tudo",
+      "sortBy": "Ordenar por",
+      "view": "Visualização",
+      "gridView": "Grade",
+      "listView": "Lista",
+      "settings": "Configurações",
+      "newTab": "Abrir em nova aba",
+      "copyPath": "Copiar caminho",
+      "properties": "Propriedades",
+      "help": "Ajuda",
+      "shortcuts": "Atalhos de teclado",
+      "feedback": "Enviar feedback"
+    },
+    "refresh": {
+      "success": "Arquivos atualizados",
+      "description": "Lista de arquivos atualizada com sucesso"
+    },
+    "selection": {
+      "selected": "{{count}} selecionado",
+      "selected_plural": "{{count}} selecionados",
+      "allSelected": "Todos os itens selecionados"
+    },
+    "clipboard": {
+      "pathCopied": "Caminho copiado para a área de transferência"
+    },
+    "shortcuts": {
+      "comingSoon": "Atalhos de teclado em breve"
     }
   },
   "sidebar": {

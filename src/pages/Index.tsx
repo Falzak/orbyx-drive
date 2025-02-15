@@ -25,6 +25,16 @@ import {
   Plus,
   FolderPlus,
   FileUp,
+  Grid,
+  List,
+  Copy,
+  HelpCircle,
+  Keyboard,
+  MessageSquarePlus,
+  MousePointerClick,
+  ArrowUpDown,
+  ExternalLink,
+  Info,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -48,6 +58,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { formatFileSize, formatDate } from "@/lib/format";
 
 const Index = () => {
   const session = useAuthRedirect();
@@ -58,26 +70,14 @@ const Index = () => {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
-
-  if (!session) {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: t("common.logoutError"),
-      });
-    } else {
-      navigate("/auth");
-    }
-  };
+  const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
+      if (!session?.user?.id) return;
+
       const fileExt = file.name.split(".").pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
@@ -95,7 +95,7 @@ const Index = () => {
         file_path: filePath,
         content_type: file.type,
         size: file.size,
-        user_id: session?.user.id,
+        user_id: session.user.id,
       });
 
       if (dbError) throw dbError;
@@ -185,6 +185,23 @@ const Index = () => {
     },
   });
 
+  if (!session) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: t("common.logoutError"),
+      });
+    } else {
+      navigate("/auth");
+    }
+  };
+
   const handleRefreshFiles = () => {
     queryClient.invalidateQueries({ queryKey: ["files"] });
     toast({
@@ -194,16 +211,128 @@ const Index = () => {
   };
 
   const handleCreateFolder = () => {
+    setIsCreateFolderOpen(true);
+  };
+
+  const handleSelectAll = async () => {
+    const { data: files } = await supabase
+      .from("files")
+      .select("id")
+      .eq("user_id", session.user.id);
+
+    if (files) {
+      setSelectedItems(files.map((file) => file.id));
+      toast({
+        title: t("common.success"),
+        description: t("dashboard.selection.allSelected"),
+      });
+    }
+  };
+
+  const handleCopyPath = () => {
+    const currentPath = window.location.href;
+    navigator.clipboard.writeText(currentPath);
     toast({
-      title: t("dashboard.folder.createSuccess"),
-      description: t("dashboard.folder.createDescription"),
+      title: t("common.success"),
+      description: t("dashboard.clipboard.pathCopied"),
     });
   };
 
-  const handleUploadClick = () => {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
+  const handleOpenInNewTab = () => {
+    window.open(window.location.href, "_blank");
+  };
+
+  const handleKeyboardShortcuts = () => {
+    toast({
+      title: t("dashboard.contextMenu.shortcuts"),
+      description: t("dashboard.shortcuts.comingSoon"),
+    });
+  };
+
+  const handleSortFiles = async (sortBy: string) => {
+    try {
+      let query = supabase
+        .from("files")
+        .select("*")
+        .eq("user_id", session.user.id);
+
+      switch (sortBy) {
+        case "nameAsc":
+          query = query.order("filename", { ascending: true });
+          break;
+        case "nameDesc":
+          query = query.order("filename", { ascending: false });
+          break;
+        case "dateAsc":
+          query = query.order("created_at", { ascending: true });
+          break;
+        case "dateDesc":
+          query = query.order("created_at", { ascending: false });
+          break;
+        case "sizeAsc":
+          query = query.order("size", { ascending: true });
+          break;
+        case "sizeDesc":
+          query = query.order("size", { ascending: false });
+          break;
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      queryClient.setQueryData(["files"], data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: error.message,
+      });
+    }
+  };
+
+  const handleViewChange = (newView: "grid" | "list") => {
+    setView(newView);
+  };
+
+  const handleHelp = () => {
+    window.open("/help", "_blank");
+  };
+
+  const handleFeedback = () => {
+    window.open("/feedback", "_blank");
+  };
+
+  const handleFileProperties = async () => {
+    if (selectedItems.length === 1) {
+      const { data: file, error } = await supabase
+        .from("files")
+        .select("*")
+        .eq("id", selectedItems[0])
+        .single();
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: error.message,
+        });
+        return;
+      }
+
+      // Aqui você pode abrir um modal com as propriedades do arquivo
+      // Por enquanto vamos apenas mostrar um toast
+      toast({
+        title: file.filename,
+        description: `${t(
+          "fileExplorer.fileProperties.size"
+        )}: ${formatFileSize(file.size)} | ${t(
+          "fileExplorer.fileProperties.type"
+        )}: ${file.content_type} | ${t(
+          "fileExplorer.fileProperties.created"
+        )}: ${formatDate(file.created_at)}`,
+        duration: 5000,
+      });
     }
   };
 
@@ -493,36 +622,126 @@ const Index = () => {
           </div>
         </SidebarProvider>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
+      <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50 shadow-lg animate-in fade-in-0 zoom-in-95 duration-100">
         <ContextMenuItem
           onClick={handleRefreshFiles}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4 group-hover:animate-spin" />
           {t("dashboard.contextMenu.refresh")}
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-border/50" />
+
+        <ContextMenuSeparator className="bg-border/50 my-1" />
+
         <ContextMenuItem
           onClick={handleCreateFolder}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
         >
-          <FolderPlus className="h-4 w-4" />
+          <FolderPlus className="h-4 w-4 group-hover:scale-110 transition-transform" />
           {t("dashboard.contextMenu.createFolder")}
         </ContextMenuItem>
+
         <ContextMenuItem
-          onClick={handleUploadClick}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          onClick={handleSelectAll}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
         >
-          <FileUp className="h-4 w-4" />
-          {t("dashboard.contextMenu.uploadFile")}
+          <MousePointerClick className="h-4 w-4" />
+          {t("dashboard.contextMenu.selectAll")}
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-border/50" />
+
+        <ContextMenuSeparator className="bg-border/50 my-1" />
+
         <ContextMenuItem
-          onClick={() => navigate("/settings/profile")}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          onClick={() => handleSortFiles("nameAsc")}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          inset
+        >
+          <ArrowUpDown className="h-4 w-4" />
+          {t("fileExplorer.sortBy.nameAsc")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={() => handleSortFiles("dateDesc")}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          inset
+        >
+          <ArrowUpDown className="h-4 w-4" />
+          {t("fileExplorer.sortBy.dateDesc")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={() => handleViewChange(view === "grid" ? "list" : "grid")}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          inset
+        >
+          {view === "grid" ? (
+            <List className="h-4 w-4" />
+          ) : (
+            <Grid className="h-4 w-4" />
+          )}
+          {view === "grid"
+            ? t("dashboard.contextMenu.listView")
+            : t("dashboard.contextMenu.gridView")}
+        </ContextMenuItem>
+
+        <ContextMenuSeparator className="bg-border/50 my-1" />
+
+        <ContextMenuItem
+          onClick={handleOpenInNewTab}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <ExternalLink className="h-4 w-4" />
+          {t("dashboard.contextMenu.newTab")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={handleCopyPath}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <Copy className="h-4 w-4" />
+          {t("dashboard.contextMenu.copyPath")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={handleFileProperties}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <Info className="h-4 w-4" />
+          {t("dashboard.contextMenu.properties")}
+        </ContextMenuItem>
+
+        <ContextMenuSeparator className="bg-border/50 my-1" />
+
+        <ContextMenuItem
+          onClick={() => navigate("/settings")}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
         >
           <Settings className="h-4 w-4" />
-          {t("settings.sections.profile.title")}
+          {t("dashboard.contextMenu.settings")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={handleKeyboardShortcuts}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <Keyboard className="h-4 w-4" />
+          {t("dashboard.contextMenu.shortcuts")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={handleHelp}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <HelpCircle className="h-4 w-4" />
+          {t("dashboard.contextMenu.help")}
+        </ContextMenuItem>
+
+        <ContextMenuItem
+          onClick={handleFeedback}
+          className="group flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          {t("dashboard.contextMenu.feedback")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

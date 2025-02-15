@@ -423,7 +423,7 @@ export function AppSidebar() {
       <CreateFolderDialog
         isOpen={isCreateFolderOpen}
         onClose={() => setIsCreateFolderOpen(false)}
-        userId={session?.user.id!}
+        userId={session?.user?.id || ""}
       />
     </>
   );
