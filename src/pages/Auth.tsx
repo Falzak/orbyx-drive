@@ -123,6 +123,10 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+      }, {
+        data: {
+          remember_me: rememberMe
+        }
       });
 
       // Store the remember me preference in localStorage

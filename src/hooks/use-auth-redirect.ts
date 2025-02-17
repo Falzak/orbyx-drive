@@ -9,7 +9,7 @@ export function useAuthRedirect(redirectTo: string = '/auth', requireAdmin: bool
   const { session } = useAuth();
   const navigate = useNavigate();
 
-  const { data: isAdmin } = useQuery({
+  const { data: isAdmin, isLoading } = useQuery({
     queryKey: ['user-role', session?.user.id],
     queryFn: async () => {
       if (!session) return false;
@@ -29,10 +29,10 @@ export function useAuthRedirect(redirectTo: string = '/auth', requireAdmin: bool
   useEffect(() => {
     if (!session) {
       navigate(redirectTo);
-    } else if (requireAdmin && isAdmin === false) {
+    } else if (requireAdmin && !isLoading && isAdmin === false) {
       navigate('/');
     }
-  }, [session, navigate, redirectTo, requireAdmin, isAdmin]);
+  }, [session, navigate, redirectTo, requireAdmin, isAdmin, isLoading]);
 
   return session;
 }

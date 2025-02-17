@@ -43,11 +43,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
+    // Configure session persistence
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setIsLoading(false);
     });
 
     // Listen for auth changes
@@ -55,10 +57,16 @@ const App = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -69,7 +77,10 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/auth" element={<Auth />} />
+                <Route 
+                  path="/auth" 
+                  element={session ? <Navigate to="/" replace /> : <Auth />} 
+                />
                 <Route path="/s/:id" element={<Share />} />
                 <Route
                   path="/"
