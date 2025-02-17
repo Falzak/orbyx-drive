@@ -159,6 +159,36 @@ export type Database = {
           },
         ]
       }
+      storage_providers: {
+        Row: {
+          created_at: string
+          credentials: Json
+          id: string
+          is_active: boolean | null
+          name: string
+          provider: Database["public"]["Enums"]["storage_provider"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credentials: Json
+          id?: string
+          is_active?: boolean | null
+          name: string
+          provider: Database["public"]["Enums"]["storage_provider"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credentials?: Json
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          provider?: Database["public"]["Enums"]["storage_provider"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       storage_quotas: {
         Row: {
           created_at: string
@@ -183,6 +213,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -194,7 +245,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      storage_provider: "aws" | "google" | "backblaze" | "wasabi" | "cloudflare"
     }
     CompositeTypes: {
       [_ in never]: never
