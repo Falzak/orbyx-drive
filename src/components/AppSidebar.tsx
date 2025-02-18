@@ -1,62 +1,44 @@
+import { useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import {
   FolderOpen,
-  Image,
-  FileText,
-  Video,
-  Music,
   Star,
   Settings,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  Upload,
-  Tag,
-  Clock,
-  Filter,
-  Users,
-  Share2,
   Shield,
-  Trash2,
+  Upload,
   FolderPlus,
-  Grid,
-  List,
-  LayoutGrid,
-  Box,
-  Download,
   Sun,
   Moon,
   User,
+  Search,
+  Globe,
+  Grid,
+  List,
+  RefreshCw,
+  Check,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarSeparator,
   SidebarHeader,
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/App";
+import { CreateFolderDialog } from "@/components/CreateFolderDialog";
+import StorageQuota from "@/components/StorageQuota";
+import { useTheme } from "next-themes";
+import { Input } from "@/components/ui/input";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,109 +47,58 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "next-themes";
-import { useAuth } from "@/App";
-import StorageQuota from "@/components/StorageQuota";
-import { useTranslation } from "react-i18next";
-import { CreateFolderDialog } from "@/components/CreateFolderDialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
+const LANGUAGES = [
+  {
+    code: "en",
+    name: "English",
+    flag: "🇺🇸"
+  },
+  {
+    code: "pt-BR",
+    name: "Português",
+    flag: "🇧🇷"
+  }
+] as const;
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const { session } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const { state, toggleSidebar } = useSidebar();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
-  const [recentFiles, setRecentFiles] = useState<string[]>([]);
+  const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
 
-  // Salvar o estado no localStorage quando mudar
-  useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", JSON.stringify(isCollapsed));
-  }, [isCollapsed]);
-
-  const handleSidebarToggle = () => {
-    toggleSidebar();
+  const handleViewChange = (newView: "grid" | "list") => {
+    setView(newView);
   };
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: t("common.error"),
-        description: t("common.logoutError"),
-      });
-    } else {
-      navigate("/auth");
-    }
+  const handleRefreshFiles = () => {
+    queryClient.invalidateQueries({ queryKey: ["files"] });
   };
 
-  const mainItems = [
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
+
+  const menuItems = [
     {
       title: t("sidebar.mainItems.allFiles"),
       icon: FolderOpen,
       path: "/",
     },
     {
-      title: t("sidebar.mainItems.recent"),
-      icon: Clock,
-      path: "/?filter=recent",
-      badge: recentFiles.length,
-    },
-    {
-      title: t("sidebar.mainItems.shared"),
-      icon: Share2,
-      path: "/?filter=shared",
-    },
-    {
       title: t("sidebar.mainItems.favorites"),
       icon: Star,
       path: "/?filter=favorites",
     },
-  ];
-
-  const viewItems = [
-    {
-      title: t("sidebar.views.gridView"),
-      icon: LayoutGrid,
-      path: "/?view=grid",
-    },
-    {
-      title: t("sidebar.views.listView"),
-      icon: List,
-      path: "/?view=list",
-    },
-  ];
-
-  const categoryItems = [
-    {
-      title: t("sidebar.categories.images"),
-      icon: Image,
-      path: "/?category=images",
-    },
-    {
-      title: t("sidebar.categories.documents"),
-      icon: FileText,
-      path: "/?category=documents",
-    },
-    {
-      title: t("sidebar.categories.videos"),
-      icon: Video,
-      path: "/?category=videos",
-    },
-    {
-      title: t("sidebar.categories.audio"),
-      icon: Music,
-      path: "/?category=audio",
-    },
-  ];
-
-  const toolItems = [
     {
       title: t("sidebar.tools.uploadFiles"),
       icon: Upload,
@@ -178,447 +109,288 @@ export function AppSidebar() {
       icon: FolderPlus,
       onClick: () => setIsCreateFolderOpen(true),
     },
-    {
-      title: t("sidebar.tools.bulkActions"),
-      icon: Box,
-      path: "/?action=bulk",
-    },
-    {
-      title: t("sidebar.tools.downloadAll"),
-      icon: Download,
-      path: "/?action=download-all",
-    },
   ];
 
   return (
     <>
       <Sidebar
         className={cn(
-          "border-r border-border/5",
+          "border-r border-border/10",
           "transition-all duration-300 ease-in-out",
-          "bg-background/95 dark:bg-black/95",
+          "bg-gradient-to-b from-background/80 to-background/60",
+          "dark:from-black/80 dark:to-black/60",
           "backdrop-blur-2xl",
-          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.03)]",
-          isCollapsed && "w-[70px] md:w-[80px]"
+          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.08)]",
+          "dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.03)]",
+          isCollapsed ? "w-16" : "w-64"
         )}
         variant="sidebar"
         collapsible="icon"
       >
-        <SidebarHeader className="border-b border-border/5 p-4 bg-background/95 dark:bg-black/95">
+        <SidebarHeader className="border-b border-border/5 p-4 space-y-4">
           <motion.div layout className="flex items-center gap-3">
-            <Shield className="h-7 w-7 text-primary shrink-0 drop-shadow-[0_0_15px_rgba(var(--primary))] animate-pulse" />
+            <div className="relative">
+              <Shield className="h-6 w-6 text-primary" />
+              <div className="absolute inset-0 animate-pulse-slow blur-md bg-primary/30 rounded-full" />
+            </div>
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
-                  className="text-xl font-semibold overflow-hidden whitespace-nowrap text-foreground"
+                  className="text-lg font-semibold text-foreground/90"
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: "auto", opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  transition={{ duration: 0.2 }}
                 >
                   File Safari
                 </motion.span>
               )}
             </AnimatePresence>
           </motion.div>
+
+          {!isCollapsed && (
+            <div className="space-y-2">
+              <Input
+                type="search"
+                placeholder={t("common.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9"
+              />
+              
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-1 h-8"
+                  onClick={handleRefreshFiles}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-1 h-8"
+                  onClick={() => handleViewChange(view === "grid" ? "list" : "grid")}
+                >
+                  {view === "grid" ? (
+                    <Grid className="h-4 w-4" />
+                  ) : (
+                    <List className="h-4 w-4" />
+                  )}
+                </Button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="flex-1 h-8 relative group"
+                    >
+                      <Globe className="h-4 w-4 group-hover:text-foreground/80 transition-colors" />
+                      <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center">
+                        <span className="text-[8px]">
+                          {LANGUAGES.find(lang => lang.code === i18n.language)?.flag}
+                        </span>
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="w-48 p-2 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50"
+                  >
+                    <DropdownMenuLabel className="text-xs font-medium text-foreground/70 px-2 pb-2">
+                      {t("common.language")}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-border/50 -mx-2" />
+                    {LANGUAGES.map((language) => (
+                      <DropdownMenuItem
+                        key={language.code}
+                        onClick={() => i18n.changeLanguage(language.code)}
+                        className={cn(
+                          "gap-2 p-2 cursor-pointer text-sm",
+                          "hover:bg-accent/50 focus:bg-accent/50",
+                          "transition-colors duration-150",
+                          i18n.language === language.code && "bg-accent/30 font-medium"
+                        )}
+                      >
+                        <span className="text-base">{language.flag}</span>
+                        <span className="flex-1">{language.name}</span>
+                        {i18n.language === language.code && (
+                          <Check className="h-4 w-4 text-foreground/70" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-1 h-8"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </SidebarHeader>
 
-        <SidebarContent className="py-2">
-          <ScrollArea className="h-[calc(100vh-8rem)]">
-            <SidebarGroup className="px-2">
+        <SidebarContent>
+          <ScrollArea className="h-[calc(100vh-20rem)]">
+            <SidebarGroup>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {mainItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            className={cn(
-                              "w-full transition-all duration-200",
-                              "p-3 md:p-3.5",
-                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                              "group relative overflow-hidden rounded-xl",
-                              location.pathname + location.search ===
-                                item.path &&
-                                "bg-primary/10 text-primary font-medium"
-                            )}
-                            onClick={() => navigate(item.path)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <item.icon
-                                className={cn(
-                                  "h-5 w-5 shrink-0 transition-transform duration-200",
-                                  "group-hover:scale-110",
-                                  isCollapsed && "w-6 h-6"
-                                )}
-                              />
-                              <AnimatePresence>
-                                {!isCollapsed && (
-                                  <motion.span
-                                    className="flex-1 truncate text-base"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    {item.title}
-                                  </motion.span>
-                                )}
-                              </AnimatePresence>
-                              {item.badge && !isCollapsed && (
-                                <Badge
-                                  variant="secondary"
-                                  className="ml-auto bg-primary/20 text-primary hover:bg-primary/30 h-6 px-2"
-                                >
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </div>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent
-                            side="right"
-                            className="flex items-center gap-2"
-                          >
-                            <span>{item.title}</span>
-                            {item.badge && (
-                              <Badge variant="secondary" className="h-5 px-1.5">
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </SidebarMenuItem>
+                <div className="space-y-1 p-2">
+                  {menuItems.map((item) => (
+                    <Tooltip key={item.title}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size={isCollapsed ? "icon" : "default"}
+                          className={cn(
+                            "w-full justify-start gap-3 transition-all duration-200",
+                            "hover:bg-accent/50 hover:text-accent-foreground",
+                            "group relative overflow-hidden",
+                            "data-[active=true]:bg-accent/70 data-[active=true]:text-accent-foreground",
+                            isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3",
+                            location.pathname + location.search === item.path && "bg-accent/50 text-accent-foreground font-medium"
+                          )}
+                          onClick={item.onClick || (() => navigate(item.path!))}
+                          data-active={location.pathname + location.search === item.path}
+                        >
+                          <item.icon className={cn(
+                            "h-4 w-4 shrink-0",
+                            "transition-transform duration-200",
+                            "group-hover:scale-105",
+                            location.pathname + location.search === item.path ? "text-accent-foreground" : "text-muted-foreground"
+                          )} />
+                          {!isCollapsed && (
+                            <motion.span
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="flex-1 truncate text-sm"
+                            >
+                              {item.title}
+                            </motion.span>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </Button>
+                      </TooltipTrigger>
+                      {isCollapsed && (
+                        <TooltipContent side="right" className="bg-background/60 backdrop-blur-xl border-border/50">
+                          {item.title}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator className="my-4 opacity-5" />
-
-            <SidebarGroup className="px-2">
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                      {t("sidebar.views.title")}
-                    </SidebarGroupLabel>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {viewItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            className={cn(
-                              "w-full transition-all duration-200",
-                              "p-3 md:p-3.5",
-                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                              "group relative overflow-hidden rounded-xl",
-                              location.pathname + location.search ===
-                                item.path &&
-                                "bg-primary/10 text-primary font-medium"
-                            )}
-                            onClick={() => navigate(item.path)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <item.icon
-                                className={cn(
-                                  "h-5 w-5 shrink-0 transition-transform duration-200",
-                                  "group-hover:scale-110",
-                                  isCollapsed && "w-6 h-6"
-                                )}
-                              />
-                              <AnimatePresence>
-                                {!isCollapsed && (
-                                  <motion.span
-                                    className="flex-1 truncate text-base"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    {item.title}
-                                  </motion.span>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent side="right">
-                            {item.title}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator className="my-4 opacity-5" />
-
-            <SidebarGroup className="px-2">
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                      {t("sidebar.categories.title")}
-                    </SidebarGroupLabel>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {categoryItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            className={cn(
-                              "w-full transition-all duration-200",
-                              "p-3 md:p-3.5",
-                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                              "group relative overflow-hidden rounded-xl",
-                              location.pathname + location.search ===
-                                item.path &&
-                                "bg-primary/10 text-primary font-medium"
-                            )}
-                            onClick={() => navigate(item.path)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <item.icon
-                                className={cn(
-                                  "h-5 w-5 shrink-0 transition-transform duration-200",
-                                  "group-hover:scale-110",
-                                  isCollapsed && "w-6 h-6"
-                                )}
-                              />
-                              <AnimatePresence>
-                                {!isCollapsed && (
-                                  <motion.span
-                                    className="flex-1 truncate text-base"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    {item.title}
-                                  </motion.span>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent side="right">
-                            {item.title}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator className="my-4 opacity-5" />
-
-            <SidebarGroup className="px-2">
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                      {t("sidebar.tools.title")}
-                    </SidebarGroupLabel>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {toolItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            className={cn(
-                              "w-full transition-all duration-200",
-                              "p-3 md:p-3.5",
-                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                              "group relative overflow-hidden rounded-xl",
-                              location.pathname + location.search ===
-                                item.path &&
-                                "bg-primary/10 text-primary font-medium"
-                            )}
-                            onClick={
-                              item.onClick ||
-                              (item.path
-                                ? () => navigate(item.path)
-                                : undefined)
-                            }
-                          >
-                            <div className="flex items-center gap-3">
-                              <item.icon
-                                className={cn(
-                                  "h-5 w-5 shrink-0 transition-transform duration-200",
-                                  "group-hover:scale-110",
-                                  isCollapsed && "w-6 h-6"
-                                )}
-                              />
-                              <AnimatePresence>
-                                {!isCollapsed && (
-                                  <motion.span
-                                    className="flex-1 truncate text-base"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    {item.title}
-                                  </motion.span>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent side="right">
-                            {item.title}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator className="my-4 opacity-5" />
-
-            <SidebarGroup className="px-2">
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                      {t("sidebar.system.title")}
-                    </SidebarGroupLabel>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <SidebarGroupContent>
-                <div className={cn("px-2", isCollapsed && "px-1")}>
-                  <StorageQuota collapsed={isCollapsed} />
                 </div>
               </SidebarGroupContent>
             </SidebarGroup>
           </ScrollArea>
         </SidebarContent>
 
-        <SidebarFooter
-          className={cn(
-            "border-t border-border/5 bg-background/95 dark:bg-black/95",
-            isCollapsed ? "p-2" : "p-4"
-          )}
-        >
-          <div className="flex items-center justify-end">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSidebarToggle}
-                  className={cn(
-                    "h-9 w-9 rounded-xl",
-                    "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                    "transition-all duration-200"
-                  )}
-                >
-                  <AnimatePresence mode="wait">
-                    {isCollapsed ? (
-                      <motion.div
-                        key="expand"
-                        initial={{ rotate: -180, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: 180, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="collapse"
-                        initial={{ rotate: 180, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: -180, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Button>
-              </TooltipTrigger>
-              {isCollapsed && (
-                <TooltipContent side="right">
-                  <p>{t("sidebar.expandSidebar")}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </div>
+        <SidebarFooter className="border-t border-border/5 p-4 space-y-4">
+          <StorageQuota collapsed={isCollapsed} />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className={cn(
+                  "w-full gap-3 h-auto p-2",
+                  isCollapsed ? "justify-center" : "justify-start",
+                  "hover:bg-accent/10 group",
+                  "transition-all duration-200",
+                  "relative overflow-hidden"
+                )}
+              >
+                <Avatar className={cn(
+                  "h-8 w-8 ring-2 ring-border/50 group-hover:ring-border/80",
+                  "transition-all duration-200 group-hover:scale-105",
+                  isCollapsed && "h-6 w-6"
+                )}>
+                  <AvatarImage
+                    src={session?.user?.user_metadata?.avatar_url}
+                    alt={session?.user?.email || ""}
+                    className="group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors duration-200">
+                    {session?.user?.email?.[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                  <div className="flex flex-col items-start flex-1 min-w-0 group-hover:translate-x-0.5 transition-transform duration-200">
+                    <span className="text-sm font-medium truncate w-full text-foreground/90 group-hover:text-foreground transition-colors duration-200">
+                      {session?.user?.user_metadata?.full_name ||
+                        session?.user?.email?.split("@")[0]}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate w-full group-hover:text-muted-foreground/80 transition-colors duration-200">
+                      {session?.user?.email}
+                    </span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align={isCollapsed ? "center" : "start"}
+              className="w-64 p-2 bg-background/60 backdrop-blur-xl border-border/50"
+            >
+              <div className="flex items-center gap-3 p-2 group">
+                <Avatar className="h-12 w-12 ring-2 ring-border/50 transition-all duration-200 group-hover:ring-border/80 group-hover:scale-105">
+                  <AvatarImage
+                    src={session?.user?.user_metadata?.avatar_url}
+                    alt={session?.user?.email || ""}
+                    className="group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary text-lg group-hover:bg-primary/20 transition-colors duration-200">
+                    {session?.user?.email?.[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col flex-1 min-w-0 group-hover:translate-x-0.5 transition-transform duration-200">
+                  <span className="text-sm font-medium truncate text-foreground/90 group-hover:text-foreground transition-colors duration-200">
+                    {session?.user?.user_metadata?.full_name ||
+                      session?.user?.email?.split("@")[0]}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate group-hover:text-muted-foreground/80 transition-colors duration-200">
+                    {session?.user?.email}
+                  </span>
+                </div>
+              </div>
+              <DropdownMenuSeparator className="my-2 bg-border/10" />
+              <DropdownMenuItem 
+                onClick={() => navigate("/settings")}
+                className="gap-3 p-2 cursor-pointer group hover:bg-accent/50 transition-all duration-200"
+              >
+                <Settings className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
+                <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                  {t("settings.title")}
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => navigate("/auth")}
+                className="gap-3 p-2 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 transition-all duration-200"
+              >
+                <LogOut className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
+                <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                  {t("common.logout")}
+                </span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
 
       <CreateFolderDialog
         open={isCreateFolderOpen}
-        onOpenChange={(open) => setIsCreateFolderOpen(open)}
-        onSubmit={async (values) => {
-          const { error } = await supabase.from("folders").insert({
-            name: values.name,
-            user_id: session?.user?.id,
-            icon: values.icon,
-            color: values.color,
-          });
-
-          if (error) {
-            toast({
-              variant: "destructive",
-              title: t("common.error"),
-              description: t("fileExplorer.actions.createFolderError"),
-            });
-          } else {
-            toast({
-              title: t("common.success"),
-              description: t("fileExplorer.actions.createFolderSuccess"),
-            });
-            setIsCreateFolderOpen(false);
-          }
-        }}
+        onOpenChange={setIsCreateFolderOpen}
       />
     </>
   );
