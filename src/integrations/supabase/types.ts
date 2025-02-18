@@ -61,21 +61,27 @@ export type Database = {
       }
       folders: {
         Row: {
+          color: string | null
           created_at: string | null
+          icon: string | null
           id: string
           name: string
           parent_id: string | null
           user_id: string
         }
         Insert: {
+          color?: string | null
           created_at?: string | null
+          icon?: string | null
           id?: string
           name: string
           parent_id?: string | null
           user_id: string
         }
         Update: {
+          color?: string | null
           created_at?: string | null
+          icon?: string | null
           id?: string
           name?: string
           parent_id?: string | null

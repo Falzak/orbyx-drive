@@ -1,131 +1,176 @@
+
 import React from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { FolderPlus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useTranslation } from "react-i18next";
+import { Folder, FolderOpen, FolderPlus, FolderX } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const folderIcons = [
+  { value: "📁", label: "Pasta padrão" },
+  { value: "📂", label: "Pasta aberta" },
+  { value: "📚", label: "Biblioteca" },
+  { value: "🗂️", label: "Arquivo" },
+  { value: "📑", label: "Documentos" },
+  { value: "📊", label: "Dados" },
+  { value: "🎵", label: "Música" },
+  { value: "🎬", label: "Vídeos" },
+  { value: "📸", label: "Fotos" },
+];
+
+const folderColors = [
+  { value: "#94a3b8", label: "Cinza" },
+  { value: "#60a5fa", label: "Azul" },
+  { value: "#34d399", label: "Verde" },
+  { value: "#fbbf24", label: "Amarelo" },
+  { value: "#f87171", label: "Vermelho" },
+  { value: "#c084fc", label: "Roxo" },
+  { value: "#f472b6", label: "Rosa" },
+];
+
+const formSchema = z.object({
+  name: z.string().min(1, "O nome da pasta é obrigatório"),
+  icon: z.string().default("📁"),
+  color: z.string().default("#94a3b8"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface CreateFolderDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentPath?: string;
-  userId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (values: FormValues) => void;
+  loading?: boolean;
 }
 
-export function CreateFolderDialog({
-  isOpen,
-  onClose,
-  currentPath = "/",
-  userId,
+export default function CreateFolderDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  loading = false,
 }: CreateFolderDialogProps) {
   const { t } = useTranslation();
-  const [folderName, setFolderName] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      icon: "📁",
+      color: "#94a3b8",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!folderName.trim() || !userId) return;
-
-    setIsLoading(true);
-    try {
-      // Criar a pasta no banco de dados
-      const { error } = await supabase.from("folders").insert({
-        name: folderName.trim(),
-        user_id: userId,
-        parent_id: null, // TODO: Adicionar suporte para subpastas no futuro
-        created_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        console.error("Erro ao criar pasta:", error);
-        throw error;
-      }
-
-      toast({
-        title: t("common.success"),
-        description: t("fileExplorer.actions.createFolderSuccess"),
-      });
-
-      // Atualizar a lista de arquivos e pastas
-      queryClient.invalidateQueries({ queryKey: ["files"] });
-      queryClient.invalidateQueries({ queryKey: ["folders"] });
-
-      // Fechar o modal e limpar o estado
-      onClose();
-      setFolderName("");
-    } catch (error) {
-      console.error("Erro detalhado:", error);
-      toast({
-        variant: "destructive",
-        title: t("common.error"),
-        description: t("fileExplorer.actions.createFolderError"),
-      });
-    } finally {
-      setIsLoading(false);
+  const handleSubmit = (values: FormValues) => {
+    onSubmit(values);
+    if (!loading) {
+      form.reset();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FolderPlus className="h-5 w-5 text-primary" />
-              {t("fileExplorer.createFolder.title")}
-            </DialogTitle>
-            <DialogDescription>
-              {t("fileExplorer.createFolder.description")}
-            </DialogDescription>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("fileExplorer.createFolder.title")}</DialogTitle>
+          <DialogDescription>
+            {t("fileExplorer.createFolder.description")}
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="folderName">
-                {t("fileExplorer.createFolder.name")}
-              </Label>
-              <Input
-                id="folderName"
-                placeholder={t("fileExplorer.createFolder.namePlaceholder")}
-                value={folderName}
-                onChange={(e) => setFolderName(e.target.value)}
-                className="bg-background/50 dark:bg-black/50"
-                autoFocus
-              />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fileExplorer.createFolder.name")}</FormLabel>
+                  <FormControl>
+                    <Input autoFocus placeholder={t("fileExplorer.createFolder.namePlaceholder")} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ícone</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um ícone" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {folderIcons.map((icon) => (
+                        <SelectItem key={icon.value} value={icon.value}>
+                          <div className="flex items-center gap-2">
+                            <span>{icon.value}</span>
+                            <span>{icon.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cor</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma cor" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {folderColors.map((color) => (
+                        <SelectItem key={color.value} value={color.value}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-4 h-4 rounded"
+                              style={{ backgroundColor: color.value }}
+                            />
+                            <span>{color.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? t("common.loading") : t("common.create")}
+              </Button>
             </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={onClose}
-              type="button"
-              className="bg-background/50 dark:bg-black/50"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={!folderName.trim() || isLoading}
-              className="bg-primary/90 hover:bg-primary"
-            >
-              {isLoading ? t("common.creating") : t("common.create")}
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

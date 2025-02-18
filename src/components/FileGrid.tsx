@@ -63,6 +63,13 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       );
     };
 
+    const getFolderStyle = (file: FileData) => {
+      if (!file.is_folder) return {};
+      return {
+        backgroundColor: file.color || "#94a3b8",
+      };
+    };
+
     if (isLoading) {
       return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 p-6 h-full">
@@ -126,9 +133,12 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                         </>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
+                        <div 
+                          className="w-full h-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+                          style={getFolderStyle(file)}
+                        >
                           <span className="text-4xl drop-shadow-sm">
-                            {getFileIcon(file.content_type)}
+                            {file.is_folder ? file.icon || "📁" : getFileIcon(file.content_type)}
                           </span>
                         </div>
                       )}
