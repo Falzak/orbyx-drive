@@ -128,29 +128,61 @@
       "properties": "Properties",
       "favorite": "Add to favorites",
       "unfavorite": "Remove from favorites",
-      "renamePrompt": "Enter new file name"
+      "renamePrompt": "Enter new file name",
+      "editFolder": "Edit folder"
     },
     "fileProperties": {
       "name": "Name",
       "size": "Size",
       "type": "Type",
       "modified": "Modified",
-      "created": "Created",
+      "created": "Created on",
       "location": "Location",
-      "added": "Added on"
+      "added": "Added on",
+      "details": {
+        "title": "File Details",
+        "type": "Type: {{type}}",
+        "size": "Size: {{size}}",
+        "created": "Created on: {{date}}",
+        "modified": "Modified on: {{date}}"
+      }
+    },
+    "preview": {
+      "noPreview": "Cannot preview this file",
+      "openFile": "Open file",
+      "download": "Download",
+      "share": "Share",
+      "close": "Close"
+    },
+    "tabs": {
+      "emoji": "Emojis",
+      "color": "Colors"
+    },
+    "labels": {
+      "icon": "Icon",
+      "color": "Color"
+    },
+    "colors": {
+      "gray": "Gray",
+      "blue": "Blue",
+      "green": "Green",
+      "yellow": "Yellow",
+      "red": "Red",
+      "purple": "Purple",
+      "pink": "Pink",
+      "turquoise": "Turquoise",
+      "orange": "Orange",
+      "lightGreen": "Light Green",
+      "indigo": "Indigo",
+      "magenta": "Magenta"
     },
     "selection": {
       "selected": "{{count}} selected",
       "selected_plural": "{{count}} selected"
     },
     "actions": {
-      "deleteConfirm": "Are you sure you want to delete this file?",
-      "deleteSuccess": "File deleted successfully",
-      "deleteError": "Error deleting file",
-      "renameSuccess": "File renamed successfully",
-      "renameError": "Error renaming file",
-      "shareSuccess": "Share link copied",
-      "shareError": "Error generating share link"
+      "createFolderSuccess": "Folder created successfully",
+      "createFolderError": "Error creating folder"
     },
     "createFolder": {
       "title": "New Folder",
@@ -158,9 +190,14 @@
       "name": "Folder name",
       "namePlaceholder": "Enter folder name"
     },
-    "actions": {
-      "createFolderSuccess": "Folder created successfully",
-      "createFolderError": "Error creating folder"
+    "editFolder": {
+      "title": "Edit Folder",
+      "description": "Modify folder properties",
+      "success": "Folder updated successfully",
+      "error": "Error updating folder"
+    },
+    "categories": {
+      "allFiles": "All Files"
     }
   },
   "auth": {

@@ -1,241 +1,147 @@
 {
-  "common": {
-    "search": "Pesquisar arquivos...",
-    "settings": "Configurações",
-    "logout": "Sair",
-    "language": "Idioma",
-    "theme": {
-      "light": "Claro",
-      "dark": "Escuro"
-    },
-    "error": "Erro",
-    "success": "Sucesso",
-    "loading": "Carregando...",
-    "cancel": "Cancelar",
-    "save": "Salvar",
-    "saving": "Salvando...",
-    "delete": "Excluir",
-    "edit": "Editar",
-    "upload": "Enviar",
-    "logoutError": "Falha ao sair do sistema",
-    "create": "Criar",
-    "creating": "Criando..."
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Bem-vindo de volta, {{name}}",
-    "uploadHint": "Arraste arquivos para a área de upload ou navegue",
-    "uploadInProgress": "Upload em andamento",
-    "uploadWait": "Por favor, aguarde o upload atual terminar",
-    "uploadSuccess": "Arquivo enviado com sucesso",
-    "uploadError": "Falha ao enviar arquivo: {{error}}",
-    "dropzone": {
-      "title": "Solte os arquivos aqui ou clique para selecionar",
-      "subtitle": "Suporta imagens, vídeos, áudio e documentos",
-      "dragActive": "Solte os arquivos aqui para fazer upload"
-    },
-    "contextMenu": {
-      "refresh": "Atualizar arquivos",
-      "createFolder": "Nova pasta",
-      "uploadFile": "Enviar arquivo",
-      "selectAll": "Selecionar tudo",
-      "sortBy": "Ordenar por",
-      "view": "Visualização",
-      "gridView": "Grade",
-      "listView": "Lista",
-      "settings": "Configurações",
-      "newTab": "Abrir em nova aba",
-      "copyPath": "Copiar caminho",
-      "properties": "Propriedades",
-      "help": "Ajuda",
-      "shortcuts": "Atalhos de teclado",
-      "feedback": "Enviar feedback"
-    },
-    "refresh": {
-      "success": "Arquivos atualizados",
-      "description": "Lista de arquivos atualizada com sucesso"
-    },
-    "selection": {
-      "selected": "{{count}} selecionado",
-      "selected_plural": "{{count}} selecionados",
-      "allSelected": "Todos os itens selecionados"
-    },
-    "clipboard": {
-      "pathCopied": "Caminho copiado para a área de transferência"
-    },
-    "shortcuts": {
-      "comingSoon": "Atalhos de teclado em breve"
-    }
-  },
-  "sidebar": {
-    "expandSidebar": "Expandir sidebar",
-    "collapseSidebar": "Recolher sidebar",
-    "mainItems": {
-      "allFiles": "Todos os Arquivos",
-      "recent": "Recentes",
-      "shared": "Compartilhados",
-      "favorites": "Favoritos"
-    },
-    "views": {
-      "title": "Visualizações",
-      "gridView": "Visualização em Grade",
-      "listView": "Visualização em Lista"
-    },
-    "categories": {
-      "title": "Categorias",
-      "images": "Imagens",
-      "documents": "Documentos",
-      "videos": "Vídeos",
-      "audio": "Áudio"
-    },
-    "tools": {
-      "title": "Ferramentas",
-      "uploadFiles": "Enviar Arquivos",
-      "newFolder": "Nova Pasta",
-      "bulkActions": "Ações em Lote",
-      "downloadAll": "Baixar Tudo"
-    },
-    "system": {
-      "title": "Sistema",
-      "storage": "Armazenamento",
-      "used": "Usado"
-    }
-  },
   "fileExplorer": {
-    "emptyState": {
-      "title": "Nenhum arquivo encontrado",
-      "description": "Comece fazendo upload de alguns arquivos"
-    },
-    "allFiles": "Todos os Arquivos",
-    "sortBy": {
-      "placeholder": "Ordenar por",
-      "nameAsc": "Nome (A-Z)",
-      "nameDesc": "Nome (Z-A)",
-      "dateAsc": "Data (Mais antiga)",
-      "dateDesc": "Data (Mais recente)",
-      "sizeAsc": "Tamanho (Menor)",
-      "sizeDesc": "Tamanho (Maior)"
+    "editFolder": {
+      "title": "Editar Pasta",
+      "description": "Modificar propriedades da pasta"
     },
     "contextMenu": {
-      "open": "Abrir",
-      "download": "Baixar",
-      "share": "Compartilhar",
+      "editFolder": "Editar pasta",
       "delete": "Excluir",
-      "rename": "Renomear",
-      "properties": "Propriedades",
-      "favorite": "Adicionar aos favoritos",
-      "unfavorite": "Remover dos favoritos",
-      "renamePrompt": "Digite o novo nome do arquivo"
+      "open": "Abrir",
+      "download": "Download",
+      "share": "Compartilhar",
+      "unfavorite": "Remova dos favoritos",
+      "favorite": "Adicione aos favoritos",
+      "renamePrompt": "Digite um novo nome de arquivo",
+      "rename": "Renomear"
     },
     "fileProperties": {
       "name": "Nome",
       "size": "Tamanho",
       "type": "Tipo",
       "modified": "Modificado",
-      "created": "Criado",
+      "created": "Criado em",
       "location": "Localização",
-      "added": "Adicionado em"
+      "added": "Adicionado em",
+      "details": {
+        "title": "Detalhes do arquivo",
+        "type": "Tipo: {{type}}",
+        "size": "Tamanho: {{size}}",
+        "created": "Criado em: {{date}}",
+        "modified": "Modificado em: {{date}}"
+      }
     },
-    "selection": {
-      "selected": "{{count}} selecionado",
-      "selected_plural": "{{count}} selecionados"
+    "actions": {
+      "createFolderError": "Erro de criação de pasta",
+      "createFolderSuccess": "Pasta criada com sucesso"
     },
     "createFolder": {
-      "title": "Nova Pasta",
       "description": "Crie uma nova pasta para organizar seus arquivos",
       "name": "Nome da pasta",
       "namePlaceholder": "Digite o nome da pasta"
     },
-    "actions": {
-      "deleteConfirm": "Tem certeza que deseja excluir este arquivo?",
-      "deleteSuccess": "Arquivo excluído com sucesso",
-      "deleteError": "Erro ao excluir arquivo",
-      "renameSuccess": "Arquivo renomeado com sucesso",
-      "renameError": "Erro ao renomear arquivo",
-      "shareSuccess": "Link de compartilhamento copiado",
-      "shareError": "Erro ao gerar link de compartilhamento",
-      "createFolderSuccess": "Pasta criada com sucesso",
-      "createFolderError": "Erro ao criar pasta",
-      "deleteFolderSuccess": "Pasta excluída com sucesso",
-      "deleteFolderError": "Erro ao excluir pasta",
-      "renameFolderSuccess": "Pasta renomeada com sucesso",
-      "renameFolderError": "Erro ao renomear pasta"
-    },
-    "navigation": {
-      "back": "Voltar"
-    }
-  },
-  "auth": {
-    "login": {
-      "title": "Entrar",
-      "email": "Email",
-      "password": "Senha",
-      "submit": "Entrar",
-      "forgotPassword": "Esqueceu sua senha?",
-      "noAccount": "Não tem uma conta?",
-      "signUp": "Cadastre-se"
-    },
-    "register": {
-      "title": "Criar conta",
-      "email": "Email",
-      "password": "Senha",
-      "confirmPassword": "Confirmar senha",
-      "submit": "Criar conta",
-      "hasAccount": "Já tem uma conta?",
-      "signIn": "Entre"
-    },
-    "forgotPassword": {
-      "title": "Esqueceu sua senha",
-      "email": "Email",
-      "submit": "Enviar email de recuperação",
-      "backToLogin": "Voltar para o login"
-    }
-  },
-  "settings": {
-    "title": "Configurações",
-    "profileUpdated": "Perfil atualizado com sucesso",
-    "sections": {
-      "profile": {
-        "title": "Perfil",
-        "description": "Gerencie suas informações pessoais",
-        "name": "Nome completo",
-        "namePlaceholder": "Digite seu nome completo",
-        "email": "Email",
-        "avatar": "Foto de perfil"
-      },
-      "appearance": {
-        "title": "Aparência",
-        "description": "Personalize a aparência do aplicativo",
-        "theme": "Tema"
-      },
-      "storage": {
-        "title": "Armazenamento",
-        "usage": "Uso de armazenamento",
-        "quota": "Cota"
-      },
-      "security": {
-        "title": "Segurança",
-        "description": "Gerencie suas configurações de segurança",
-        "password": "Senha",
-        "changePassword": "Alterar senha",
-        "twoFactor": "Autenticação de dois fatores",
-        "enable2FA": "Ativar autenticação de dois fatores"
-      }
-    }
-  },
-  "mediaPreview": {
-    "loading": "Carregando...",
-    "error": "Erro ao carregar arquivo",
-    "controls": {
-      "play": "Reproduzir",
-      "pause": "Pausar",
-      "mute": "Mutar",
-      "unmute": "Desmutar",
-      "fullscreen": "Tela cheia",
-      "exitFullscreen": "Sair da tela cheia",
+    "preview": {
+      "noPreview": "Não é possível visualizar este arquivo",
+      "openFile": "Abrir arquivo",
       "download": "Baixar",
       "share": "Compartilhar",
       "close": "Fechar"
+    },
+    "tabs": {
+      "emoji": "Emojis",
+      "color": "Cores"
+    },
+    "labels": {
+      "icon": "Ícone",
+      "color": "Cor"
+    },
+    "colors": {
+      "gray": "Cinza",
+      "blue": "Azul",
+      "green": "Verde",
+      "yellow": "Amarelo",
+      "red": "Vermelho",
+      "purple": "Roxo",
+      "pink": "Rosa",
+      "turquoise": "Turquesa",
+      "orange": "Laranja",
+      "lightGreen": "Verde Claro",
+      "indigo": "Índigo",
+      "magenta": "Magenta"
+    },
+    "sortBy": {
+      "nameAsc": "Nome (a-z)",
+      "nameDesc": "Nome (Z-A)",
+      "dateDesc": "Data (mais recente)",
+      "dateAsc": "Data (mais antiga)",
+      "sizeDesc": "Tamanho (maior)",
+      "sizeAsc": "Tamanho (menor)"
+    },
+    "categories": {
+      "allFiles": "Todos os arquivos"
+    }
+  },
+  "sidebar": {
+    "mainItems": {
+      "allFiles": "Todos os arquivos",
+      "recent": "Recente",
+      "shared": "Compartilhado",
+      "favorites": "Favoritos"
+    },
+    "views": {
+      "gridView": "Visualizar em grade",
+      "listView": "Visualizar em lista",
+      "title": "Visualizações"
+    },
+    "categories": {
+      "images": "Imagens",
+      "documents": "Documentos",
+      "videos": "Vídeos",
+      "audio": "Áudio",
+      "title": "Categorias"
+    },
+    "tools": {
+      "uploadFiles": "Fazer upload",
+      "newFolder": "Nova pasta",
+      "bulkActions": "Ações em massa",
+      "downloadAll": "Baixar tudo",
+      "title": "Ferramentas"
+    },
+    "system": {
+      "title": "Sistema"
+    },
+    "expandSidebar": "Expanda a barra lateral"
+  },
+  "common": {
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "loading": "Carregando...",
+    "create": "Criar",
+    "save": "Salvar"
+  },
+  "dashboard": {
+    "welcome": "Olá, {{name}}",
+    "uploadHint": "Arraste os arquivos para a área de upload ou navegue",
+    "dropzone": {
+      "title": "Solte os arquivos aqui ou clique para selecionar",
+      "subtitle": "Suporta imagens, vídeos, áudio e documentos",
+      "dragActive": "Solte arquivos aqui para fazer upload"
+    },
+    "contextMenu": {
+      "refresh": "Atualizar arquivos",
+      "createFolder": "Nova pasta",
+      "uploadFile": "Fazer upload",
+      "selectAll": "Selecione tudo",
+      "sortBy": "Ordenar por",
+      "view": "Visualizar",
+      "gridView": "Grade",
+      "listView": "Lista",
+      "newTab": "Abrir na nova guia",
+      "copyPath": "Copiar caminho",
+      "help": "Ajuda",
+      "shortcuts": "Atalhos de teclado",
+      "feedback": "Envie feedback"
     }
   }
 }

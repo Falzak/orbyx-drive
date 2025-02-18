@@ -42,6 +42,7 @@ interface FileListProps {
   onDelete: (file: FileData) => void;
   onRename: (file: FileData, newName: string) => void;
   onToggleFavorite: (file: FileData) => void;
+  onEditFolder?: (folder: FileData) => void;
 }
 
 export const FileList = forwardRef<HTMLDivElement, FileListProps>(
@@ -55,6 +56,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
       onDelete,
       onRename,
       onToggleFavorite,
+      onEditFolder,
     },
     ref
   ) => {
@@ -171,9 +173,19 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                                   "w-10 h-10 rounded-lg bg-gradient-to-b from-muted/5 to-muted/20 flex items-center justify-center shrink-0 border border-border/50 transition-transform duration-200 group-hover:scale-110",
                                   file.is_folder && "bg-primary/5"
                                 )}
+                                style={
+                                  file.is_folder
+                                    ? {
+                                        backgroundColor:
+                                          file.color || "#94a3b8",
+                                      }
+                                    : {}
+                                }
                               >
                                 <span className="text-2xl drop-shadow-sm">
-                                  {getFileIcon(file.content_type)}
+                                  {file.is_folder
+                                    ? file.icon || "📁"
+                                    : getFileIcon(file.content_type)}
                                 </span>
                               </div>
                             )}
@@ -212,9 +224,18 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                               />
                             </div>
                           ) : (
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-b from-muted/5 to-muted/20 flex items-center justify-center border border-border/50">
+                            <div
+                              className="w-12 h-12 rounded-lg bg-gradient-to-b from-muted/5 to-muted/20 flex items-center justify-center border border-border/50"
+                              style={
+                                file.is_folder
+                                  ? { backgroundColor: file.color || "#94a3b8" }
+                                  : {}
+                              }
+                            >
                               <span className="text-3xl">
-                                {getFileIcon(file.content_type)}
+                                {file.is_folder
+                                  ? file.icon || "📁"
+                                  : getFileIcon(file.content_type)}
                               </span>
                             </div>
                           )}
@@ -247,15 +268,27 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="h-3.5 w-3.5" />
-                          <span>Criado em {formatDate(file.created_at)}</span>
+                          <span>
+                            {t("fileExplorer.fileProperties.details.created", {
+                              date: formatDate(file.created_at),
+                            })}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <FileType className="h-3.5 w-3.5" />
-                          <span>{file.content_type}</span>
+                          <span>
+                            {t("fileExplorer.fileProperties.details.type", {
+                              type: file.content_type,
+                            })}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <HardDrive className="h-3.5 w-3.5" />
-                          <span>{formatFileSize(file.size)}</span>
+                          <span>
+                            {t("fileExplorer.fileProperties.details.size", {
+                              size: formatFileSize(file.size),
+                            })}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -302,31 +335,46 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                           ? t("fileExplorer.contextMenu.unfavorite")
                           : t("fileExplorer.contextMenu.favorite")}
                       </ContextMenuItem>
-                      <ContextMenuItem
-                        onClick={() => {
-                          const newName = prompt(
-                            t("fileExplorer.contextMenu.renamePrompt"),
-                            file.filename
-                          );
-                          if (newName && newName !== file.filename) {
-                            onRename(file, newName);
-                          }
-                        }}
-                        className="text-foreground/90 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t("fileExplorer.contextMenu.rename")}
-                      </ContextMenuItem>
+                      {!file.is_folder && (
+                        <ContextMenuItem
+                          onClick={() => {
+                            const newName = prompt(
+                              t("fileExplorer.contextMenu.renamePrompt"),
+                              file.filename
+                            );
+                            if (newName && newName !== file.filename) {
+                              onRename(file, newName);
+                            }
+                          }}
+                          className="text-foreground/90 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          {t("fileExplorer.contextMenu.rename")}
+                        </ContextMenuItem>
+                      )}
                     </div>
 
                     <div className="p-1">
-                      <ContextMenuItem
-                        onClick={() => onDelete(file)}
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t("fileExplorer.contextMenu.delete")}
-                      </ContextMenuItem>
+                      {file.is_folder ? (
+                        <>
+                          <ContextMenuItem
+                            onClick={() => onEditFolder?.(file)}
+                            className="text-foreground/90 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            {t("fileExplorer.contextMenu.editFolder")}
+                          </ContextMenuItem>
+                          <ContextMenuSeparator className="bg-border/50" />
+                        </>
+                      ) : (
+                        <ContextMenuItem
+                          onClick={() => onDelete(file)}
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {t("fileExplorer.contextMenu.delete")}
+                        </ContextMenuItem>
+                      )}
                     </div>
                   </ContextMenuContent>
                 </ContextMenu>

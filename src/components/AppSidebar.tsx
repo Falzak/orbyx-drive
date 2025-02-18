@@ -69,7 +69,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/App";
 import StorageQuota from "@/components/StorageQuota";
 import { useTranslation } from "react-i18next";
-import CreateFolderDialog from "@/components/CreateFolderDialog";
+import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -99,8 +99,8 @@ export function AppSidebar() {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to log out.",
+        title: t("common.error"),
+        description: t("common.logoutError"),
       });
     } else {
       navigate("/auth");

@@ -74,7 +74,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import CreateFolderDialog from "@/components/CreateFolderDialog";
+import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 
 const Index = () => {
   const session = useAuthRedirect();

@@ -53,6 +53,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
 import { ShareDialog } from "./ShareDialog";
+import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 
 interface FileExplorerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -79,6 +80,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     const queryClient = useQueryClient();
     const { toast } = useToast();
     const { t } = useTranslation();
+    const [selectedFolder, setSelectedFolder] = useState<FileData | null>(null);
+    const [isEditFolderOpen, setIsEditFolderOpen] = useState(false);
 
     useEffect(() => {
       if (!session) {
@@ -98,7 +101,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       queryFn: async () => {
         let query = supabase
           .from("folders")
-          .select("id, name, parent_id, user_id")
+          .select("id, name, parent_id, user_id, icon, color")
           .eq("user_id", session?.user.id);
 
         if (currentFolderId === null) {
@@ -201,6 +204,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           category: "folder",
           name: folder.name,
           parent_id: folder.parent_id,
+          icon: folder.icon,
+          color: folder.color,
         })
       );
 
@@ -251,8 +256,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         } catch (error) {
           toast({
             variant: "destructive",
-            title: "Error",
-            description: "Failed to download file",
+            title: t("common.error"),
+            description: t("fileExplorer.actions.downloadError"),
           });
         }
       },
@@ -262,6 +267,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     const handlePreview = useCallback(
       async (file: FileData) => {
         try {
+          if (file.is_folder) {
+            handleFolderClick(file.id);
+            return;
+          }
+
           let url = previewUrls[file.id];
           if (!url) {
             const signedUrl = await getSignedUrl(file.file_path);
@@ -286,7 +296,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       },
-      [previewUrls, getSignedUrl]
+      [previewUrls, getSignedUrl, handleFolderClick]
     );
 
     const getFileIcon = (contentType: string) => {
@@ -322,25 +332,83 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
 
       if (file.is_folder) {
-        const { error: dbError } = await supabase
-          .from("folders")
-          .delete()
-          .eq("id", file.id);
+        try {
+          // Primeiro, excluir todos os arquivos na pasta
+          const { data: filesInFolder, error: filesError } = await supabase
+            .from("files")
+            .select("*")
+            .eq("folder_id", file.id);
 
-        if (dbError) {
+          if (filesError) throw filesError;
+
+          // Excluir os arquivos do storage
+          if (filesInFolder && filesInFolder.length > 0) {
+            const filePaths = filesInFolder
+              .map((f) => f.file_path)
+              .filter(Boolean);
+            if (filePaths.length > 0) {
+              const { error: storageError } = await supabase.storage
+                .from("files")
+                .remove(filePaths);
+
+              if (storageError) throw storageError;
+            }
+
+            // Excluir os registros dos arquivos
+            const { error: filesDeleteError } = await supabase
+              .from("files")
+              .delete()
+              .eq("folder_id", file.id);
+
+            if (filesDeleteError) throw filesDeleteError;
+          }
+
+          // Excluir subpastas recursivamente
+          const { data: subfolders, error: subfoldersError } = await supabase
+            .from("folders")
+            .select("*")
+            .eq("parent_id", file.id);
+
+          if (subfoldersError) throw subfoldersError;
+
+          if (subfolders) {
+            for (const subfolder of subfolders) {
+              await handleDelete({
+                ...subfolder,
+                is_folder: true,
+                content_type: "folder",
+                filename: subfolder.name,
+                size: 0,
+                updated_at: subfolder.created_at,
+                file_path: null,
+                folder_id: subfolder.parent_id,
+                is_favorite: false,
+                category: "folder",
+                url: null,
+              });
+            }
+          }
+
+          // Finalmente, excluir a pasta
+          const { error: folderError } = await supabase
+            .from("folders")
+            .delete()
+            .eq("id", file.id);
+
+          if (folderError) throw folderError;
+
+          queryClient.invalidateQueries({ queryKey: ["folders"] });
+          toast({
+            title: t("common.success"),
+            description: t("fileExplorer.actions.deleteFolderSuccess"),
+          });
+        } catch (error) {
           toast({
             variant: "destructive",
             title: t("common.error"),
             description: t("fileExplorer.actions.deleteFolderError"),
           });
-          return;
         }
-
-        queryClient.invalidateQueries({ queryKey: ["folders"] });
-        toast({
-          title: t("common.success"),
-          description: t("fileExplorer.actions.deleteFolderSuccess"),
-        });
       } else {
         const { error: storageError } = await supabase.storage
           .from("files")
@@ -446,6 +514,40 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           is_favorite: !file.is_favorite,
         });
         queryClient.invalidateQueries({ queryKey: ["files"] });
+      }
+    };
+
+    const handleEditFolder = async (values: {
+      name: string;
+      icon: string;
+      color: string;
+    }) => {
+      if (!selectedFolder) return;
+
+      try {
+        const { error } = await supabase
+          .from("folders")
+          .update({
+            name: values.name,
+            icon: values.icon,
+            color: values.color,
+          })
+          .eq("id", selectedFolder.id);
+
+        if (error) throw error;
+
+        queryClient.invalidateQueries({ queryKey: ["folders"] });
+        toast({
+          title: t("common.success"),
+          description: t("fileExplorer.editFolder.success"),
+        });
+        setIsEditFolderOpen(false);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: t("fileExplorer.editFolder.error"),
+        });
       }
     };
 
@@ -560,6 +662,10 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               onDelete={handleDelete}
               onRename={handleRename}
               onToggleFavorite={handleToggleFavorite}
+              onEditFolder={(folder) => {
+                setSelectedFolder(folder);
+                setIsEditFolderOpen(true);
+              }}
             />
           ) : (
             <FileList
@@ -571,6 +677,10 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               onDelete={handleDelete}
               onRename={handleRename}
               onToggleFavorite={handleToggleFavorite}
+              onEditFolder={(folder) => {
+                setSelectedFolder(folder);
+                setIsEditFolderOpen(true);
+              }}
             />
           )}
         </div>
@@ -607,6 +717,23 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             onOpenChange={(open) => !open && setShareFile(null)}
           />
         )}
+
+        <CreateFolderDialog
+          open={isEditFolderOpen}
+          onOpenChange={setIsEditFolderOpen}
+          onSubmit={handleEditFolder}
+          mode="edit"
+          editFolder={
+            selectedFolder
+              ? {
+                  id: selectedFolder.id,
+                  name: selectedFolder.name || selectedFolder.filename,
+                  icon: selectedFolder.icon,
+                  color: selectedFolder.color,
+                }
+              : null
+          }
+        />
       </div>
     );
   }

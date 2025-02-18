@@ -2,7 +2,7 @@
 import React from 'react';
 import { Image, FileText, Video, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { useTranslation } from 'react-i18next';
 interface FileCategoriesProps {
   selectedCategory: string | null;
   onCategorySelect: (category: string | null) => void;
@@ -24,6 +24,7 @@ const FileCategories = ({
   onCategorySelect,
   categories,
 }: FileCategoriesProps) => {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground mb-4">Categories</h3>
@@ -34,7 +35,7 @@ const FileCategories = ({
           onClick={() => onCategorySelect(null)}
         >
           <File className="mr-2 h-4 w-4" />
-          All Files
+          {t("fileExplorer.categories.allFiles")}
         </Button>
         {categories.map((category) => {
           const Icon = categoryIcons[category.name as keyof typeof categoryIcons];
@@ -46,7 +47,7 @@ const FileCategories = ({
               onClick={() => onCategorySelect(category.name)}
             >
               <Icon className="mr-2 h-4 w-4" />
-              {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
+              {t(`fileExplorer.categories.${category.name}`)}
               <span className="ml-auto text-xs text-muted-foreground">
                 {category.count}
               </span>
