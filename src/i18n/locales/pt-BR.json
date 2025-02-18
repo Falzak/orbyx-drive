@@ -79,6 +79,9 @@
     },
     "categories": {
       "allFiles": "Todos os arquivos"
+    },
+    "navigation": {
+      "back": "Voltar"
     }
   },
   "sidebar": {

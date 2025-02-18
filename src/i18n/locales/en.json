@@ -198,6 +198,9 @@
     },
     "categories": {
       "allFiles": "All Files"
+    },
+    "navigation": {
+      "back": "Back"
     }
   },
   "auth": {
