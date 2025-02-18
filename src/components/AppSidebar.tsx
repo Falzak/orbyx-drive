@@ -195,15 +195,16 @@ export function AppSidebar() {
       <Sidebar
         className={cn(
           "border-r border-border/5",
-          "transition-[width] duration-300",
+          "transition-all duration-300 ease-in-out",
           "bg-background/95 dark:bg-black/95",
           "backdrop-blur-2xl",
-          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.03)]"
+          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.03)]",
+          isCollapsed && "w-[70px] md:w-[80px]"
         )}
         variant="sidebar"
         collapsible="icon"
       >
-        <SidebarHeader className="border-b border-border/5 p-6 bg-background/95 dark:bg-black/95">
+        <SidebarHeader className="border-b border-border/5 p-4 bg-background/95 dark:bg-black/95">
           <motion.div layout className="flex items-center gap-3">
             <Shield className="h-7 w-7 text-primary shrink-0 drop-shadow-[0_0_15px_rgba(var(--primary))] animate-pulse" />
             <AnimatePresence>
@@ -213,7 +214,7 @@ export function AppSidebar() {
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: "auto", opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
                   File Safari
                 </motion.span>
@@ -229,29 +230,66 @@ export function AppSidebar() {
                 <SidebarMenu>
                   {mainItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        className={cn(
-                          "w-full transition-all duration-200 p-3",
-                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                          "group relative overflow-hidden rounded-xl",
-                          location.pathname + location.search === item.path &&
-                            "bg-primary/10 text-primary font-medium"
-                        )}
-                        onClick={() => navigate(item.path)}
-                      >
-                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate text-base ml-3">
-                          {item.title}
-                        </span>
-                        {item.badge && (
-                          <Badge
-                            variant="secondary"
-                            className="ml-auto bg-primary/20 text-primary hover:bg-primary/30 h-6 px-2"
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            className={cn(
+                              "w-full transition-all duration-200",
+                              "p-3 md:p-3.5",
+                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                              "group relative overflow-hidden rounded-xl",
+                              location.pathname + location.search ===
+                                item.path &&
+                                "bg-primary/10 text-primary font-medium"
+                            )}
+                            onClick={() => navigate(item.path)}
                           >
-                            {item.badge}
-                          </Badge>
+                            <div className="flex items-center gap-3">
+                              <item.icon
+                                className={cn(
+                                  "h-5 w-5 shrink-0 transition-transform duration-200",
+                                  "group-hover:scale-110",
+                                  isCollapsed && "w-6 h-6"
+                                )}
+                              />
+                              <AnimatePresence>
+                                {!isCollapsed && (
+                                  <motion.span
+                                    className="flex-1 truncate text-base"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    {item.title}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                              {item.badge && !isCollapsed && (
+                                <Badge
+                                  variant="secondary"
+                                  className="ml-auto bg-primary/20 text-primary hover:bg-primary/30 h-6 px-2"
+                                >
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </div>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                          <TooltipContent
+                            side="right"
+                            className="flex items-center gap-2"
+                          >
+                            <span>{item.title}</span>
+                            {item.badge && (
+                              <Badge variant="secondary" className="h-5 px-1.5">
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </TooltipContent>
                         )}
-                      </SidebarMenuButton>
+                      </Tooltip>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
@@ -261,29 +299,68 @@ export function AppSidebar() {
             <SidebarSeparator className="my-4 opacity-5" />
 
             <SidebarGroup className="px-2">
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                {t("sidebar.views.title")}
-              </SidebarGroupLabel>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
+                      {t("sidebar.views.title")}
+                    </SidebarGroupLabel>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {viewItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        className={cn(
-                          "w-full transition-all duration-200 p-3",
-                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                          "group relative overflow-hidden rounded-xl",
-                          location.pathname + location.search === item.path &&
-                            "bg-primary/10 text-primary font-medium"
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            className={cn(
+                              "w-full transition-all duration-200",
+                              "p-3 md:p-3.5",
+                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                              "group relative overflow-hidden rounded-xl",
+                              location.pathname + location.search ===
+                                item.path &&
+                                "bg-primary/10 text-primary font-medium"
+                            )}
+                            onClick={() => navigate(item.path)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon
+                                className={cn(
+                                  "h-5 w-5 shrink-0 transition-transform duration-200",
+                                  "group-hover:scale-110",
+                                  isCollapsed && "w-6 h-6"
+                                )}
+                              />
+                              <AnimatePresence>
+                                {!isCollapsed && (
+                                  <motion.span
+                                    className="flex-1 truncate text-base"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    {item.title}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                          <TooltipContent side="right">
+                            {item.title}
+                          </TooltipContent>
                         )}
-                        onClick={() => navigate(item.path)}
-                        tooltip={item.title}
-                      >
-                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate text-base ml-3">
-                          {item.title}
-                        </span>
-                      </SidebarMenuButton>
+                      </Tooltip>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
@@ -293,29 +370,68 @@ export function AppSidebar() {
             <SidebarSeparator className="my-4 opacity-5" />
 
             <SidebarGroup className="px-2">
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                {t("sidebar.categories.title")}
-              </SidebarGroupLabel>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
+                      {t("sidebar.categories.title")}
+                    </SidebarGroupLabel>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {categoryItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        className={cn(
-                          "w-full transition-all duration-200 p-3",
-                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                          "group relative overflow-hidden rounded-xl",
-                          location.pathname + location.search === item.path &&
-                            "bg-primary/10 text-primary font-medium"
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            className={cn(
+                              "w-full transition-all duration-200",
+                              "p-3 md:p-3.5",
+                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                              "group relative overflow-hidden rounded-xl",
+                              location.pathname + location.search ===
+                                item.path &&
+                                "bg-primary/10 text-primary font-medium"
+                            )}
+                            onClick={() => navigate(item.path)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon
+                                className={cn(
+                                  "h-5 w-5 shrink-0 transition-transform duration-200",
+                                  "group-hover:scale-110",
+                                  isCollapsed && "w-6 h-6"
+                                )}
+                              />
+                              <AnimatePresence>
+                                {!isCollapsed && (
+                                  <motion.span
+                                    className="flex-1 truncate text-base"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    {item.title}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                          <TooltipContent side="right">
+                            {item.title}
+                          </TooltipContent>
                         )}
-                        onClick={() => navigate(item.path)}
-                        tooltip={item.title}
-                      >
-                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate text-base ml-3">
-                          {item.title}
-                        </span>
-                      </SidebarMenuButton>
+                      </Tooltip>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
@@ -325,32 +441,73 @@ export function AppSidebar() {
             <SidebarSeparator className="my-4 opacity-5" />
 
             <SidebarGroup className="px-2">
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                {t("sidebar.tools.title")}
-              </SidebarGroupLabel>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
+                      {t("sidebar.tools.title")}
+                    </SidebarGroupLabel>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {toolItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        className={cn(
-                          "w-full transition-all duration-200 p-3",
-                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
-                          "group relative overflow-hidden rounded-xl",
-                          location.pathname + location.search === item.path &&
-                            "bg-primary/10 text-primary font-medium"
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            className={cn(
+                              "w-full transition-all duration-200",
+                              "p-3 md:p-3.5",
+                              "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                              "group relative overflow-hidden rounded-xl",
+                              location.pathname + location.search ===
+                                item.path &&
+                                "bg-primary/10 text-primary font-medium"
+                            )}
+                            onClick={
+                              item.onClick ||
+                              (item.path
+                                ? () => navigate(item.path)
+                                : undefined)
+                            }
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon
+                                className={cn(
+                                  "h-5 w-5 shrink-0 transition-transform duration-200",
+                                  "group-hover:scale-110",
+                                  isCollapsed && "w-6 h-6"
+                                )}
+                              />
+                              <AnimatePresence>
+                                {!isCollapsed && (
+                                  <motion.span
+                                    className="flex-1 truncate text-base"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    {item.title}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                          <TooltipContent side="right">
+                            {item.title}
+                          </TooltipContent>
                         )}
-                        onClick={
-                          item.onClick ||
-                          (item.path ? () => navigate(item.path) : undefined)
-                        }
-                        tooltip={item.title}
-                      >
-                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate text-base ml-3">
-                          {item.title}
-                        </span>
-                      </SidebarMenuButton>
+                      </Tooltip>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
@@ -360,12 +517,23 @@ export function AppSidebar() {
             <SidebarSeparator className="my-4 opacity-5" />
 
             <SidebarGroup className="px-2">
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
-                {t("sidebar.system.title")}
-              </SidebarGroupLabel>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
+                      {t("sidebar.system.title")}
+                    </SidebarGroupLabel>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <SidebarGroupContent>
                 <div className={cn("px-2", isCollapsed && "px-1")}>
-                  <StorageQuota />
+                  <StorageQuota collapsed={isCollapsed} />
                 </div>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -375,7 +543,7 @@ export function AppSidebar() {
         <SidebarFooter
           className={cn(
             "border-t border-border/5 bg-background/95 dark:bg-black/95",
-            isCollapsed ? "p-3" : "p-4"
+            isCollapsed ? "p-2" : "p-4"
           )}
         >
           <div className="flex items-center justify-end">
@@ -395,9 +563,9 @@ export function AppSidebar() {
                     {isCollapsed ? (
                       <motion.div
                         key="expand"
-                        initial={{ rotate: -180 }}
-                        animate={{ rotate: 0 }}
-                        exit={{ rotate: 180 }}
+                        initial={{ rotate: -180, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: 180, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
                         <ChevronRight className="h-5 w-5" />
@@ -405,9 +573,9 @@ export function AppSidebar() {
                     ) : (
                       <motion.div
                         key="collapse"
-                        initial={{ rotate: 180 }}
-                        animate={{ rotate: 0 }}
-                        exit={{ rotate: -180 }}
+                        initial={{ rotate: 180, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: -180, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
                         <ChevronLeft className="h-5 w-5" />

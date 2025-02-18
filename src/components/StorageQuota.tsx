@@ -12,8 +12,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
+import { formatFileSize } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
-const StorageQuota = () => {
+interface StorageQuotaProps {
+  collapsed?: boolean;
+}
+
+const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { t } = useTranslation();
