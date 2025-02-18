@@ -403,17 +403,17 @@ const Index = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="w-48 bg-background/20 dark:bg-black/20 backdrop-blur-xl border-border"
+                        className="w-48 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50 shadow-lg animate-in"
                       >
-                        <DropdownMenuLabel className="text-foreground">
+                        <DropdownMenuLabel className="text-foreground/90 font-medium">
                           {t("common.language")}
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-border" />
+                        <DropdownMenuSeparator className="bg-border/50" />
                         <DropdownMenuItem
                           onClick={() => i18n.changeLanguage("pt-BR")}
                           className={cn(
-                            "text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10 cursor-pointer",
-                            i18n.language === "pt-BR" && "bg-accent"
+                            "text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 cursor-pointer transition-colors",
+                            i18n.language === "pt-BR" && "bg-accent/50"
                           )}
                         >
                           🇧🇷 Português
@@ -421,8 +421,8 @@ const Index = () => {
                         <DropdownMenuItem
                           onClick={() => i18n.changeLanguage("en")}
                           className={cn(
-                            "text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10 cursor-pointer",
-                            i18n.language === "en" && "bg-accent"
+                            "text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 cursor-pointer transition-colors",
+                            i18n.language === "en" && "bg-accent/50"
                           )}
                         >
                           🇺🇸 English
@@ -446,20 +446,20 @@ const Index = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="bg-background/20 dark:bg-black/20 backdrop-blur-xl border-border"
+                        className="bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50 shadow-lg animate-in"
                       >
                         <DropdownMenuItem
                           onClick={() => setTheme("light")}
-                          className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                          className="text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 transition-colors group"
                         >
-                          <Sun className="h-4 w-4 mr-2" />
+                          <Sun className="h-4 w-4 mr-2 group-hover:text-foreground/90" />
                           {t("common.theme.light")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setTheme("dark")}
-                          className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                          className="text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 transition-colors group"
                         >
-                          <Moon className="h-4 w-4 mr-2" />
+                          <Moon className="h-4 w-4 mr-2 group-hover:text-foreground/90" />
                           {t("common.theme.dark")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -470,9 +470,9 @@ const Index = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10 relative"
+                          className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10 relative group"
                         >
-                          <div className="relative w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-border/50 group-hover:ring-border transition-all">
                             {session?.user?.user_metadata?.avatar_url ? (
                               <img
                                 src={session.user.user_metadata.avatar_url}
@@ -489,10 +489,10 @@ const Index = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="w-56 bg-background/20 dark:bg-black/20 backdrop-blur-xl border-border"
+                        className="w-64 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50 shadow-lg animate-in"
                       >
-                        <div className="flex items-center justify-start gap-2 p-2">
-                          <div className="relative h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                        <div className="flex items-center justify-start gap-3 p-3">
+                          <div className="relative h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-border/50">
                             {session?.user?.user_metadata?.avatar_url ? (
                               <img
                                 src={session.user.user_metadata.avatar_url}
@@ -500,13 +500,13 @@ const Index = () => {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <span className="text-sm font-medium text-primary">
+                              <span className="text-base font-medium text-primary">
                                 {session?.user?.email?.[0].toUpperCase()}
                               </span>
                             )}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground">
+                            <span className="text-sm font-semibold text-foreground/90">
                               {session?.user?.user_metadata?.full_name ||
                                 session?.user?.email?.split("@")[0]}
                             </span>
@@ -515,34 +515,20 @@ const Index = () => {
                             </span>
                           </div>
                         </div>
-                        <DropdownMenuSeparator className="bg-border" />
+                        <DropdownMenuSeparator className="bg-border/50" />
                         <DropdownMenuItem
-                          onClick={() => navigate("/settings/profile")}
-                          className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
+                          onClick={() => navigate("/settings")}
+                          className="text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 transition-colors group p-3"
                         >
-                          <User className="h-4 w-4 mr-2" />
-                          {t("settings.sections.profile.title")}
+                          <Settings className="h-4 w-4 mr-3 group-hover:text-foreground/90" />
+                          {t("settings.title")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => navigate("/settings/appearance")}
-                          className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          {t("settings.sections.appearance.title")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => navigate("/settings/security")}
-                          className="text-foreground/90 hover:bg-background/20 dark:hover:bg-white/10"
-                        >
-                          <Shield className="h-4 w-4 mr-2" />
-                          {t("settings.sections.security.title")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-border" />
+                        <DropdownMenuSeparator className="bg-border/50" />
                         <DropdownMenuItem
                           onClick={handleLogout}
-                          className="text-destructive hover:bg-destructive/10"
+                          className="text-destructive hover:bg-destructive/10 transition-colors group p-3"
                         >
-                          <LogOut className="h-4 w-4 mr-2" />
+                          <LogOut className="h-4 w-4 mr-3 group-hover:text-destructive" />
                           {t("common.logout")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>

@@ -121,7 +121,14 @@
     "cancel": "Cancelar",
     "loading": "Carregando...",
     "create": "Criar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "logout": "Logout",
+    "upload": "Upload",
+    "saving": "Salvando ...",
+    "theme": {
+      "light": "Claro",
+      "dark": "Escuro"
+    }
   },
   "dashboard": {
     "welcome": "Olá, {{name}}",
@@ -145,6 +152,35 @@
       "help": "Ajuda",
       "shortcuts": "Atalhos de teclado",
       "feedback": "Envie feedback"
-    }
+    },
+    "uploadSuccess": "Arquivo enviado com sucesso",
+    "uploadError": "Falha ao fazer upload de arquivo: {{error}}",
+    "uploadInProgress": "Upload em andamento"
+  },
+  "settings": {
+    "sections": {
+      "profile": {
+        "title": "Perfil",
+        "description": "Gerencie suas informações pessoais",
+        "avatar": "Imagem do perfil",
+        "name": "Nome completo",
+        "namePlaceholder": "Digite seu nome completo",
+        "email": "E-mail"
+      },
+      "appearance": {
+        "title": "Aparência",
+        "description": "Personalize a aparência do aplicativo",
+        "theme": "Tema"
+      },
+      "security": {
+        "title": "Segurança",
+        "description": "Gerencie suas configurações de segurança",
+        "password": "Senha",
+        "changePassword": "Alterar a senha",
+        "twoFactor": "Autenticação de dois fatores",
+        "enable2FA": "Ativar autenticação de dois fatores"
+      }
+    },
+    "title": "Configurações"
   }
 }

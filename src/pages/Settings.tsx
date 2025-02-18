@@ -78,7 +78,7 @@ export default function Settings() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
             className="h-8 w-8"
           >
             <ChevronLeft className="h-4 w-4" />
