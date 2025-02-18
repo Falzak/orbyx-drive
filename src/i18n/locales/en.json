@@ -29,6 +29,14 @@
     "uploadWait": "Please wait for the current upload to finish",
     "uploadSuccess": "File uploaded successfully",
     "uploadError": "Failed to upload file: {{error}}",
+    "upload": {
+      "button": "Upload",
+      "cancel": "Cancel Upload",
+      "complete": "Upload completed",
+      "uploading": "Uploading",
+      "cancelled": "Upload canceled",
+      "cancelledDescription": "Upload has been canceled"
+    },
     "folder": {
       "createSuccess": "Folder created",
       "createDescription": "New folder has been created",
@@ -182,7 +190,8 @@
     },
     "actions": {
       "createFolderSuccess": "Folder created successfully",
-      "createFolderError": "Error creating folder"
+      "createFolderError": "Error creating folder",
+      "deleteSuccess": "Successfully deleted"
     },
     "createFolder": {
       "title": "New Folder",
@@ -201,6 +210,10 @@
     },
     "navigation": {
       "back": "Back"
+    },
+    "dropzone": {
+      "title": "Drop files here",
+      "subtitle": "Upload files to this folder"
     }
   },
   "auth": {

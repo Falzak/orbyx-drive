@@ -90,6 +90,7 @@ const Index = () => {
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentUpload, setCurrentUpload] = useState<{ id: string; abort: () => void } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const uploadMutation = useMutation({
@@ -174,6 +175,18 @@ const Index = () => {
     uploadMutation.isError,
   ]);
 
+  const handleCancelUpload = useCallback(() => {
+    if (currentUpload) {
+      currentUpload.abort();
+      setCurrentUpload(null);
+      setUploadProgress(null);
+      toast({
+        title: t("dashboard.upload.cancelled"),
+        description: t("dashboard.upload.cancelledDescription"),
+      });
+    }
+  }, [currentUpload, toast, t]);
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (uploadProgress !== null) {
@@ -184,8 +197,22 @@ const Index = () => {
         });
         return;
       }
+      
       acceptedFiles.forEach((file) => {
-        uploadMutation.mutate(file);
+        const abortController = new AbortController();
+        setCurrentUpload({
+          id: crypto.randomUUID(),
+          abort: () => abortController.abort()
+        });
+        
+        uploadMutation.mutate(file, {
+          onSuccess: () => {
+            setCurrentUpload(null);
+          },
+          onError: () => {
+            setCurrentUpload(null);
+          }
+        });
       });
     },
     [uploadMutation, uploadProgress, toast, t]
@@ -193,14 +220,14 @@ const Index = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    noClick: true, // Desabilita o clique para abrir o seletor de arquivo
     accept: {
       "image/*": [],
       "video/*": [],
       "audio/*": [],
       "application/pdf": [],
       "application/msword": [],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        [],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [],
     },
   });
 
@@ -365,454 +392,276 @@ const Index = () => {
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger className="flex h-screen w-full overflow-hidden">
-        <SidebarProvider>
-          <div className="flex h-screen w-full overflow-hidden">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
-              <motion.div
-                className="bg-background/20 dark:bg-black/20 backdrop-blur-xl"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
-              >
-                <div className="flex items-center justify-between px-6 h-[73px]">
-                  <div className="flex items-center gap-4 flex-1">
-                    <h1 className="text-xl font-semibold">
-                      {t("dashboard.title")}
-                    </h1>
-                    <div className="relative flex-1 max-w-md">
-                      <Input
-                        placeholder={t("common.search")}
-                        className="h-9 pl-9 bg-background/20 dark:bg-black/20 border-border"
-                      />
-                      <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
-                        >
-                          <Globe className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-48 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50 shadow-lg animate-in"
-                      >
-                        <DropdownMenuLabel className="text-foreground/90 font-medium">
-                          {t("common.language")}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-border/50" />
-                        <DropdownMenuItem
-                          onClick={() => i18n.changeLanguage("pt-BR")}
-                          className={cn(
-                            "text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 cursor-pointer transition-colors",
-                            i18n.language === "pt-BR" && "bg-accent/50"
-                          )}
-                        >
-                          🇧🇷 Português
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => i18n.changeLanguage("en")}
-                          className={cn(
-                            "text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 cursor-pointer transition-colors",
-                            i18n.language === "en" && "bg-accent/50"
-                          )}
-                        >
-                          🇺🇸 English
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10"
-                        >
-                          {theme === "dark" ? (
-                            <Moon className="h-4 w-4" />
-                          ) : (
-                            <Sun className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50 shadow-lg animate-in"
-                      >
-                        <DropdownMenuItem
-                          onClick={() => setTheme("light")}
-                          className="text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 transition-colors group"
-                        >
-                          <Sun className="h-4 w-4 mr-2 group-hover:text-foreground/90" />
-                          {t("common.theme.light")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setTheme("dark")}
-                          className="text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 transition-colors group"
-                        >
-                          <Moon className="h-4 w-4 mr-2 group-hover:text-foreground/90" />
-                          {t("common.theme.dark")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-background/20 dark:hover:bg-white/10 relative group"
-                        >
-                          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-border/50 group-hover:ring-border transition-all">
-                            {session?.user?.user_metadata?.avatar_url ? (
-                              <img
-                                src={session.user.user_metadata.avatar_url}
-                                alt={session.user.email || ""}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-xs font-medium text-primary">
-                                {session?.user?.email?.[0].toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-64 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50 shadow-lg animate-in"
-                      >
-                        <div className="flex items-center justify-start gap-3 p-3">
-                          <div className="relative h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-border/50">
-                            {session?.user?.user_metadata?.avatar_url ? (
-                              <img
-                                src={session.user.user_metadata.avatar_url}
-                                alt={session.user.email || ""}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-base font-medium text-primary">
-                                {session?.user?.email?.[0].toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-foreground/90">
-                              {session?.user?.user_metadata?.full_name ||
-                                session?.user?.email?.split("@")[0]}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {session?.user?.email}
-                            </span>
-                          </div>
-                        </div>
-                        <DropdownMenuSeparator className="bg-border/50" />
-                        <DropdownMenuItem
-                          onClick={() => navigate("/settings")}
-                          className="text-foreground/80 hover:bg-background/80 dark:hover:bg-white/10 transition-colors group p-3"
-                        >
-                          <Settings className="h-4 w-4 mr-3 group-hover:text-foreground/90" />
-                          {t("settings.title")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-border/50" />
-                        <DropdownMenuItem
-                          onClick={handleLogout}
-                          className="text-destructive hover:bg-destructive/10 transition-colors group p-3"
-                        >
-                          <LogOut className="h-4 w-4 mr-3 group-hover:text-destructive" />
-                          {t("common.logout")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </motion.div>
-
-              <div className="flex-1 overflow-y-auto w-full">
-                <div className="p-6 h-full">
-                  <motion.div
-                    className="mb-8"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut", delay: 0.3 }}
-                  >
-                    <div className="space-y-1">
-                      <h1 className="text-3xl font-bold">
-                        {t("dashboard.welcome", {
-                          name: session?.user.email?.split("@")[0],
-                        })}
-                      </h1>
-                      <p className="text-muted-foreground">
-                        {t("dashboard.uploadHint")}
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    className="space-y-6"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut", delay: 0.4 }}
-                  >
-                    <div
-                      {...getRootProps()}
-                      className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
+    <div {...getRootProps()} className="h-screen w-full relative">
+      <input {...getInputProps()} />
+      <ContextMenu>
+        <ContextMenuTrigger className="flex h-screen w-full overflow-hidden">
+          <SidebarProvider>
+            <div className="flex h-screen w-full overflow-hidden">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
+                {/* Overlay do Dashboard */}
+                <AnimatePresence>
+                  {isDragActive && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute inset-0 bg-background/50 backdrop-blur-sm border-2 border-primary/20 border-dashed rounded-lg z-50 m-2"
                     >
-                      <input {...getInputProps()} />
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <Upload className="h-8 w-8" />
-                        <p className="text-sm font-medium">
-                          {t("dashboard.dropzone.title")}
-                        </p>
-                        <p className="text-xs">
-                          {t("dashboard.dropzone.subtitle")}
-                        </p>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-background/95 dark:bg-black/95 backdrop-blur-xl p-6 rounded-lg shadow-lg border border-border/50">
+                          <Upload className="h-10 w-10 mx-auto mb-3 text-primary animate-bounce" />
+                          <p className="text-base font-medium text-foreground">
+                            {t("fileExplorer.dropzone.title")}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {t("fileExplorer.dropzone.subtitle")}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    <div ref={ref}>
-                      <FileExplorer onFolderChange={setCurrentFolderId} />
-                    </div>
-                  </motion.div>
+                <div className="flex-1 overflow-y-auto w-full">
+                  <div className="p-6 h-full">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: "easeOut", delay: 0.3 }}
+                    >
+                      <div ref={ref}>
+                        <FileExplorer onFolderChange={setCurrentFolderId} />
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
-
-              {isDragActive && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center pointer-events-none"
-                >
-                  <div className="p-8 rounded-lg border-2 border-dashed border-primary flex flex-col items-center gap-4">
-                    <Upload className="h-12 w-12 text-primary animate-bounce" />
-                    <p className="text-lg font-medium">
-                      {t("dashboard.dropzone.dragActive")}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {uploadProgress !== null && (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key="upload-progress"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.2 }}
-                    className="fixed bottom-4 right-4 w-80 p-4 bg-card rounded-lg shadow-lg border z-50"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">
-                        {uploadProgress >= 100 ? (
-                          <span className="text-primary">Upload complete!</span>
-                        ) : (
-                          "Uploading..."
-                        )}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {Math.round(uploadProgress)}%
-                      </span>
-                    </div>
-                    <Progress
-                      value={uploadProgress}
-                      className={cn(
-                        "h-2 transition-colors",
-                        uploadProgress >= 100 && "bg-primary/10"
-                      )}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              )}
             </div>
-          </div>
-        </SidebarProvider>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
-        <ContextMenuItem
-          onClick={handleRefreshFiles}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <RefreshCw className="h-4 w-4" />
-          {t("dashboard.contextMenu.refresh")}
-        </ContextMenuItem>
-        <ContextMenuSeparator className="bg-border/50" />
-        <ContextMenuItem
-          onClick={handleCreateFolder}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <FolderPlus className="h-4 w-4" />
-          {t("dashboard.contextMenu.createFolder")}
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={handleUploadClick}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <FileUp className="h-4 w-4" />
-          {t("dashboard.contextMenu.uploadFile")}
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={handleSelectAll}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <MousePointerClick className="h-4 w-4" />
-          {t("dashboard.contextMenu.selectAll")}
-        </ContextMenuItem>
-        <ContextMenuSub>
-          <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-            <ArrowUpDown className="h-4 w-4" />
-            {t("dashboard.contextMenu.sortBy")}
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            <ContextMenuRadioGroup value={view}>
-              <ContextMenuRadioItem
-                onClick={() => handleSortFiles("nameAsc")}
-                value="nameAsc"
-              >
-                {t("fileExplorer.sortBy.nameAsc")}
-              </ContextMenuRadioItem>
-              <ContextMenuRadioItem
-                onClick={() => handleSortFiles("nameDesc")}
-                value="nameDesc"
-              >
-                {t("fileExplorer.sortBy.nameDesc")}
-              </ContextMenuRadioItem>
-              <ContextMenuRadioItem
-                onClick={() => handleSortFiles("dateDesc")}
-                value="dateDesc"
-              >
-                {t("fileExplorer.sortBy.dateDesc")}
-              </ContextMenuRadioItem>
-              <ContextMenuRadioItem
-                onClick={() => handleSortFiles("dateAsc")}
-                value="dateAsc"
-              >
-                {t("fileExplorer.sortBy.dateAsc")}
-              </ContextMenuRadioItem>
-              <ContextMenuRadioItem
-                onClick={() => handleSortFiles("sizeDesc")}
-                value="sizeDesc"
-              >
-                {t("fileExplorer.sortBy.sizeDesc")}
-              </ContextMenuRadioItem>
-              <ContextMenuRadioItem
-                onClick={() => handleSortFiles("sizeAsc")}
-                value="sizeAsc"
-              >
-                {t("fileExplorer.sortBy.sizeAsc")}
-              </ContextMenuRadioItem>
-            </ContextMenuRadioGroup>
-          </ContextMenuSubContent>
-        </ContextMenuSub>
-        <ContextMenuSub>
-          <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-            {view === "grid" ? (
-              <Grid className="h-4 w-4" />
-            ) : (
-              <List className="h-4 w-4" />
-            )}
-            {t("dashboard.contextMenu.view")}
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            <ContextMenuRadioGroup value={view}>
-              <ContextMenuRadioItem
-                onClick={() => setView("grid")}
-                value="grid"
-              >
-                <Grid className="h-4 w-4 mr-2" />
-                {t("dashboard.contextMenu.gridView")}
-              </ContextMenuRadioItem>
-              <ContextMenuRadioItem
-                onClick={() => setView("list")}
-                value="list"
-              >
-                <List className="h-4 w-4 mr-2" />
-                {t("dashboard.contextMenu.listView")}
-              </ContextMenuRadioItem>
-            </ContextMenuRadioGroup>
-          </ContextMenuSubContent>
-        </ContextMenuSub>
-        <ContextMenuSeparator className="bg-border/50" />
-        <ContextMenuItem
-          onClick={handleOpenInNewTab}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <ExternalLink className="h-4 w-4" />
-          {t("dashboard.contextMenu.newTab")}
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={handleCopyPath}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <Copy className="h-4 w-4" />
-          {t("dashboard.contextMenu.copyPath")}
-        </ContextMenuItem>
-        <ContextMenuSeparator className="bg-border/50" />
-        <ContextMenuItem
-          onClick={handleHelp}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <HelpCircle className="h-4 w-4" />
-          {t("dashboard.contextMenu.help")}
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={handleKeyboardShortcuts}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <Keyboard className="h-4 w-4" />
-          {t("dashboard.contextMenu.shortcuts")}
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={handleFeedback}
-          className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-        >
-          <MessageSquarePlus className="h-4 w-4" />
-          {t("dashboard.contextMenu.feedback")}
-        </ContextMenuItem>
-      </ContextMenuContent>
+          </SidebarProvider>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
+          <ContextMenuItem
+            onClick={handleRefreshFiles}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <RefreshCw className="h-4 w-4" />
+            {t("dashboard.contextMenu.refresh")}
+          </ContextMenuItem>
+          <ContextMenuSeparator className="bg-border/50" />
+          <ContextMenuItem
+            onClick={handleCreateFolder}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <FolderPlus className="h-4 w-4" />
+            {t("dashboard.contextMenu.createFolder")}
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={handleUploadClick}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <FileUp className="h-4 w-4" />
+            {t("dashboard.contextMenu.uploadFile")}
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={handleSelectAll}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <MousePointerClick className="h-4 w-4" />
+            {t("dashboard.contextMenu.selectAll")}
+          </ContextMenuItem>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
+              <ArrowUpDown className="h-4 w-4" />
+              {t("dashboard.contextMenu.sortBy")}
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-48">
+              <ContextMenuRadioGroup value={view}>
+                <ContextMenuRadioItem
+                  onClick={() => handleSortFiles("nameAsc")}
+                  value="nameAsc"
+                >
+                  {t("fileExplorer.sortBy.nameAsc")}
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem
+                  onClick={() => handleSortFiles("nameDesc")}
+                  value="nameDesc"
+                >
+                  {t("fileExplorer.sortBy.nameDesc")}
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem
+                  onClick={() => handleSortFiles("dateDesc")}
+                  value="dateDesc"
+                >
+                  {t("fileExplorer.sortBy.dateDesc")}
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem
+                  onClick={() => handleSortFiles("dateAsc")}
+                  value="dateAsc"
+                >
+                  {t("fileExplorer.sortBy.dateAsc")}
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem
+                  onClick={() => handleSortFiles("sizeDesc")}
+                  value="sizeDesc"
+                >
+                  {t("fileExplorer.sortBy.sizeDesc")}
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem
+                  onClick={() => handleSortFiles("sizeAsc")}
+                  value="sizeAsc"
+                >
+                  {t("fileExplorer.sortBy.sizeAsc")}
+                </ContextMenuRadioItem>
+              </ContextMenuRadioGroup>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
+              {view === "grid" ? (
+                <Grid className="h-4 w-4" />
+              ) : (
+                <List className="h-4 w-4" />
+              )}
+              {t("dashboard.contextMenu.view")}
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-48">
+              <ContextMenuRadioGroup value={view}>
+                <ContextMenuRadioItem
+                  onClick={() => setView("grid")}
+                  value="grid"
+                >
+                  <Grid className="h-4 w-4 mr-2" />
+                  {t("dashboard.contextMenu.gridView")}
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem
+                  onClick={() => setView("list")}
+                  value="list"
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  {t("dashboard.contextMenu.listView")}
+                </ContextMenuRadioItem>
+              </ContextMenuRadioGroup>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuSeparator className="bg-border/50" />
+          <ContextMenuItem
+            onClick={handleOpenInNewTab}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {t("dashboard.contextMenu.newTab")}
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={handleCopyPath}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <Copy className="h-4 w-4" />
+            {t("dashboard.contextMenu.copyPath")}
+          </ContextMenuItem>
+          <ContextMenuSeparator className="bg-border/50" />
+          <ContextMenuItem
+            onClick={handleHelp}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <HelpCircle className="h-4 w-4" />
+            {t("dashboard.contextMenu.help")}
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={handleKeyboardShortcuts}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <Keyboard className="h-4 w-4" />
+            {t("dashboard.contextMenu.shortcuts")}
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={handleFeedback}
+            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+          >
+            <MessageSquarePlus className="h-4 w-4" />
+            {t("dashboard.contextMenu.feedback")}
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
 
-      <CreateFolderDialog
-        open={isCreateFolderOpen}
-        onOpenChange={(open) => setIsCreateFolderOpen(open)}
-        onSubmit={async (values) => {
-          try {
-            const { error } = await supabase.from("folders").insert({
-              name: values.name,
-              user_id: session?.user?.id,
-              parent_id: currentFolderId,
-              icon: values.icon,
-              color: values.color,
-              created_at: new Date().toISOString(),
-            });
+      {/* Progress overlay com botão de cancelar */}
+      {uploadProgress !== null && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="upload-progress"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-4 right-4 w-80 p-4 bg-card rounded-lg shadow-lg border z-50"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">
+                {uploadProgress >= 100 ? (
+                  <span className="text-primary">{t("dashboard.upload.complete")}</span>
+                ) : (
+                  t("dashboard.upload.uploading")
+                )}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {Math.round(uploadProgress)}%
+                </span>
+                {uploadProgress < 100 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelUpload}
+                    className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    {t("dashboard.upload.cancel")}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <Progress
+              value={uploadProgress}
+              className={cn(
+                "h-2 transition-colors",
+                uploadProgress >= 100 && "bg-primary/10"
+              )}
+            />
+          </motion.div>
+        </AnimatePresence>
+      )}
 
-            if (error) throw error;
-
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            toast({
-              title: t("common.success"),
-              description: t("fileExplorer.actions.createFolderSuccess"),
-            });
-            setIsCreateFolderOpen(false);
-          } catch (error) {
-            toast({
-              variant: "destructive",
-              title: t("common.error"),
-              description: t("fileExplorer.actions.createFolderError"),
-            });
-          }
+      {/* Botão de upload manual */}
+      <Button
+        onClick={() => {
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.multiple = true;
+          fileInput.accept = [
+            'image/*',
+            'video/*',
+            'audio/*',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          ].join(',');
+          
+          fileInput.onchange = (e) => {
+            const files = (e.target as HTMLInputElement).files;
+            if (files) {
+              onDrop(Array.from(files));
+            }
+          };
+          
+          fileInput.click();
         }}
-      />
-    </ContextMenu>
+        className="fixed right-4 bottom-4 shadow-lg"
+      >
+        <Upload className="h-4 w-4 mr-2" />
+        {t("dashboard.upload.button")}
+      </Button>
+    </div>
   );
 };
 

@@ -33,7 +33,8 @@
     },
     "actions": {
       "createFolderError": "Erro de criação de pasta",
-      "createFolderSuccess": "Pasta criada com sucesso"
+      "createFolderSuccess": "Pasta criada com sucesso",
+      "deleteSuccess": "Excluído com sucesso"
     },
     "createFolder": {
       "description": "Crie uma nova pasta para organizar seus arquivos",
@@ -82,7 +83,12 @@
     },
     "navigation": {
       "back": "Voltar"
-    }
+    },
+    "dropzone": {
+      "title": "Solte arquivos aqui",
+      "subtitle": "Faça o upload de arquivos para esta pasta"
+    },
+    "allFiles": "Todos arquivos"
   },
   "sidebar": {
     "mainItems": {
@@ -111,7 +117,9 @@
       "title": "Ferramentas"
     },
     "system": {
-      "title": "Sistema"
+      "title": "Sistema",
+      "storage": "Armazenamento",
+      "used": "Usado"
     },
     "expandSidebar": "Expanda a barra lateral"
   },
@@ -133,6 +141,14 @@
   "dashboard": {
     "welcome": "Olá, {{name}}",
     "uploadHint": "Arraste os arquivos para a área de upload ou navegue",
+    "upload": {
+      "button": "Fazer upload",
+      "cancel": "Cancelar upload",
+      "complete": "Upload concluído",
+      "uploading": "Fazendo upload",
+      "cancelled": "Upload cancelado",
+      "cancelledDescription": "O upload foi cancelado"
+    },
     "dropzone": {
       "title": "Solte os arquivos aqui ou clique para selecionar",
       "subtitle": "Suporta imagens, vídeos, áudio e documentos",
