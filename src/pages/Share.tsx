@@ -31,7 +31,11 @@ const Share = () => {
             is_favorite,
             created_at,
             updated_at,
-            id
+            id,
+            user_id,
+            file_path,
+            folder_id,
+            category
           )
         `)
         .eq(id?.startsWith('custom-') ? 'custom_url' : 'id', id?.replace('custom-', ''))

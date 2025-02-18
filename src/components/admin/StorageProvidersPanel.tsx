@@ -32,18 +32,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { StorageProvider, StorageProviderConfig } from "@/types/storage";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { StorageProvider, StorageProviderConfig, StorageProviderDatabase } from "@/types/storage";
 
 export const StorageProvidersPanel = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddingProvider, setIsAddingProvider] = React.useState(false);
-  const [newProvider, setNewProvider] = React.useState<Partial<StorageProviderConfig>>({
+  const [newProvider, setNewProvider] = React.useState<Partial<StorageProviderDatabase>>({
     provider: "aws",
-    isActive: false,
+    is_active: false,
+    credentials: {},
+    name: "",
   });
 
   const { data: providers, isLoading } = useQuery({
@@ -55,12 +55,18 @@ export const StorageProvidersPanel = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as StorageProviderConfig[];
+
+      return (data as StorageProviderDatabase[]).map((provider) => ({
+        ...provider,
+        isActive: provider.is_active,
+        createdAt: provider.created_at,
+        updatedAt: provider.updated_at,
+      })) as StorageProviderConfig[];
     },
   });
 
   const addProviderMutation = useMutation({
-    mutationFn: async (provider: Partial<StorageProviderConfig>) => {
+    mutationFn: async (provider: Partial<StorageProviderDatabase>) => {
       const { data, error } = await supabase
         .from("storage_providers")
         .insert([provider])
@@ -73,7 +79,7 @@ export const StorageProvidersPanel = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["storage-providers"] });
       setIsAddingProvider(false);
-      setNewProvider({ provider: "aws", isActive: false });
+      setNewProvider({ provider: "aws", is_active: false, credentials: {}, name: "" });
       toast({
         title: t("admin.storage.addSuccess"),
         description: t("admin.storage.providerAdded"),
@@ -94,7 +100,7 @@ export const StorageProvidersPanel = () => {
       data,
     }: {
       id: string;
-      data: Partial<StorageProviderConfig>;
+      data: Partial<StorageProviderDatabase>;
     }) => {
       const { error } = await supabase
         .from("storage_providers")
@@ -137,7 +143,7 @@ export const StorageProvidersPanel = () => {
   const handleToggleProvider = (id: string, isActive: boolean) => {
     updateProviderMutation.mutate({
       id,
-      data: { isActive },
+      data: { is_active: isActive },
     });
   };
 
