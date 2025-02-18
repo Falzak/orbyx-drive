@@ -8,8 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from '@/integrations/supabase/client';
 import { FileData } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy, Link } from 'lucide-react';
+import { Loader2, Copy, Link, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { generateEncryptionKey } from '@/utils/encryption';
 
 interface ShareDialogProps {
   file: FileData;
@@ -20,6 +21,7 @@ interface ShareDialogProps {
 export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
   const { toast } = useToast();
   const [isPublic, setIsPublic] = useState(false);
+  const [isEncrypted, setIsEncrypted] = useState(false);
   const [password, setPassword] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [customUrl, setCustomUrl] = useState('');
@@ -29,6 +31,11 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
   const handleShare = async () => {
     try {
       setIsLoading(true);
+
+      let encryptionKey = '';
+      if (isEncrypted) {
+        encryptionKey = generateEncryptionKey();
+      }
 
       const { data, error } = await supabase
         .from('shared_files')
@@ -40,15 +47,20 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
           custom_url: customUrl || null,
           expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
           permissions: ['view', 'download'],
+          encryption_key: isEncrypted ? encryptionKey : null,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      const url = customUrl
+      let url = customUrl
         ? `${window.location.origin}/share/custom-${customUrl}`
         : `${window.location.origin}/share/${data.id}`;
+
+      if (isEncrypted) {
+        url += `#key=${encryptionKey}`;
+      }
 
       setShareUrl(url);
 
@@ -96,6 +108,20 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
               id="public"
               checked={isPublic}
               onCheckedChange={setIsPublic}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="encrypted">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Criptografia ponta a ponta
+              </div>
+            </Label>
+            <Switch
+              id="encrypted"
+              checked={isEncrypted}
+              onCheckedChange={setIsEncrypted}
             />
           </div>
 

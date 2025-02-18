@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,19 @@ import { useToast } from '@/hooks/use-toast';
 import MediaPreview from '@/components/MediaPreview';
 import { Lock, Download } from 'lucide-react';
 import { FileData } from '@/types';
+import { decryptFile } from '@/utils/encryption';
 
 const Share = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [password, setPassword] = useState('');
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
+  const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
+
+  // Extrair a chave de criptografia do hash da URL
+  const encryptionKey = location.hash.replace('#key=', '');
 
   const { data: shareData, isLoading } = useQuery({
     queryKey: ['shared-file', id],
@@ -44,38 +50,84 @@ const Share = () => {
       if (error) throw error;
 
       if (sharedFile.expires_at && new Date(sharedFile.expires_at) < new Date()) {
-        throw new Error('This link has expired');
+        throw new Error('Este link expirou');
       }
 
       return sharedFile;
     },
   });
 
+  useEffect(() => {
+    const decryptContent = async () => {
+      if (shareData?.encryption_key && encryptionKey && !decryptedUrl) {
+        try {
+          const response = await fetch(shareData.files.url);
+          const encryptedContent = await response.text();
+          
+          const decryptedFile = await decryptFile(
+            encryptedContent,
+            encryptionKey,
+            shareData.files.content_type,
+            shareData.files.filename
+          );
+          
+          setDecryptedUrl(URL.createObjectURL(decryptedFile));
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Erro",
+            description: "Não foi possível descriptografar o arquivo.",
+          });
+        }
+      }
+    };
+
+    decryptContent();
+  }, [shareData, encryptionKey]);
+
   const handleDownload = async () => {
     if (!shareData) return;
 
-    const { data, error } = await supabase.storage
-      .from('files')
-      .download(shareData.file_path);
+    try {
+      if (shareData.encryption_key) {
+        if (!decryptedUrl) {
+          toast({
+            variant: "destructive",
+            title: "Erro",
+            description: "Aguarde a descriptografia do arquivo.",
+          });
+          return;
+        }
 
-    if (error) {
+        const a = document.createElement('a');
+        a.href = decryptedUrl;
+        a.download = shareData.files.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        const { data, error } = await supabase.storage
+          .from('files')
+          .download(shareData.file_path);
+
+        if (error) throw error;
+
+        const url = URL.createObjectURL(data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = shareData.files.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Falha ao baixar arquivo",
       });
-      return;
     }
-
-    // Create download link
-    const url = URL.createObjectURL(data);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = shareData.files.filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const checkPassword = () => {
@@ -127,13 +179,9 @@ const Share = () => {
     );
   }
 
-  const { data: signedUrl } = supabase.storage
-    .from('files')
-    .getPublicUrl(shareData.file_path);
-
   const fileData: FileData = {
     ...shareData.files,
-    url: signedUrl.publicUrl,
+    url: decryptedUrl || shareData.files.url,
   };
 
   return (
@@ -144,6 +192,12 @@ const Share = () => {
           <p className="text-sm text-muted-foreground">
             Compartilhado em {new Date(shareData.created_at).toLocaleDateString()}
           </p>
+          {shareData.encryption_key && (
+            <p className="text-sm text-green-600 flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              Criptografado
+            </p>
+          )}
         </div>
 
         <MediaPreview
