@@ -252,6 +252,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      share_permission: "view" | "edit" | "download"
       storage_provider: "aws" | "google" | "backblaze" | "wasabi" | "cloudflare"
     }
     CompositeTypes: {

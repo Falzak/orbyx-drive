@@ -52,6 +52,7 @@ import { FileList } from "@/components/FileList";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
+import { ShareDialog } from "./ShareDialog";
 
 interface FileExplorerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -72,20 +73,19 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       "date_desc"
     );
     const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+    const [shareFile, setShareFile] = useState<FileData | null>(null);
     const location = useLocation();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { toast } = useToast();
     const { t } = useTranslation();
 
-    // Redirect to auth if not authenticated
     useEffect(() => {
       if (!session) {
         navigate("/auth");
       }
     }, [session, navigate]);
 
-    // Memoized function to get signed URL
     const getSignedUrl = useCallback(async (filePath: string) => {
       const { data } = await supabase.storage
         .from("files")
@@ -93,7 +93,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       return data?.signedUrl;
     }, []);
 
-    // Query para buscar pastas
     const { data: folders = [], isLoading: isFoldersLoading } = useQuery({
       queryKey: ["folders", sortBy, currentFolderId],
       queryFn: async () => {
@@ -115,10 +114,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         return data || [];
       },
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutos
+      staleTime: 1000 * 60 * 5,
     });
 
-    // Query para buscar arquivos
     const { data: files = [], isLoading: isFilesLoading } = useQuery({
       queryKey: ["files", sortBy, currentFolderId],
       queryFn: async () => {
@@ -143,7 +141,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         const { data, error } = await query;
         if (error) throw error;
 
-        // Pre-fetch URLs for all files
         const filesWithUrls = await Promise.all(
           (data || []).map(async (file) => {
             try {
@@ -162,16 +159,14 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         return filesWithUrls;
       },
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutos
+      staleTime: 1000 * 60 * 5,
     });
 
-    // Função para navegar para uma pasta
     const handleFolderClick = (folderId: string) => {
       setCurrentFolderId(folderId);
       onFolderChange?.(folderId);
     };
 
-    // Função para voltar à pasta anterior
     const handleBackClick = async () => {
       if (!currentFolderId) return;
 
@@ -189,7 +184,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     };
 
-    // Combinar arquivos e pastas
     const items = React.useMemo(() => {
       const folderItems = folders.map(
         (folder): FileData => ({
@@ -213,7 +207,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       return [...folderItems, ...files];
     }, [folders, files]);
 
-    // Atualiza o selectedFile quando os arquivos são atualizados
     useEffect(() => {
       if (selectedFile) {
         const updatedFile = items.find((file) => file.id === selectedFile.id);
@@ -228,7 +221,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     }, [items, previewUrls, selectedFile]);
 
-    // Handle download
     const handleDownload = useCallback(
       async (file: FileData) => {
         try {
@@ -267,7 +259,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       [previewUrls, getSignedUrl]
     );
 
-    // Handle preview
     const handlePreview = useCallback(
       async (file: FileData) => {
         try {
@@ -326,13 +317,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     };
 
     const handleDelete = async (file: FileData) => {
-      // Se o arquivo a ser deletado é o selecionado, fecha o preview primeiro
       if (selectedFile?.id === file.id) {
         setSelectedFile(null);
       }
 
       if (file.is_folder) {
-        // Deletar pasta
         const { error: dbError } = await supabase
           .from("folders")
           .delete()
@@ -353,7 +342,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           description: t("fileExplorer.actions.deleteFolderSuccess"),
         });
       } else {
-        // Deletar arquivo
         const { error: storageError } = await supabase.storage
           .from("files")
           .remove([file.file_path!]);
@@ -381,7 +369,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           return;
         }
 
-        // Remove a URL do preview do estado
         setPreviewUrls((prev) => {
           const newUrls = { ...prev };
           delete newUrls[file.id];
@@ -398,7 +385,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     const handleRename = async (file: FileData, newName: string) => {
       if (file.is_folder) {
-        // Renomear pasta
         const { error } = await supabase
           .from("folders")
           .update({ name: newName })
@@ -419,7 +405,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           description: t("fileExplorer.actions.renameFolderSuccess"),
         });
       } else {
-        // Renomear arquivo
         const { error } = await supabase
           .from("files")
           .update({ filename: newName })
@@ -442,19 +427,34 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     };
 
-    // Motion table row component with forwardRef
-    interface MotionTableRowProps extends HTMLMotionProps<"tr"> {
-      layoutId?: string;
-      layout?: boolean;
-    }
+    const handleShare = (file: FileData) => {
+      setShareFile(file);
+    };
+
+    const handleToggleFavorite = async (file: FileData) => {
+      if (file.is_folder) return;
+      const { error } = await supabase
+        .from("files")
+        .update({
+          is_favorite: !file.is_favorite,
+        })
+        .eq("id", file.id);
+
+      if (!error) {
+        setSelectedFile({
+          ...file,
+          is_favorite: !file.is_favorite,
+        });
+        queryClient.invalidateQueries({ queryKey: ["files"] });
+      }
+    };
 
     const MotionTableRow = React.forwardRef<
       HTMLTableRowElement,
-      MotionTableRowProps
+      HTMLMotionProps<"tr">
     >((props, ref) => <motion.tr ref={ref} {...props} />);
     MotionTableRow.displayName = "MotionTableRow";
 
-    // FileContextMenu with forwardRef
     const FileContextMenu = React.forwardRef<
       HTMLDivElement,
       {
@@ -554,80 +554,33 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             <FileGrid
               files={items}
               isLoading={isFoldersLoading || isFilesLoading}
-              onPreview={(file) => {
-                if (file.is_folder) {
-                  handleFolderClick(file.id);
-                } else {
-                  handlePreview(file);
-                }
-              }}
+              onPreview={handlePreview}
               onDownload={handleDownload}
-              onShare={(file) => navigate(`/share/${file.id}`)}
+              onShare={handleShare}
               onDelete={handleDelete}
               onRename={handleRename}
-              onToggleFavorite={async (file) => {
-                if (file.is_folder) return; // Não permitir favoritar pastas
-                const { error } = await supabase
-                  .from("files")
-                  .update({
-                    is_favorite: !file.is_favorite,
-                  })
-                  .eq("id", file.id);
-
-                if (!error) {
-                  queryClient.invalidateQueries({ queryKey: ["files"] });
-                }
-              }}
+              onToggleFavorite={handleToggleFavorite}
             />
           ) : (
             <FileList
               files={items}
               isLoading={isFoldersLoading || isFilesLoading}
-              onPreview={(file) => {
-                if (file.is_folder) {
-                  handleFolderClick(file.id);
-                } else {
-                  handlePreview(file);
-                }
-              }}
+              onPreview={handlePreview}
               onDownload={handleDownload}
-              onShare={(file) => navigate(`/share/${file.id}`)}
+              onShare={handleShare}
               onDelete={handleDelete}
               onRename={handleRename}
-              onToggleFavorite={async (file) => {
-                if (file.is_folder) return; // Não permitir favoritar pastas
-                const { error } = await supabase
-                  .from("files")
-                  .update({
-                    is_favorite: !file.is_favorite,
-                  })
-                  .eq("id", file.id);
-
-                if (!error) {
-                  queryClient.invalidateQueries({ queryKey: ["files"] });
-                }
-              }}
+              onToggleFavorite={handleToggleFavorite}
             />
           )}
         </div>
 
         {selectedFile && (
           <MediaPreview
-            file={{
-              ...selectedFile,
-              url: selectedFile.url || undefined,
-            }}
-            onClose={() => {
-              setSelectedFile(null);
-            }}
-            onDownload={async () => {
-              if (selectedFile.url) {
-                window.open(selectedFile.url, "_blank");
-              }
-            }}
-            onShare={() => {
-              navigate(`/share/${selectedFile.id}`);
-            }}
+            file={selectedFile}
+            onClose={() => setSelectedFile(null)}
+            onDownload={() => handleDownload(selectedFile)}
+            onShare={() => handleShare(selectedFile)}
             onToggleFavorite={async () => {
               const { error } = await supabase
                 .from("files")
@@ -641,8 +594,17 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                   ...selectedFile,
                   is_favorite: !selectedFile.is_favorite,
                 });
+                queryClient.invalidateQueries({ queryKey: ["files"] });
               }
             }}
+          />
+        )}
+
+        {shareFile && (
+          <ShareDialog
+            file={shareFile}
+            open={!!shareFile}
+            onOpenChange={(open) => !open && setShareFile(null)}
           />
         )}
       </div>

@@ -70,16 +70,6 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
               />
             </Button>
           )}
-          {onDownload && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onDownload}
-              className="hover:bg-background/80"
-            >
-              <Download size={20} />
-            </Button>
-          )}
           {onShare && (
             <Button
               variant="ghost"
@@ -88,6 +78,16 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
               className="hover:bg-background/80"
             >
               <Share2 size={20} />
+            </Button>
+          )}
+          {onDownload && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onDownload}
+              className="hover:bg-background/80"
+            >
+              <Download size={20} />
             </Button>
           )}
           <Button
