@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,6 +11,14 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 interface FileViewOptionsProps {
   view: "grid" | "list";
@@ -18,6 +26,8 @@ interface FileViewOptionsProps {
   sortBy: string;
   onSortChange: (value: string) => void;
   totalFiles: number;
+  currentPath: string;
+  onNavigate: (path: string) => void;
 }
 
 export function FileViewOptions({
@@ -26,23 +36,52 @@ export function FileViewOptions({
   sortBy,
   onSortChange,
   totalFiles,
+  currentPath,
+  onNavigate,
 }: FileViewOptionsProps) {
   const { t } = useTranslation();
+  const pathSegments = currentPath.split("/").filter(Boolean);
 
   return (
     <div className="sticky top-0 z-10 bg-background/20 dark:bg-black/20 backdrop-blur-xl border-b border-border">
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink onClick={() => onNavigate("")}>
+                    <Home className="h-4 w-4" />
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {pathSegments.map((segment, index) => (
+                  <React.Fragment key={segment}>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      {index === pathSegments.length - 1 ? (
+                        <BreadcrumbPage>{segment}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink
+                          onClick={() =>
+                            onNavigate(pathSegments.slice(0, index + 1).join("/"))
+                          }
+                        >
+                          {segment}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </React.Fragment>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+            <Separator orientation="vertical" className="h-6" />
             <h2 className="text-lg font-semibold">
               {t("fileExplorer.allFiles")} ({totalFiles})
             </h2>
             <Separator orientation="vertical" className="h-6" />
             <Select value={sortBy} onValueChange={onSortChange}>
               <SelectTrigger className="w-[180px] h-9">
-                <SelectValue
-                  placeholder={t("fileExplorer.sortBy.placeholder")}
-                />
+                <SelectValue placeholder={t("fileExplorer.sortBy.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="name_asc">

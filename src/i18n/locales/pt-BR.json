@@ -136,7 +136,8 @@
     "theme": {
       "light": "Claro",
       "dark": "Escuro"
-    }
+    },
+    "search": "Pesquisar arquivos..."
   },
   "dashboard": {
     "welcome": "Olá, {{name}}",

@@ -90,7 +90,11 @@ const Index = () => {
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [currentUpload, setCurrentUpload] = useState<{ id: string; abort: () => void } | null>(null);
+  const [currentUpload, setCurrentUpload] = useState<{
+    id: string;
+    abort: () => void;
+  } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   const uploadMutation = useMutation({
@@ -197,21 +201,21 @@ const Index = () => {
         });
         return;
       }
-      
+
       acceptedFiles.forEach((file) => {
         const abortController = new AbortController();
         setCurrentUpload({
           id: crypto.randomUUID(),
-          abort: () => abortController.abort()
+          abort: () => abortController.abort(),
         });
-        
+
         uploadMutation.mutate(file, {
           onSuccess: () => {
             setCurrentUpload(null);
           },
           onError: () => {
             setCurrentUpload(null);
-          }
+          },
         });
       });
     },
@@ -227,7 +231,8 @@ const Index = () => {
       "audio/*": [],
       "application/pdf": [],
       "application/msword": [],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [],
     },
   });
 
@@ -398,7 +403,7 @@ const Index = () => {
         <ContextMenuTrigger className="flex h-screen w-full overflow-hidden">
           <SidebarProvider>
             <div className="flex h-screen w-full overflow-hidden">
-              <AppSidebar />
+              <AppSidebar onSearch={setSearchQuery} />
               <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
                 {/* Overlay do Dashboard */}
                 <AnimatePresence>
@@ -430,10 +435,17 @@ const Index = () => {
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, ease: "easeOut", delay: 0.3 }}
+                      transition={{
+                        duration: 0.3,
+                        ease: "easeOut",
+                        delay: 0.3,
+                      }}
                     >
                       <div ref={ref}>
-                        <FileExplorer onFolderChange={setCurrentFolderId} />
+                        <FileExplorer
+                          onFolderChange={setCurrentFolderId}
+                          searchQuery={searchQuery}
+                        />
                       </div>
                     </motion.div>
                   </div>
@@ -600,7 +612,9 @@ const Index = () => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">
                 {uploadProgress >= 100 ? (
-                  <span className="text-primary">{t("dashboard.upload.complete")}</span>
+                  <span className="text-primary">
+                    {t("dashboard.upload.complete")}
+                  </span>
                 ) : (
                   t("dashboard.upload.uploading")
                 )}
@@ -635,25 +649,25 @@ const Index = () => {
       {/* Botão de upload manual */}
       <Button
         onClick={() => {
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
+          const fileInput = document.createElement("input");
+          fileInput.type = "file";
           fileInput.multiple = true;
           fileInput.accept = [
-            'image/*',
-            'video/*',
-            'audio/*',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          ].join(',');
-          
+            "image/*",
+            "video/*",
+            "audio/*",
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ].join(",");
+
           fileInput.onchange = (e) => {
             const files = (e.target as HTMLInputElement).files;
             if (files) {
               onDrop(Array.from(files));
             }
           };
-          
+
           fileInput.click();
         }}
         className="fixed right-4 bottom-4 shadow-lg"

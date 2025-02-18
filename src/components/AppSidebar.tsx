@@ -32,7 +32,11 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/App";
 import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 import StorageQuota from "@/components/StorageQuota";
@@ -49,21 +53,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const LANGUAGES = [
   {
     code: "en",
     name: "English",
-    flag: "🇺🇸"
+    flag: "🇺🇸",
   },
   {
     code: "pt-BR",
     name: "Português",
-    flag: "🇧🇷"
-  }
+    flag: "🇧🇷",
+  },
 ] as const;
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onSearch?: (query: string) => void;
+}
+
+export function AppSidebar({ onSearch }: AppSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useAuth();
@@ -75,6 +85,13 @@ export function AppSidebar() {
   const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    onSearch?.(value);
+  };
 
   const handleViewChange = (newView: "grid" | "list") => {
     setView(newView);
@@ -86,6 +103,36 @@ export function AppSidebar() {
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
+  };
+
+  const handleCreateFolder = async (values: {
+    name: string;
+    icon: string;
+    color: string;
+  }) => {
+    try {
+      const { error } = await supabase.from("folders").insert({
+        name: values.name,
+        icon: values.icon,
+        color: values.color,
+        user_id: session?.user.id,
+      });
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      toast({
+        title: t("common.success"),
+        description: t("fileExplorer.createFolder.success"),
+      });
+      setIsCreateFolderOpen(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: t("fileExplorer.createFolder.error"),
+      });
+    }
   };
 
   const menuItems = [
@@ -154,10 +201,10 @@ export function AppSidebar() {
                 type="search"
                 placeholder={t("common.search")}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="h-9"
               />
-              
+
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -172,7 +219,9 @@ export function AppSidebar() {
                   variant="ghost"
                   size="icon"
                   className="flex-1 h-8"
-                  onClick={() => handleViewChange(view === "grid" ? "list" : "grid")}
+                  onClick={() =>
+                    handleViewChange(view === "grid" ? "list" : "grid")
+                  }
                 >
                   {view === "grid" ? (
                     <Grid className="h-4 w-4" />
@@ -183,21 +232,25 @@ export function AppSidebar() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="flex-1 h-8 relative group"
                     >
                       <Globe className="h-4 w-4 group-hover:text-foreground/80 transition-colors" />
                       <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center">
                         <span className="text-[8px]">
-                          {LANGUAGES.find(lang => lang.code === i18n.language)?.flag}
+                          {
+                            LANGUAGES.find(
+                              (lang) => lang.code === i18n.language
+                            )?.flag
+                          }
                         </span>
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
+                  <DropdownMenuContent
+                    align="end"
                     className="w-48 p-2 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-border/50"
                   >
                     <DropdownMenuLabel className="text-xs font-medium text-foreground/70 px-2 pb-2">
@@ -212,7 +265,8 @@ export function AppSidebar() {
                           "gap-2 p-2 cursor-pointer text-sm",
                           "hover:bg-accent/50 focus:bg-accent/50",
                           "transition-colors duration-150",
-                          i18n.language === language.code && "bg-accent/30 font-medium"
+                          i18n.language === language.code &&
+                            "bg-accent/30 font-medium"
                         )}
                       >
                         <span className="text-base">{language.flag}</span>
@@ -259,17 +313,24 @@ export function AppSidebar() {
                             "group relative overflow-hidden",
                             "data-[active=true]:bg-accent/70 data-[active=true]:text-accent-foreground",
                             isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3",
-                            location.pathname + location.search === item.path && "bg-accent/50 text-accent-foreground font-medium"
+                            location.pathname + location.search === item.path &&
+                              "bg-accent/50 text-accent-foreground font-medium"
                           )}
                           onClick={item.onClick || (() => navigate(item.path!))}
-                          data-active={location.pathname + location.search === item.path}
+                          data-active={
+                            location.pathname + location.search === item.path
+                          }
                         >
-                          <item.icon className={cn(
-                            "h-4 w-4 shrink-0",
-                            "transition-transform duration-200",
-                            "group-hover:scale-105",
-                            location.pathname + location.search === item.path ? "text-accent-foreground" : "text-muted-foreground"
-                          )} />
+                          <item.icon
+                            className={cn(
+                              "h-4 w-4 shrink-0",
+                              "transition-transform duration-200",
+                              "group-hover:scale-105",
+                              location.pathname + location.search === item.path
+                                ? "text-accent-foreground"
+                                : "text-muted-foreground"
+                            )}
+                          />
                           {!isCollapsed && (
                             <motion.span
                               initial={{ opacity: 0, x: -10 }}
@@ -284,7 +345,10 @@ export function AppSidebar() {
                         </Button>
                       </TooltipTrigger>
                       {isCollapsed && (
-                        <TooltipContent side="right" className="bg-background/60 backdrop-blur-xl border-border/50">
+                        <TooltipContent
+                          side="right"
+                          className="bg-background/60 backdrop-blur-xl border-border/50"
+                        >
                           {item.title}
                         </TooltipContent>
                       )}
@@ -298,11 +362,11 @@ export function AppSidebar() {
 
         <SidebarFooter className="border-t border-border/5 p-4 space-y-4">
           <StorageQuota collapsed={isCollapsed} />
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className={cn(
                   "w-full gap-3 h-auto p-2",
                   isCollapsed ? "justify-center" : "justify-start",
@@ -311,11 +375,13 @@ export function AppSidebar() {
                   "relative overflow-hidden"
                 )}
               >
-                <Avatar className={cn(
-                  "h-8 w-8 ring-2 ring-border/50 group-hover:ring-border/80",
-                  "transition-all duration-200 group-hover:scale-105",
-                  isCollapsed && "h-6 w-6"
-                )}>
+                <Avatar
+                  className={cn(
+                    "h-8 w-8 ring-2 ring-border/50 group-hover:ring-border/80",
+                    "transition-all duration-200 group-hover:scale-105",
+                    isCollapsed && "h-6 w-6"
+                  )}
+                >
                   <AvatarImage
                     src={session?.user?.user_metadata?.avatar_url}
                     alt={session?.user?.email || ""}
@@ -365,7 +431,7 @@ export function AppSidebar() {
                 </div>
               </div>
               <DropdownMenuSeparator className="my-2 bg-border/10" />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => navigate("/settings")}
                 className="gap-3 p-2 cursor-pointer group hover:bg-accent/50 transition-all duration-200"
               >
@@ -374,7 +440,7 @@ export function AppSidebar() {
                   {t("settings.title")}
                 </span>
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => navigate("/auth")}
                 className="gap-3 p-2 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 transition-all duration-200"
               >
@@ -391,6 +457,7 @@ export function AppSidebar() {
       <CreateFolderDialog
         open={isCreateFolderOpen}
         onOpenChange={setIsCreateFolderOpen}
+        onSubmit={handleCreateFolder}
       />
     </>
   );

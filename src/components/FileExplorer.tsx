@@ -58,13 +58,15 @@ import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 interface FileExplorerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   onFolderChange?: (folderId: string | null) => void;
+  searchQuery?: string;
 }
 
 export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
-  ({ className, onFolderChange, ...props }, ref) => {
+  ({ className, onFolderChange, searchQuery = "", ...props }, ref) => {
     const { session } = useAuth();
     const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+    const [currentPath, setCurrentPath] = useState<string>("");
     const [view, setView] = useLocalStorage<"grid" | "list">(
       "file-view",
       "grid"
@@ -97,17 +99,21 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     }, []);
 
     const { data: folders = [], isLoading: isFoldersLoading } = useQuery({
-      queryKey: ["folders", sortBy, currentFolderId],
+      queryKey: ["folders", sortBy, currentFolderId, searchQuery],
       queryFn: async () => {
         let query = supabase
           .from("folders")
           .select("id, name, parent_id, user_id, icon, color")
           .eq("user_id", session?.user.id);
 
-        if (currentFolderId === null) {
-          query = query.is("parent_id", null);
+        if (searchQuery) {
+          query = query.ilike("name", `%${searchQuery}%`);
         } else {
-          query = query.eq("parent_id", currentFolderId);
+          if (currentFolderId === null) {
+            query = query.is("parent_id", null);
+          } else {
+            query = query.eq("parent_id", currentFolderId);
+          }
         }
 
         query = query.order("name", { ascending: sortBy.endsWith("asc") });
@@ -121,7 +127,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     });
 
     const { data: files = [], isLoading: isFilesLoading } = useQuery({
-      queryKey: ["files", sortBy, currentFolderId],
+      queryKey: ["files", sortBy, currentFolderId, searchQuery],
       queryFn: async () => {
         const [field, direction] = sortBy.split("_");
         let query = supabase
@@ -131,10 +137,14 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           )
           .eq("user_id", session?.user.id);
 
-        if (currentFolderId === null) {
-          query = query.is("folder_id", null);
+        if (searchQuery) {
+          query = query.ilike("filename", `%${searchQuery}%`);
         } else {
-          query = query.eq("folder_id", currentFolderId);
+          if (currentFolderId === null) {
+            query = query.is("folder_id", null);
+          } else {
+            query = query.eq("folder_id", currentFolderId);
+          }
         }
 
         query = query.order(field === "name" ? "filename" : "created_at", {
@@ -165,9 +175,69 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       staleTime: 1000 * 60 * 5,
     });
 
-    const handleFolderClick = (folderId: string) => {
-      setCurrentFolderId(folderId);
-      onFolderChange?.(folderId);
+    const handleFolderClick = async (folderId: string) => {
+      try {
+        const { data: folder } = await supabase
+          .from("folders")
+          .select("name, parent_id")
+          .eq("id", folderId)
+          .single();
+
+        if (folder) {
+          let path = folder.name;
+          let parentId = folder.parent_id;
+
+          while (parentId) {
+            const { data: parentFolder } = await supabase
+              .from("folders")
+              .select("name, parent_id")
+              .eq("id", parentId)
+              .single();
+
+            if (parentFolder) {
+              path = `${parentFolder.name}/${path}`;
+              parentId = parentFolder.parent_id;
+            } else {
+              break;
+            }
+          }
+
+          setCurrentPath(path);
+        }
+
+        setCurrentFolderId(folderId);
+        onFolderChange?.(folderId);
+      } catch (error) {
+        console.error("Error navigating to folder:", error);
+      }
+    };
+
+    const handleBreadcrumbNavigate = async (path: string) => {
+      if (path === "") {
+        setCurrentFolderId(null);
+        setCurrentPath("");
+        onFolderChange?.(null);
+        return;
+      }
+
+      const segments = path.split("/");
+      const folderName = segments[segments.length - 1];
+
+      try {
+        const { data: folder } = await supabase
+          .from("folders")
+          .select("id")
+          .eq("name", folderName)
+          .single();
+
+        if (folder) {
+          setCurrentFolderId(folder.id);
+          setCurrentPath(path);
+          onFolderChange?.(folder.id);
+        }
+      } catch (error) {
+        console.error("Error navigating via breadcrumb:", error);
+      }
     };
 
     const handleBackClick = async () => {
@@ -261,7 +331,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       },
-      [previewUrls, getSignedUrl]
+      [previewUrls, getSignedUrl, t, toast]
     );
 
     const handlePreview = useCallback(
@@ -296,7 +366,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       },
-      [previewUrls, getSignedUrl, handleFolderClick]
+      [previewUrls, getSignedUrl, handleFolderClick, toast]
     );
 
     const getFileIcon = (contentType: string) => {
@@ -638,17 +708,14 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     return (
       <div className="space-y-4 w-full">
-        {currentFolderId && (
-          <Button variant="ghost" onClick={handleBackClick} className="mb-4">
-            {t("fileExplorer.navigation.back")}
-          </Button>
-        )}
         <FileViewOptions
           view={view}
           onViewChange={setView}
           sortBy={sortBy}
           onSortChange={setSortBy}
           totalFiles={items.length}
+          currentPath={currentPath}
+          onNavigate={handleBreadcrumbNavigate}
         />
 
         <div className="w-full" ref={ref}>
