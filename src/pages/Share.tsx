@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import MediaPreview from '@/components/MediaPreview';
 import { Lock, Download } from 'lucide-react';
+import { FileData } from '@/types';
 
 const Share = () => {
   const { id } = useParams();
@@ -24,10 +26,15 @@ const Share = () => {
           *,
           files:file_path (
             filename,
-            content_type
+            content_type,
+            size,
+            is_favorite,
+            created_at,
+            updated_at,
+            id
           )
         `)
-        .eq(id.startsWith('custom-') ? 'custom_url' : 'id', id.replace('custom-', ''))
+        .eq(id?.startsWith('custom-') ? 'custom_url' : 'id', id?.replace('custom-', ''))
         .single();
 
       if (error) throw error;
@@ -120,6 +127,11 @@ const Share = () => {
     .from('files')
     .getPublicUrl(shareData.file_path);
 
+  const fileData: FileData = {
+    ...shareData.files,
+    url: signedUrl.publicUrl,
+  };
+
   return (
     <div className="min-h-screen p-4 md:p-8 flex flex-col items-center gap-8">
       <div className="w-full max-w-3xl space-y-8">
@@ -131,9 +143,8 @@ const Share = () => {
         </div>
 
         <MediaPreview
-          type={shareData.files.content_type}
-          src={signedUrl.publicUrl}
-          name={shareData.files.filename}
+          file={fileData}
+          onDownload={handleDownload}
         />
 
         <Button
@@ -147,6 +158,6 @@ const Share = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Share;

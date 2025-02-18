@@ -18,9 +18,19 @@ export interface StorageProviderConfig {
     region?: string;
     bucket?: string;
     endpoint?: string;
-    accountId?: string; // For Cloudflare R2
-    projectId?: string; // For Google Cloud
+    accountId?: string;
+    projectId?: string;
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface StorageProviderDatabase {
+  id: string;
+  name: string;
+  provider: StorageProvider;
+  is_active: boolean;
+  credentials: Record<string, any>;
+  created_at: string;
+  updated_at: string;
 }
