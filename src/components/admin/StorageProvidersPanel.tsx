@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -39,11 +38,14 @@ export const StorageProvidersPanel = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddingProvider, setIsAddingProvider] = React.useState(false);
-  const [newProvider, setNewProvider] = React.useState<Partial<StorageProviderDatabase>>({
+  const [newProvider, setNewProvider] = React.useState<StorageProviderDatabase>({
+    id: '',
+    name: '',
     provider: "aws",
     is_active: false,
     credentials: {},
-    name: "",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 
   const { data: providers, isLoading } = useQuery({
@@ -137,7 +139,8 @@ export const StorageProvidersPanel = () => {
   });
 
   const handleAddProvider = () => {
-    addProviderMutation.mutate(newProvider);
+    const { id, created_at, updated_at, ...providerData } = newProvider;
+    addProviderMutation.mutate(providerData);
   };
 
   const handleToggleProvider = (id: string, isActive: boolean) => {

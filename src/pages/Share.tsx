@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import MediaPreview from '@/components/MediaPreview';
 import { Lock, Download } from 'lucide-react';
-import { FileData } from '@/types';
+import { FileData, SharedFile } from '@/types';
 import { decryptFile } from '@/utils/encryption';
 
 const Share = () => {
@@ -23,7 +22,7 @@ const Share = () => {
   // Extrair a chave de criptografia do hash da URL
   const encryptionKey = location.hash.replace('#key=', '');
 
-  const { data: shareData, isLoading } = useQuery({
+  const { data: shareData, isLoading } = useQuery<SharedFile>({
     queryKey: ['shared-file', id],
     queryFn: async () => {
       const { data: sharedFile, error } = await supabase
@@ -59,31 +58,35 @@ const Share = () => {
 
   useEffect(() => {
     const decryptContent = async () => {
-      if (shareData?.encryption_key && encryptionKey && !decryptedUrl) {
-        try {
-          const response = await fetch(shareData.files.url);
-          const encryptedContent = await response.text();
-          
-          const decryptedFile = await decryptFile(
-            encryptedContent,
-            encryptionKey,
-            shareData.files.content_type,
-            shareData.files.filename
-          );
-          
-          setDecryptedUrl(URL.createObjectURL(decryptedFile));
-        } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Erro",
-            description: "Não foi possível descriptografar o arquivo.",
-          });
-        }
+      if (!shareData?.encryption_key || !encryptionKey || decryptedUrl) return;
+
+      try {
+        const { data, error } = await supabase.storage
+          .from('files')
+          .download(shareData.file_path);
+
+        if (error) throw error;
+
+        const encryptedContent = await data.text();
+        const decryptedFile = await decryptFile(
+          encryptedContent,
+          encryptionKey,
+          shareData.files.content_type,
+          shareData.files.filename
+        );
+        
+        setDecryptedUrl(URL.createObjectURL(decryptedFile));
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Não foi possível descriptografar o arquivo.",
+        });
       }
     };
 
     decryptContent();
-  }, [shareData, encryptionKey]);
+  }, [shareData, encryptionKey, decryptedUrl]);
 
   const handleDownload = async () => {
     if (!shareData) return;
@@ -181,7 +184,7 @@ const Share = () => {
 
   const fileData: FileData = {
     ...shareData.files,
-    url: decryptedUrl || shareData.files.url,
+    url: decryptedUrl || undefined,
   };
 
   return (

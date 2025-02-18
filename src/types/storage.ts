@@ -16,20 +16,8 @@ export interface StorageProviderDatabase {
   updated_at: string;
 }
 
-export interface StorageProviderConfig {
-  id: string;
-  name: string;
-  provider: StorageProvider;
+export interface StorageProviderConfig extends Omit<StorageProviderDatabase, 'is_active' | 'created_at' | 'updated_at'> {
   isActive: boolean;
-  credentials: {
-    accessKeyId?: string;
-    secretAccessKey?: string;
-    region?: string;
-    bucket?: string;
-    endpoint?: string;
-    accountId?: string;
-    projectId?: string;
-  };
   createdAt: string;
   updatedAt: string;
 }

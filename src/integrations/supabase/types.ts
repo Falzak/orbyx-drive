@@ -125,6 +125,7 @@ export type Database = {
         Row: {
           created_at: string
           custom_url: string | null
+          encryption_key: string | null
           expires_at: string | null
           file_path: string | null
           id: string
@@ -136,6 +137,7 @@ export type Database = {
         Insert: {
           created_at?: string
           custom_url?: string | null
+          encryption_key?: string | null
           expires_at?: string | null
           file_path?: string | null
           id?: string
@@ -147,6 +149,7 @@ export type Database = {
         Update: {
           created_at?: string
           custom_url?: string | null
+          encryption_key?: string | null
           expires_at?: string | null
           file_path?: string | null
           id?: string
