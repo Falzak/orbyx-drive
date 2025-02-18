@@ -69,7 +69,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/App";
 import StorageQuota from "@/components/StorageQuota";
 import { useTranslation } from "react-i18next";
-import { CreateFolderDialog } from "@/components/CreateFolderDialog";
+import CreateFolderDialog from "@/components/CreateFolderDialog";
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -194,20 +194,22 @@ export function AppSidebar() {
     <>
       <Sidebar
         className={cn(
-          "border-r border-border/10",
-          "transition-[width] duration-300 bg-background/5 dark:bg-black/5 backdrop-blur-2xl",
-          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.1)] dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.1)]"
+          "border-r border-border/5",
+          "transition-[width] duration-300",
+          "bg-background/95 dark:bg-black/95",
+          "backdrop-blur-2xl",
+          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.03)]"
         )}
         variant="sidebar"
         collapsible="icon"
       >
-        <SidebarHeader className="border-b border-border/10 p-4 bg-gradient-to-r from-background/50 to-background/10 dark:from-black/50 dark:to-black/10">
-          <motion.div layout className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary shrink-0 drop-shadow-[0_0_10px_rgba(var(--primary))]" />
+        <SidebarHeader className="border-b border-border/5 p-6 bg-background/95 dark:bg-black/95">
+          <motion.div layout className="flex items-center gap-3">
+            <Shield className="h-7 w-7 text-primary shrink-0 drop-shadow-[0_0_15px_rgba(var(--primary))] animate-pulse" />
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
-                  className="text-lg font-semibold overflow-hidden whitespace-nowrap text-foreground/90 drop-shadow-sm"
+                  className="text-xl font-semibold overflow-hidden whitespace-nowrap text-foreground"
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: "auto", opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
@@ -220,30 +222,31 @@ export function AppSidebar() {
           </motion.div>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent className="py-2">
           <ScrollArea className="h-[calc(100vh-8rem)]">
-            <SidebarGroup>
+            <SidebarGroup className="px-2">
               <SidebarGroupContent>
                 <SidebarMenu>
                   {mainItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         className={cn(
-                          "w-full transition-all duration-200",
-                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
-                          "group relative overflow-hidden",
+                          "w-full transition-all duration-200 p-3",
+                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                          "group relative overflow-hidden rounded-xl",
                           location.pathname + location.search === item.path &&
-                            "bg-accent/40 text-accent-foreground font-medium"
+                            "bg-primary/10 text-primary font-medium"
                         )}
                         onClick={() => navigate(item.path)}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
-                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate">{item.title}</span>
+                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate text-base ml-3">
+                          {item.title}
+                        </span>
                         {item.badge && (
                           <Badge
                             variant="secondary"
-                            className="ml-auto bg-primary/10 text-primary hover:bg-primary/20"
+                            className="ml-auto bg-primary/20 text-primary hover:bg-primary/30 h-6 px-2"
                           >
                             {item.badge}
                           </Badge>
@@ -255,10 +258,10 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarSeparator className="my-4 opacity-10" />
+            <SidebarSeparator className="my-4 opacity-5" />
 
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+            <SidebarGroup className="px-2">
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
                 {t("sidebar.views.title")}
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -267,18 +270,19 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         className={cn(
-                          "w-full transition-all duration-200",
-                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
-                          "group relative overflow-hidden",
+                          "w-full transition-all duration-200 p-3",
+                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                          "group relative overflow-hidden rounded-xl",
                           location.pathname + location.search === item.path &&
-                            "bg-accent/40 text-accent-foreground font-medium"
+                            "bg-primary/10 text-primary font-medium"
                         )}
                         onClick={() => navigate(item.path)}
                         tooltip={item.title}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
-                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate">{item.title}</span>
+                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate text-base ml-3">
+                          {item.title}
+                        </span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -286,10 +290,10 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarSeparator className="my-4 opacity-10" />
+            <SidebarSeparator className="my-4 opacity-5" />
 
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+            <SidebarGroup className="px-2">
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
                 {t("sidebar.categories.title")}
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -298,18 +302,19 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         className={cn(
-                          "w-full transition-all duration-200",
-                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
-                          "group relative overflow-hidden",
+                          "w-full transition-all duration-200 p-3",
+                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                          "group relative overflow-hidden rounded-xl",
                           location.pathname + location.search === item.path &&
-                            "bg-accent/40 text-accent-foreground font-medium"
+                            "bg-primary/10 text-primary font-medium"
                         )}
                         onClick={() => navigate(item.path)}
                         tooltip={item.title}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
-                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate">{item.title}</span>
+                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate text-base ml-3">
+                          {item.title}
+                        </span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -317,10 +322,10 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarSeparator className="my-4 opacity-10" />
+            <SidebarSeparator className="my-4 opacity-5" />
 
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+            <SidebarGroup className="px-2">
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
                 {t("sidebar.tools.title")}
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -329,11 +334,11 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         className={cn(
-                          "w-full transition-all duration-200",
-                          "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
-                          "group relative overflow-hidden",
+                          "w-full transition-all duration-200 p-3",
+                          "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
+                          "group relative overflow-hidden rounded-xl",
                           location.pathname + location.search === item.path &&
-                            "bg-accent/40 text-accent-foreground font-medium"
+                            "bg-primary/10 text-primary font-medium"
                         )}
                         onClick={
                           item.onClick ||
@@ -341,9 +346,10 @@ export function AppSidebar() {
                         }
                         tooltip={item.title}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-300" />
-                        <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        <span className="flex-1 truncate">{item.title}</span>
+                        <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        <span className="flex-1 truncate text-base ml-3">
+                          {item.title}
+                        </span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -351,10 +357,10 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarSeparator className="my-4 opacity-10" />
+            <SidebarSeparator className="my-4 opacity-5" />
 
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-4">
+            <SidebarGroup className="px-2">
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 px-3 uppercase tracking-wider mb-2">
                 {t("sidebar.system.title")}
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -368,8 +374,8 @@ export function AppSidebar() {
 
         <SidebarFooter
           className={cn(
-            "border-t border-border/10 bg-gradient-to-b from-background/50 to-background/10 dark:from-black/50 dark:to-black/10",
-            isCollapsed ? "p-2" : "p-4"
+            "border-t border-border/5 bg-background/95 dark:bg-black/95",
+            isCollapsed ? "p-3" : "p-4"
           )}
         >
           <div className="flex items-center justify-end">
@@ -380,8 +386,8 @@ export function AppSidebar() {
                   size="icon"
                   onClick={handleSidebarToggle}
                   className={cn(
-                    "h-8 w-8 rounded-full",
-                    "hover:bg-accent/50 hover:text-accent-foreground active:bg-accent/70",
+                    "h-9 w-9 rounded-xl",
+                    "hover:bg-accent/20 hover:text-accent-foreground active:bg-accent/30",
                     "transition-all duration-200"
                   )}
                 >
@@ -394,7 +400,7 @@ export function AppSidebar() {
                         exit={{ rotate: 180 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-5 w-5" />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -404,7 +410,7 @@ export function AppSidebar() {
                         exit={{ rotate: -180 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-5 w-5" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -421,9 +427,30 @@ export function AppSidebar() {
       </Sidebar>
 
       <CreateFolderDialog
-        isOpen={isCreateFolderOpen}
-        onClose={() => setIsCreateFolderOpen(false)}
-        userId={session?.user?.id || ""}
+        open={isCreateFolderOpen}
+        onOpenChange={(open) => setIsCreateFolderOpen(open)}
+        onSubmit={async (values) => {
+          const { error } = await supabase.from("folders").insert({
+            name: values.name,
+            user_id: session?.user?.id,
+            icon: values.icon,
+            color: values.color,
+          });
+
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.createFolderError"),
+            });
+          } else {
+            toast({
+              title: t("common.success"),
+              description: t("fileExplorer.actions.createFolderSuccess"),
+            });
+            setIsCreateFolderOpen(false);
+          }
+        }}
       />
     </>
   );

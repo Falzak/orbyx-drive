@@ -74,6 +74,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import CreateFolderDialog from "@/components/CreateFolderDialog";
 
 const Index = () => {
   const session = useAuthRedirect();
@@ -230,37 +231,6 @@ const Index = () => {
 
   const handleCreateFolder = () => {
     setIsCreateFolderOpen(true);
-  };
-
-  const handleCreateFolderSubmit = async () => {
-    if (!newFolderName.trim() || !session.user.id) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase.from("folders").insert({
-        name: newFolderName.trim(),
-        user_id: session.user.id,
-        parent_id: currentFolderId,
-        created_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ["folders"] });
-      toast({
-        title: t("fileExplorer.actions.createFolderSuccess"),
-        description: `${t("dashboard.folder.created")}: ${newFolderName}`,
-      });
-      setIsCreateFolderOpen(false);
-      setNewFolderName("");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: t("common.error"),
-        description: t("fileExplorer.actions.createFolderError"),
-      });
-    }
   };
 
   const handleUploadClick = () => {
@@ -825,40 +795,37 @@ const Index = () => {
         </ContextMenuItem>
       </ContextMenuContent>
 
-      <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("fileExplorer.createFolder.title")}</DialogTitle>
-            <DialogDescription>
-              {t("fileExplorer.createFolder.description")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                {t("fileExplorer.createFolder.name")}
-              </Label>
-              <Input
-                id="name"
-                placeholder={t("fileExplorer.createFolder.namePlaceholder")}
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCreateFolderOpen(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button onClick={handleCreateFolderSubmit}>
-              {t("common.create")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateFolderDialog
+        open={isCreateFolderOpen}
+        onOpenChange={(open) => setIsCreateFolderOpen(open)}
+        onSubmit={async (values) => {
+          try {
+            const { error } = await supabase.from("folders").insert({
+              name: values.name,
+              user_id: session?.user?.id,
+              parent_id: currentFolderId,
+              icon: values.icon,
+              color: values.color,
+              created_at: new Date().toISOString(),
+            });
+
+            if (error) throw error;
+
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
+            toast({
+              title: t("common.success"),
+              description: t("fileExplorer.actions.createFolderSuccess"),
+            });
+            setIsCreateFolderOpen(false);
+          } catch (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.createFolderError"),
+            });
+          }
+        }}
+      />
     </ContextMenu>
   );
 };
