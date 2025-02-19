@@ -47,13 +47,18 @@ export default function Auth() {
 
       if (error) throw error;
 
+      // Check 2FA status before proceeding with navigation
       const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totpFactor = factors?.totp.length > 0 ? factors.totp[0] : null;
       
-      if (mfaData.nextLevel === 'aal2') {
-        setShowOtpDialog(true);
-      } else {
-        navigate("/");
+      if (mfaData?.currentLevel === 'aal1' && mfaData?.nextLevel === 'aal2' && totpFactor) {
+        navigate('/two-factor');
+        return;
       }
+
+      // Only navigate to dashboard if 2FA is not required or already verified
+      navigate("/");
     } catch (error: unknown) {
       toast({
         variant: "destructive",
@@ -137,8 +142,8 @@ export default function Auth() {
     try {
       setLoading(true);
 
-      const { data: factors } = await supabase.auth.mfa.list();
-      const totpFactor = factors.find(factor => factor.factor_type === 'totp');
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totpFactor = factors.totp[0];
 
       if (!totpFactor) {
         throw new Error("Fator TOTP não encontrado");
@@ -150,7 +155,7 @@ export default function Auth() {
 
       if (challengeError) throw challengeError;
 
-      const { error: verifyError } = await supabase.auth.mfa.verify({
+      const { data: verifyData, error: verifyError } = await supabase.auth.mfa.verify({
         factorId: totpFactor.id,
         challengeId: challengeData.id,
         code: otpCode
@@ -158,7 +163,15 @@ export default function Auth() {
 
       if (verifyError) throw verifyError;
 
-      navigate("/");
+      // Check if verification was successful
+      const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      
+      if (mfaData?.currentLevel === 'aal2') {
+        setShowOtpDialog(false);
+        navigate("/");
+      } else {
+        throw new Error("Falha na verificação do código");
+      }
     } catch (error: unknown) {
       toast({
         variant: "destructive",
@@ -167,6 +180,7 @@ export default function Auth() {
       });
     } finally {
       setLoading(false);
+      setOtpCode("");
     }
   };
 

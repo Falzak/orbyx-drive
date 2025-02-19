@@ -14,6 +14,7 @@ import Share from "./pages/Share";
 import NotFound from "./pages/NotFound";
 import Settings from "@/pages/Settings";
 import Admin from "@/pages/Admin";
+import TwoFactor from "@/pages/TwoFactor";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,7 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/two-factor" element={<TwoFactor />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

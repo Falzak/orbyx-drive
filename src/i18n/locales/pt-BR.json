@@ -196,7 +196,8 @@
         "password": "Senha",
         "changePassword": "Alterar a senha",
         "twoFactor": "Autenticação de dois fatores",
-        "enable2FA": "Ativar autenticação de dois fatores"
+        "enable2FA": "Ativar autenticação em dois fatores",
+        "disable2FA": "Desativar autenticação em dois fatores"
       }
     },
     "title": "Configurações"

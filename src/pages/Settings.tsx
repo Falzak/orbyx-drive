@@ -226,6 +226,35 @@ export default function Settings() {
     }
   };
 
+  const handleDisable2FA = async () => {
+    try {
+      const { data: factors } = await supabase.auth.mfa.list();
+      const totpFactor = factors.find(factor => factor.factor_type === 'totp');
+
+      if (!totpFactor) {
+        throw new Error("Fator TOTP não encontrado");
+      }
+
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Autenticação em dois fatores desativada com sucesso",
+      });
+
+      setHas2FAEnabled(false);
+    } catch (error) {
+      console.error('Error disabling 2FA:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao desativar 2FA",
+      });
+    }
+  };
+
   return (
     <motion.div
       className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-6"
@@ -405,9 +434,9 @@ export default function Settings() {
                     <Button
                       variant="outline"
                       className="w-full"
-                      disabled
+                      onClick={handleDisable2FA}
                     >
-                      2FA já está ativado
+                      Desativar autenticação em dois fatores
                     </Button>
                   ) : (
                     <Button
