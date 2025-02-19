@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -61,6 +62,7 @@ export default function Settings() {
   const [qrCode, setQrCode] = React.useState<string | null>(null);
   const [otpCode, setOtpCode] = React.useState("");
   const [isVerifying2FA, setIsVerifying2FA] = React.useState(false);
+  const [factorId, setFactorId] = React.useState<string | null>(null);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (values: { full_name: string; avatar_url?: string }) => {
@@ -134,17 +136,20 @@ export default function Settings() {
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        issuer: 'FileVault', // Nome do seu app
-        friendlyName: `TOTP-${new Date().getTime()}` // Nome único para o fator
+        issuer: 'FileVault',
+        friendlyName: `TOTP-${new Date().getTime()}`
       });
 
       if (error) throw error;
 
-      if (data?.totp?.qr_code) {
+      if (data?.totp) {
+        console.log('Factor enrolled:', data);
         setQrCode(data.totp.qr_code);
+        setFactorId(data.id); // Armazenando o ID do fator
         setShowTwoFactorDialog(true);
       }
     } catch (error) {
+      console.error('Error enabling 2FA:', error);
       toast({
         variant: "destructive",
         title: "Erro",
@@ -156,17 +161,28 @@ export default function Settings() {
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!factorId) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Factor ID não encontrado. Tente novamente.",
+      });
+      return;
+    }
+
     try {
       setIsVerifying2FA(true);
       
+      console.log('Challenging with factor ID:', factorId);
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-        factorId: 'totp'
+        factorId: factorId
       });
 
       if (challengeError) throw challengeError;
 
+      console.log('Challenge response:', challengeData);
       const { error: verifyError } = await supabase.auth.mfa.verify({
-        factorId: 'totp',
+        factorId: factorId,
         challengeId: challengeData.id,
         code: otpCode
       });
@@ -180,7 +196,9 @@ export default function Settings() {
 
       setShowTwoFactorDialog(false);
       setOtpCode("");
+      setFactorId(null);
     } catch (error) {
+      console.error('Error verifying 2FA:', error);
       toast({
         variant: "destructive",
         title: "Erro",
