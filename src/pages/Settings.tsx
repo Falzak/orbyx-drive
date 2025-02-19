@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -489,18 +488,13 @@ export default function Settings() {
             <form onSubmit={handleVerify2FA} className="space-y-4">
               <div className="space-y-2">
                 <Label>Digite o código de verificação</Label>
-                <InputOTP
-                  value={otpCode}
-                  onChange={setOtpCode}
-                  maxLength={6}
-                  render={({ slots }) => (
-                    <InputOTPGroup>
-                      {slots.map((slot, i) => (
-                        <InputOTPSlot key={i} {...slot} index={i} />
-                      ))}
-                    </InputOTPGroup>
-                  )}
-                />
+                <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                  <InputOTPGroup>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <InputOTPSlot key={i} index={i} />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isVerifying2FA}>

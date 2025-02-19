@@ -382,18 +382,13 @@ export default function Auth() {
               <p className="text-sm text-muted-foreground text-center">
                 Digite o código de verificação gerado pelo seu aplicativo autenticador
               </p>
-              <InputOTP
-                value={otpCode}
-                onChange={setOtpCode}
-                maxLength={6}
-                render={({ slots }) => (
-                  <InputOTPGroup>
-                    {slots.map((slot, i) => (
-                      <InputOTPSlot key={i} {...slot} index={i} />
-                    ))}
-                  </InputOTPGroup>
-                )}
-              />
+              <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                <InputOTPGroup>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <InputOTPSlot key={i} index={i} />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             <Button type="submit" disabled={isLoading} className="w-full">
               {isLoading ? "Verificando..." : "Verificar"}
