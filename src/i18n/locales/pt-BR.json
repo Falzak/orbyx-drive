@@ -137,7 +137,8 @@
       "light": "Claro",
       "dark": "Escuro"
     },
-    "search": "Pesquisar arquivos..."
+    "search": "Pesquisar arquivos...",
+    "language": "Idioma"
   },
   "dashboard": {
     "welcome": "Olá, {{name}}",

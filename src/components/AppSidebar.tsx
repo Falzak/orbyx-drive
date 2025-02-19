@@ -14,10 +14,8 @@ import {
   Moon,
   User,
   Search,
-  Globe,
-  Grid,
-  List,
   RefreshCw,
+  Globe,
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,7 +40,6 @@ import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 import StorageQuota from "@/components/StorageQuota";
 import { useTheme } from "next-themes";
 import { Input } from "@/components/ui/input";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,11 +47,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+interface AppSidebarProps {
+  onSearch?: (query: string) => void;
+}
 
 const LANGUAGES = [
   {
@@ -69,20 +71,15 @@ const LANGUAGES = [
   },
 ] as const;
 
-interface AppSidebarProps {
-  onSearch?: (query: string) => void;
-}
-
 export function AppSidebar({ onSearch }: AppSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useAuth();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(); // Adicionando i18n de volta
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -93,16 +90,8 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
     onSearch?.(value);
   };
 
-  const handleViewChange = (newView: "grid" | "list") => {
-    setView(newView);
-  };
-
   const handleRefreshFiles = () => {
     queryClient.invalidateQueries({ queryKey: ["files"] });
-  };
-
-  const handleLanguageChange = (lang: string) => {
-    i18n.changeLanguage(lang);
   };
 
   const handleCreateFolder = async (values: {
@@ -133,6 +122,25 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
         description: t("fileExplorer.createFolder.error"),
       });
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+      });
+    }
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
   };
 
   const menuItems = [
@@ -215,21 +223,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                   <RefreshCw className="h-4 w-4" />
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex-1 h-8"
-                  onClick={() =>
-                    handleViewChange(view === "grid" ? "list" : "grid")
-                  }
-                >
-                  {view === "grid" ? (
-                    <Grid className="h-4 w-4" />
-                  ) : (
-                    <List className="h-4 w-4" />
-                  )}
-                </Button>
-
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -260,7 +253,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                     {LANGUAGES.map((language) => (
                       <DropdownMenuItem
                         key={language.code}
-                        onClick={() => i18n.changeLanguage(language.code)}
+                        onClick={() => handleLanguageChange(language.code)}
                         className={cn(
                           "gap-2 p-2 cursor-pointer text-sm",
                           "hover:bg-accent/50 focus:bg-accent/50",
@@ -372,13 +365,15 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                   isCollapsed ? "justify-center" : "justify-start",
                   "hover:bg-accent/10 group",
                   "transition-all duration-200",
-                  "relative overflow-hidden"
+                  "relative overflow-hidden",
+                  "ring-1 ring-border/10 hover:ring-border/20"
                 )}
               >
                 <Avatar
                   className={cn(
                     "h-8 w-8 ring-2 ring-border/50 group-hover:ring-border/80",
                     "transition-all duration-200 group-hover:scale-105",
+                    "border-2 border-background",
                     isCollapsed && "h-6 w-6"
                   )}
                 >
@@ -407,48 +402,94 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align={isCollapsed ? "center" : "start"}
-              className="w-64 p-2 bg-background/60 backdrop-blur-xl border-border/50"
+              className="w-80 p-2 bg-background/80 dark:bg-black/80 backdrop-blur-xl border-border/50"
             >
-              <div className="flex items-center gap-3 p-2 group">
-                <Avatar className="h-12 w-12 ring-2 ring-border/50 transition-all duration-200 group-hover:ring-border/80 group-hover:scale-105">
-                  <AvatarImage
-                    src={session?.user?.user_metadata?.avatar_url}
-                    alt={session?.user?.email || ""}
-                    className="group-hover:scale-105 transition-transform duration-200"
-                  />
-                  <AvatarFallback className="bg-primary/10 text-primary text-lg group-hover:bg-primary/20 transition-colors duration-200">
-                    {session?.user?.email?.[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col flex-1 min-w-0 group-hover:translate-x-0.5 transition-transform duration-200">
-                  <span className="text-sm font-medium truncate text-foreground/90 group-hover:text-foreground transition-colors duration-200">
-                    {session?.user?.user_metadata?.full_name ||
-                      session?.user?.email?.split("@")[0]}
-                  </span>
-                  <span className="text-xs text-muted-foreground truncate group-hover:text-muted-foreground/80 transition-colors duration-200">
-                    {session?.user?.email}
-                  </span>
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-4 p-4"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="relative group">
+                    <Avatar className="h-16 w-16 ring-2 ring-border/50 transition-all duration-200 group-hover:ring-border/80 group-hover:scale-105 border-2 border-background">
+                      <AvatarImage
+                        src={session?.user?.user_metadata?.avatar_url}
+                        alt={session?.user?.email || ""}
+                        className="group-hover:scale-105 transition-transform duration-200"
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xl group-hover:bg-primary/20 transition-colors duration-200">
+                        {session?.user?.email?.[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0 gap-1">
+                    <span className="text-base font-medium truncate text-foreground">
+                      {session?.user?.user_metadata?.full_name ||
+                        session?.user?.email?.split("@")[0]}
+                    </span>
+                    <span className="text-sm text-muted-foreground truncate">
+                      {session?.user?.email}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <DropdownMenuSeparator className="my-2 bg-border/10" />
-              <DropdownMenuItem
-                onClick={() => navigate("/settings")}
-                className="gap-3 p-2 cursor-pointer group hover:bg-accent/50 transition-all duration-200"
+              </motion.div>
+
+              <DropdownMenuSeparator className="bg-border/10" />
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
               >
-                <Settings className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
-                <span className="group-hover:translate-x-0.5 transition-transform duration-200">
-                  {t("settings.title")}
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/auth")}
-                className="gap-3 p-2 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 transition-all duration-200"
+                <DropdownMenuGroup className="p-2">
+                  <DropdownMenuItem
+                    onClick={() => navigate("/settings")}
+                    className="gap-3 p-3 cursor-pointer group hover:bg-accent/50 transition-all duration-200 rounded-lg"
+                  >
+                    <div className="relative">
+                      <Settings className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
+                      <div className="absolute inset-0 blur-sm bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    </div>
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                        {t("settings.title")}
+                      </span>
+                      <span className="text-xs text-muted-foreground group-hover:translate-x-0.5 transition-transform duration-200">
+                        Preferências, segurança e mais
+                      </span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </motion.div>
+
+              <DropdownMenuSeparator className="bg-border/10" />
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: 0.2 }}
+                className="p-2"
               >
-                <LogOut className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
-                <span className="group-hover:translate-x-0.5 transition-transform duration-200">
-                  {t("common.logout")}
-                </span>
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="gap-3 p-3 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 transition-all duration-200 rounded-lg"
+                >
+                  <div className="relative">
+                    <LogOut className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
+                    <div className="absolute inset-0 blur-sm bg-destructive/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 flex-1">
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                      {t("common.logout")}
+                    </span>
+                    <span className="text-xs text-destructive/70 group-hover:translate-x-0.5 transition-transform duration-200">
+                      Sair da sua conta
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              </motion.div>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarFooter>
