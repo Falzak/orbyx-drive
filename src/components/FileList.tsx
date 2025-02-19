@@ -99,8 +99,14 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
       );
     }
 
+    const MotionFileContextMenu = motion.create(FileContextMenu);
+    const MotionTableRow = motion.create(TableRow);
+
     return (
-      <div className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full p-6">
+      <div
+        ref={ref}
+        className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full p-6"
+      >
         <Table className="w-full">
           <TableHeader>
             <TableRow className="hover:bg-transparent border-border/50">
@@ -118,7 +124,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
           <TableBody>
             <AnimatePresence mode="popLayout">
               {files.map((file) => (
-                <FileContextMenu
+                <MotionFileContextMenu
                   key={file.id}
                   file={file}
                   onPreview={onPreview}
@@ -128,9 +134,9 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                   onRename={onRename}
                   onToggleFavorite={onToggleFavorite}
                   onEditFolder={onEditFolder}
+                  layout
                 >
-                  <motion.tr
-                    layout
+                  <MotionTableRow
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
@@ -140,9 +146,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                       file.is_folder && "hover:bg-accent/10"
                     )}
                     onClick={() => {
-                      if (file.is_folder) {
-                        onPreview(file);
-                      } else if (isMediaFile(file.content_type)) {
+                      if (file.is_folder || isMediaFile(file.content_type)) {
                         onPreview(file);
                       }
                     }}
@@ -199,8 +203,8 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
                       {formatDate(file.created_at)}
                     </TableCell>
-                  </motion.tr>
-                </FileContextMenu>
+                  </MotionTableRow>
+                </MotionFileContextMenu>
               ))}
             </AnimatePresence>
           </TableBody>
