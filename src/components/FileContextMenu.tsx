@@ -65,9 +65,7 @@ export const FileContextMenu = React.forwardRef<
 
     return (
       <ContextMenu>
-        <ContextMenuTrigger asChild>
-          <div ref={ref}>{children}</div>
-        </ContextMenuTrigger>
+        <ContextMenuTrigger>{children}</ContextMenuTrigger>
         <ContextMenuContent className="w-72 bg-background/80 dark:bg-black/80 backdrop-blur-xl border-border/50 shadow-xl divide-y divide-border/50">
           <div className="px-2 py-3 space-y-3">
             <div className="flex items-start gap-3 group">

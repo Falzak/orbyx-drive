@@ -91,7 +91,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       );
     }
 
-    const MotionFileContextMenu = motion.create(FileContextMenu);
+    const MotionDiv = motion.div;
 
     return (
       <motion.div
@@ -101,7 +101,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       >
         <AnimatePresence mode="popLayout">
           {files.map((file) => (
-            <MotionFileContextMenu
+            <FileContextMenu
               key={file.id}
               file={file}
               onPreview={onPreview}
@@ -111,12 +111,12 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
               onRename={onRename}
               onToggleFavorite={onToggleFavorite}
               onEditFolder={onEditFolder}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
             >
-              <div
+              <MotionDiv
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
                 onClick={() => {
                   if (file.is_folder || isMediaFile(file.content_type)) {
                     onPreview(file);
@@ -165,8 +165,8 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                     </p>
                   </div>
                 </Card>
-              </div>
-            </MotionFileContextMenu>
+              </MotionDiv>
+            </FileContextMenu>
           ))}
         </AnimatePresence>
       </motion.div>
