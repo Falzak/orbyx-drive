@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -19,6 +31,10 @@ export default function Auth() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,16 +44,26 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          captchaToken: undefined
+        }
       });
 
       if (error) throw error;
-      navigate("/");
+
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user?.factors?.length) {
+        setShowOtpDialog(true);
+      } else {
+        navigate("/");
+      }
     } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Erro",
         description:
-          error instanceof Error ? error.message : "An error occurred",
+          error instanceof Error ? error.message : "Ocorreu um erro",
       });
     } finally {
       setLoading(false);
@@ -49,8 +75,8 @@ export default function Auth() {
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Passwords do not match",
+        title: "Erro",
+        description: "As senhas não coincidem",
       });
       return;
     }
@@ -66,15 +92,70 @@ export default function Auth() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Please check your email to confirm your account",
+        title: "Sucesso",
+        description: "Verifique seu email para confirmar sua conta",
       });
     } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Erro",
         description:
-          error instanceof Error ? error.message : "An error occurred",
+          error instanceof Error ? error.message : "Ocorreu um erro",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Email enviado",
+        description: "Verifique seu email para redefinir sua senha",
+      });
+      
+      setShowResetPassword(false);
+    } catch (error: unknown) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description:
+          error instanceof Error ? error.message : "Ocorreu um erro",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: "totp"
+      });
+
+      if (error) throw error;
+
+      navigate("/");
+    } catch (error: unknown) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description:
+          error instanceof Error ? error.message : "Código inválido",
       });
     } finally {
       setLoading(false);
@@ -105,13 +186,6 @@ export default function Auth() {
 
   const passwordStrength = calculatePasswordStrength(password);
   const passwordStrengthColor = getPasswordStrengthColor(passwordStrength);
-
-  const getPasswordStrengthText = (strength: number): string => {
-    if (strength <= 25) return "Fraca";
-    if (strength <= 50) return "Média";
-    if (strength <= 75) return "Boa";
-    return "Forte";
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -165,6 +239,14 @@ export default function Auth() {
                   </Button>
                 </div>
               </div>
+              <Button
+                type="button"
+                variant="link"
+                className="p-0 h-auto font-normal"
+                onClick={() => setShowResetPassword(true)}
+              >
+                Esqueceu sua senha?
+              </Button>
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? "Carregando..." : "Entrar"}
               </Button>
@@ -216,10 +298,6 @@ export default function Auth() {
                         value={passwordStrength}
                         className={`h-1 ${passwordStrengthColor}`}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Força da senha:{" "}
-                        {getPasswordStrengthText(passwordStrength)}
-                      </p>
                       <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
                         <li
                           className={
@@ -289,6 +367,60 @@ export default function Auth() {
           </TabsContent>
         </Tabs>
       </Card>
+
+      <Dialog open={showOtpDialog} onOpenChange={setShowOtpDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Verificação em duas etapas</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleVerifyOTP} className="space-y-4">
+            <div className="flex flex-col items-center space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Digite o código de verificação gerado pelo seu aplicativo autenticador
+              </p>
+              <InputOTP
+                value={otpCode}
+                onChange={setOtpCode}
+                maxLength={6}
+                render={({ slots }) => (
+                  <InputOTPGroup>
+                    {slots.map((slot, index) => (
+                      <InputOTPSlot key={index} {...slot} />
+                    ))}
+                  </InputOTPGroup>
+                )}
+              />
+            </div>
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? "Verificando..." : "Verificar"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showResetPassword} onOpenChange={setShowResetPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Recuperar senha</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">Email</Label>
+              <Input
+                type="email"
+                id="reset-email"
+                placeholder="Digite seu email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? "Enviando..." : "Enviar email de recuperação"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
