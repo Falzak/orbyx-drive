@@ -80,7 +80,7 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
         isCollapsed && "p-2"
       )}
     >
-      <motion.div 
+      <motion.div
         className="space-y-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -93,16 +93,28 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
           )}
         >
           <div className="relative">
-            <HardDrive className={cn(
-              "h-4 w-4 shrink-0",
-              isCritical ? "text-destructive" : isNearLimit ? "text-yellow-500" : "text-primary",
-              "transition-transform group-hover:scale-110 duration-200"
-            )} />
-            <div className={cn(
-              "absolute inset-0 blur-md",
-              isCritical ? "bg-destructive/30" : isNearLimit ? "bg-yellow-500/30" : "bg-primary/30",
-              "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            )} />
+            <HardDrive
+              className={cn(
+                "h-4 w-4 shrink-0",
+                isCritical
+                  ? "text-destructive"
+                  : isNearLimit
+                  ? "text-yellow-500"
+                  : "text-primary",
+                "transition-transform group-hover:scale-110 duration-200"
+              )}
+            />
+            <div
+              className={cn(
+                "absolute inset-0 blur-md",
+                isCritical
+                  ? "bg-destructive/30"
+                  : isNearLimit
+                  ? "bg-yellow-500/30"
+                  : "bg-primary/30",
+                "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              )}
+            />
           </div>
           {!isCollapsed && (
             <span className="font-medium text-foreground/90">
@@ -112,7 +124,7 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
         </div>
 
         {!isCollapsed && (
-          <motion.div 
+          <motion.div
             className="space-y-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -134,10 +146,12 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
                   >
                     <Tooltip>
                       <TooltipTrigger>
-                        <AlertCircle className={cn(
-                          "h-4 w-4",
-                          isCritical ? "text-destructive" : "text-yellow-500"
-                        )} />
+                        <AlertCircle
+                          className={cn(
+                            "h-4 w-4",
+                            isCritical ? "text-destructive" : "text-yellow-500"
+                          )}
+                        />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="text-sm">
@@ -157,27 +171,37 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
                 value={usedPercentage}
                 className={cn(
                   "h-2",
-                  isCritical ? "bg-destructive/20" : isNearLimit ? "bg-yellow-500/20" : "bg-primary/20"
+                  isCritical
+                    ? "bg-destructive/20"
+                    : isNearLimit
+                    ? "bg-yellow-500/20"
+                    : "bg-primary/20"
                 )}
                 indicatorClassName={cn(
                   "transition-all duration-500",
-                  isCritical ? "bg-destructive" : isNearLimit ? "bg-yellow-500" : "bg-primary"
+                  isCritical
+                    ? "bg-destructive"
+                    : isNearLimit
+                    ? "bg-yellow-500"
+                    : "bg-primary"
                 )}
               />
-              <div className={cn(
-                "absolute inset-0 blur-md",
-                isCritical ? "bg-destructive/20" : isNearLimit ? "bg-yellow-500/20" : "bg-primary/20",
-                "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              )} />
+              <div
+                className={cn(
+                  "absolute inset-0 blur-md",
+                  isCritical
+                    ? "bg-destructive/20"
+                    : isNearLimit
+                    ? "bg-yellow-500/20"
+                    : "bg-primary/20",
+                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                )}
+              />
             </div>
 
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>
-                {formatFileSize(quotaInfo.used_quota)}
-              </span>
-              <span>
-                {usedPercentage.toFixed(1)}%
-              </span>
+              <span>{formatFileSize(quotaInfo.used_quota)}</span>
+              <span>{usedPercentage.toFixed(1)}%</span>
             </div>
           </motion.div>
         )}
@@ -197,20 +221,30 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
           <div className="font-medium flex items-center gap-2">
             {t("sidebar.system.storage")}
             {isNearLimit && (
-              <AlertCircle className={cn(
-                "h-4 w-4",
-                isCritical ? "text-destructive" : "text-yellow-500"
-              )} />
+              <AlertCircle
+                className={cn(
+                  "h-4 w-4",
+                  isCritical ? "text-destructive" : "text-yellow-500"
+                )}
+              />
             )}
           </div>
           <Progress
             value={usedPercentage}
             className={cn(
               "h-1.5",
-              isCritical ? "bg-destructive/20" : isNearLimit ? "bg-yellow-500/20" : "bg-primary/20"
+              isCritical
+                ? "bg-destructive/20"
+                : isNearLimit
+                ? "bg-yellow-500/20"
+                : "bg-primary/20"
             )}
             indicatorClassName={cn(
-              isCritical ? "bg-destructive" : isNearLimit ? "bg-yellow-500" : "bg-primary"
+              isCritical
+                ? "bg-destructive"
+                : isNearLimit
+                ? "bg-yellow-500"
+                : "bg-primary"
             )}
           />
           <div className="text-sm space-y-1">
