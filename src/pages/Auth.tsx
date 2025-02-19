@@ -40,19 +40,16 @@ export default function Auth() {
     try {
       setLoading(true);
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          captchaToken: undefined
-        }
       });
 
       if (error) throw error;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       
-      if (user?.factors?.length) {
+      if (mfaData.nextLevel === 'aal2') {
         setShowOtpDialog(true);
       } else {
         navigate("/");
@@ -140,14 +137,21 @@ export default function Auth() {
     try {
       setLoading(true);
 
+      const { data: factors } = await supabase.auth.mfa.list();
+      const totpFactor = factors.find(factor => factor.factor_type === 'totp');
+
+      if (!totpFactor) {
+        throw new Error("Fator TOTP não encontrado");
+      }
+
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-        factorId: 'totp'
+        factorId: totpFactor.id
       });
 
       if (challengeError) throw challengeError;
 
       const { error: verifyError } = await supabase.auth.mfa.verify({
-        factorId: 'totp',
+        factorId: totpFactor.id,
         challengeId: challengeData.id,
         code: otpCode
       });

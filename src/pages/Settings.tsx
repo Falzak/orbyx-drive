@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -63,6 +62,7 @@ export default function Settings() {
   const [otpCode, setOtpCode] = React.useState("");
   const [isVerifying2FA, setIsVerifying2FA] = React.useState(false);
   const [factorId, setFactorId] = React.useState<string | null>(null);
+  const [has2FAEnabled, setHas2FAEnabled] = React.useState(false);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (values: { full_name: string; avatar_url?: string }) => {
@@ -132,6 +132,22 @@ export default function Settings() {
     }
   };
 
+  const check2FAStatus = React.useCallback(async () => {
+    try {
+      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      
+      if (error) throw error;
+
+      setHas2FAEnabled(data.currentLevel === 'aal2' || data.nextLevel === 'aal2');
+    } catch (error) {
+      console.error('Error checking 2FA status:', error);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    check2FAStatus();
+  }, [check2FAStatus]);
+
   const handleEnable2FA = async () => {
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
@@ -145,7 +161,7 @@ export default function Settings() {
       if (data?.totp) {
         console.log('Factor enrolled:', data);
         setQrCode(data.totp.qr_code);
-        setFactorId(data.id); // Armazenando o ID do fator
+        setFactorId(data.id);
         setShowTwoFactorDialog(true);
       }
     } catch (error) {
@@ -197,6 +213,7 @@ export default function Settings() {
       setShowTwoFactorDialog(false);
       setOtpCode("");
       setFactorId(null);
+      check2FAStatus();
     } catch (error) {
       console.error('Error verifying 2FA:', error);
       toast({
@@ -384,13 +401,23 @@ export default function Settings() {
 
                 <div className="space-y-2">
                   <Label>{t("settings.sections.security.twoFactor")}</Label>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleEnable2FA}
-                  >
-                    {t("settings.sections.security.enable2FA")}
-                  </Button>
+                  {has2FAEnabled ? (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled
+                    >
+                      2FA já está ativado
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleEnable2FA}
+                    >
+                      {t("settings.sections.security.enable2FA")}
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
