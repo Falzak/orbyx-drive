@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -141,21 +140,26 @@ export default function Auth() {
     try {
       setLoading(true);
 
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "totp"
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: 'totp'
       });
 
-      if (error) throw error;
+      if (challengeError) throw challengeError;
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: 'totp',
+        challengeId: challengeData.id,
+        code: otpCode
+      });
+
+      if (verifyError) throw verifyError;
 
       navigate("/");
     } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Erro",
-        description:
-          error instanceof Error ? error.message : "Código inválido",
+        description: error instanceof Error ? error.message : "Código inválido",
       });
     } finally {
       setLoading(false);
@@ -384,8 +388,8 @@ export default function Auth() {
                 maxLength={6}
                 render={({ slots }) => (
                   <InputOTPGroup>
-                    {slots.map((slot, index) => (
-                      <InputOTPSlot key={index} {...slot} />
+                    {slots.map((slot, i) => (
+                      <InputOTPSlot key={i} {...slot} index={i} />
                     ))}
                   </InputOTPGroup>
                 )}

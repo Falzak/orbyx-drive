@@ -71,7 +71,7 @@ export const StorageProvidersPanel = () => {
     mutationFn: async (provider: Partial<StorageProviderDatabase>) => {
       const { data, error } = await supabase
         .from("storage_providers")
-        .insert([provider])
+        .insert(provider)
         .select()
         .single();
 
@@ -143,10 +143,10 @@ export const StorageProvidersPanel = () => {
     addProviderMutation.mutate(providerData);
   };
 
-  const handleToggleProvider = (id: string, isActive: boolean) => {
+  const handleToggleProvider = (id: string, is_active: boolean) => {
     updateProviderMutation.mutate({
       id,
-      data: { is_active: isActive },
+      data: { is_active },
     });
   };
 

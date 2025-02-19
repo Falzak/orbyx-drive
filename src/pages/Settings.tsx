@@ -134,13 +134,15 @@ export default function Settings() {
   const handleEnable2FA = async () => {
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
-        factorType: 'totp'
+        factorType: 'totp',
+        issuer: 'FileVault', // Nome do seu app
+        friendlyName: `TOTP-${new Date().getTime()}` // Nome único para o fator
       });
 
       if (error) throw error;
 
-      if (data.qr_code) {
-        setQrCode(data.qr_code);
+      if (data?.totp?.qr_code) {
+        setQrCode(data.totp.qr_code);
         setShowTwoFactorDialog(true);
       }
     } catch (error) {
@@ -158,15 +160,16 @@ export default function Settings() {
     try {
       setIsVerifying2FA(true);
       
-      const { error } = await supabase.auth.mfa.challenge({
-        factorId: 'totp',
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: 'totp'
       });
 
-      if (error) throw error;
+      if (challengeError) throw challengeError;
 
       const { error: verifyError } = await supabase.auth.mfa.verify({
         factorId: 'totp',
-        code: otpCode,
+        challengeId: challengeData.id,
+        code: otpCode
       });
 
       if (verifyError) throw verifyError;
