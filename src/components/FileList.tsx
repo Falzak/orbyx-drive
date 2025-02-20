@@ -16,6 +16,8 @@ import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileContextMenu } from "./FileContextMenu";
 
+const MotionTableRow = motion(TableRow);
+
 interface FileListProps {
   files: FileData[];
   isLoading: boolean;
@@ -99,9 +101,6 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
       );
     }
 
-    const MotionFileContextMenu = motion.create(FileContextMenu);
-    const MotionTableRow = motion.create(TableRow);
-
     return (
       <div
         ref={ref}
@@ -122,36 +121,35 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
             </TableRow>
           </TableHeader>
           <TableBody>
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="popLayout" initial={false}>
               {files.map((file) => (
-                <MotionFileContextMenu
+                <MotionTableRow
                   key={file.id}
-                  file={file}
-                  onPreview={onPreview}
-                  onDownload={onDownload}
-                  onShare={onShare}
-                  onDelete={onDelete}
-                  onRename={onRename}
-                  onToggleFavorite={onToggleFavorite}
-                  onEditFolder={onEditFolder}
-                  layout
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.2 }}
+                  className={cn(
+                    "group cursor-pointer transition-all hover:bg-accent/5 border-border/50",
+                    file.is_folder && "hover:bg-accent/10"
+                  )}
+                  onClick={() => {
+                    if (file.is_folder || isMediaFile(file.content_type)) {
+                      onPreview(file);
+                    }
+                  }}
                 >
-                  <MotionTableRow
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.2 }}
-                    className={cn(
-                      "group cursor-pointer transition-all hover:bg-accent/5 border-border/50",
-                      file.is_folder && "hover:bg-accent/10"
-                    )}
-                    onClick={() => {
-                      if (file.is_folder || isMediaFile(file.content_type)) {
-                        onPreview(file);
-                      }
-                    }}
-                  >
-                    <TableCell className="max-w-0">
+                  <TableCell className="max-w-0">
+                    <FileContextMenu
+                      file={file}
+                      onPreview={onPreview}
+                      onDownload={onDownload}
+                      onShare={onShare}
+                      onDelete={onDelete}
+                      onRename={onRename}
+                      onToggleFavorite={onToggleFavorite}
+                      onEditFolder={onEditFolder}
+                    >
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           {file.content_type.startsWith("image/") &&
@@ -196,15 +194,15 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                           </span>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
-                      {formatFileSize(file.size)}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
-                      {formatDate(file.created_at)}
-                    </TableCell>
-                  </MotionTableRow>
-                </MotionFileContextMenu>
+                    </FileContextMenu>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
+                    {formatFileSize(file.size)}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
+                    {formatDate(file.created_at)}
+                  </TableCell>
+                </MotionTableRow>
               ))}
             </AnimatePresence>
           </TableBody>
