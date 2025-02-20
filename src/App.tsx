@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "./integrations/supabase/client";
@@ -37,6 +37,51 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!session) {
     return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const TwoFactorProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session } = useAuth();
+  const [isChecking, setIsChecking] = useState(true);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const check2FAStatus = async () => {
+      if (!session) {
+        setIsChecking(false);
+        return;
+      }
+
+      try {
+        const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const totpFactor = factors?.totp.length > 0 ? factors.totp[0] : null;
+
+        if (mfaData?.currentLevel === 'aal1' && 
+            mfaData?.nextLevel === 'aal2' && 
+            totpFactor) {
+          setRequires2FA(true);
+          navigate('/two-factor');
+        }
+      } catch (error) {
+        console.error('Error checking 2FA status:', error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    check2FAStatus();
+  }, [session, navigate]);
+
+  if (isChecking) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (requires2FA) {
+    return null;
   }
 
   return <>{children}</>;
@@ -83,11 +128,14 @@ const App = () => {
                   element={session ? <Navigate to="/" replace /> : <Auth />} 
                 />
                 <Route path="/s/:id" element={<Share />} />
+                <Route path="/two-factor" element={<TwoFactor />} />
                 <Route
                   path="/"
                   element={
                     <ProtectedRoute>
-                      <Index />
+                      <TwoFactorProtectedRoute>
+                        <Index />
+                      </TwoFactorProtectedRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -95,7 +143,9 @@ const App = () => {
                   path="/settings/:section?"
                   element={
                     <ProtectedRoute>
-                      <Settings />
+                      <TwoFactorProtectedRoute>
+                        <Settings />
+                      </TwoFactorProtectedRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -103,11 +153,12 @@ const App = () => {
                   path="/admin"
                   element={
                     <ProtectedRoute>
-                      <Admin />
+                      <TwoFactorProtectedRoute>
+                        <Admin />
+                      </TwoFactorProtectedRoute>
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/two-factor" element={<TwoFactor />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
