@@ -1,7 +1,354 @@
 {
-  "error": {
-    "404": {
-      "description": "A página que você está procurando não existe"
+  "common": {
+    "search": "Pesquisar arquivos...",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "language": "Idioma",
+    "theme": {
+      "light": "Claro",
+      "dark": "Escuro"
+    },
+    "error": "Erro",
+    "success": "Sucesso",
+    "loading": "Carregando...",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "upload": "Upload",
+    "logoutError": "Falha ao sair",
+    "create": "Criar",
+    "creating": "Criando..."
+  },
+  "dashboard": {
+    "title": "Painel",
+    "welcome": "Bem-vindo(a), {{name}}",
+    "uploadHint": "Arraste arquivos para a área de upload ou navegue",
+    "uploadInProgress": "Upload em andamento",
+    "uploadWait": "Aguarde o upload atual terminar",
+    "uploadSuccess": "Arquivo enviado com sucesso",
+    "uploadError": "Falha ao fazer upload do arquivo: {{error}}",
+    "upload": {
+      "button": "Upload",
+      "cancel": "Cancelar Upload",
+      "complete": "Upload concluído",
+      "uploading": "Enviando",
+      "cancelled": "Upload cancelado",
+      "cancelledDescription": "O upload foi cancelado"
+    },
+    "folder": {
+      "createSuccess": "Pasta criada",
+      "createDescription": "Nova pasta foi criada",
+      "created": "Pasta criada"
+    },
+    "dropzone": {
+      "title": "Solte os arquivos aqui ou clique para selecionar",
+      "subtitle": "Suporta imagens, vídeos, áudio e documentos",
+      "dragActive": "Solte os arquivos aqui para fazer upload"
+    },
+    "contextMenu": {
+      "refresh": "Atualizar arquivos",
+      "createFolder": "Nova pasta",
+      "uploadFile": "Fazer upload",
+      "selectAll": "Selecionar tudo",
+      "sortBy": "Ordenar por",
+      "view": "Visualizar",
+      "gridView": "Grade",
+      "listView": "Lista",
+      "settings": "Configurações",
+      "newTab": "Abrir em nova aba",
+      "copyPath": "Copiar caminho",
+      "properties": "Propriedades",
+      "help": "Ajuda",
+      "shortcuts": "Atalhos de teclado",
+      "feedback": "Enviar feedback"
+    },
+    "refresh": {
+      "success": "Arquivos atualizados",
+      "description": "Lista de arquivos atualizada com sucesso"
+    },
+    "selection": {
+      "allSelected": "Todos os itens selecionados"
+    },
+    "clipboard": {
+      "pathCopied": "Caminho copiado para a área de transferência"
+    },
+    "shortcuts": {
+      "comingSoon": "Atalhos de teclado em breve"
+    }
+  },
+  "sidebar": {
+    "expandSidebar": "Expandir barra lateral",
+    "collapseSidebar": "Recolher barra lateral",
+    "mainItems": {
+      "allFiles": "Todos os Arquivos",
+      "recent": "Recentes",
+      "shared": "Compartilhados",
+      "favorites": "Favoritos"
+    },
+    "views": {
+      "title": "Visualizações",
+      "gridView": "Visualização em Grade",
+      "listView": "Visualização em Lista"
+    },
+    "categories": {
+      "title": "Categorias",
+      "images": "Imagens",
+      "documents": "Documentos",
+      "videos": "Vídeos",
+      "audio": "Áudio"
+    },
+    "tools": {
+      "title": "Ferramentas",
+      "uploadFiles": "Fazer Upload",
+      "newFolder": "Nova Pasta",
+      "bulkActions": "Ações em Massa",
+      "downloadAll": "Baixar Tudo"
+    },
+    "system": {
+      "title": "Sistema",
+      "storage": "Armazenamento",
+      "used": "Usado"
+    }
+  },
+  "fileExplorer": {
+    "emptyState": {
+      "title": "Nenhum arquivo encontrado",
+      "description": "Comece fazendo upload de alguns arquivos"
+    },
+    "allFiles": "Todos os Arquivos",
+    "sortBy": {
+      "placeholder": "Ordenar por",
+      "nameAsc": "Nome (A-Z)",
+      "nameDesc": "Nome (Z-A)",
+      "dateAsc": "Data (Mais antiga)",
+      "dateDesc": "Data (Mais recente)",
+      "sizeAsc": "Tamanho (Menor)",
+      "sizeDesc": "Tamanho (Maior)"
+    },
+    "contextMenu": {
+      "open": "Abrir",
+      "download": "Baixar",
+      "share": "Compartilhar",
+      "delete": "Excluir",
+      "rename": "Renomear",
+      "properties": "Propriedades",
+      "favorite": "Adicionar aos favoritos",
+      "unfavorite": "Remover dos favoritos",
+      "renamePrompt": "Digite o novo nome do arquivo",
+      "editFolder": "Editar pasta"
+    },
+    "fileProperties": {
+      "name": "Nome",
+      "size": "Tamanho",
+      "type": "Tipo",
+      "modified": "Modificado",
+      "created": "Criado em",
+      "location": "Localização",
+      "added": "Adicionado em",
+      "details": {
+        "title": "Detalhes do Arquivo",
+        "type": "Tipo: {{type}}",
+        "size": "Tamanho: {{size}}",
+        "created": "Criado em: {{date}}",
+        "modified": "Modificado em: {{date}}"
+      }
+    },
+    "preview": {
+      "noPreview": "Não é possível visualizar este arquivo",
+      "openFile": "Abrir arquivo",
+      "download": "Baixar",
+      "share": "Compartilhar",
+      "close": "Fechar"
+    },
+    "tabs": {
+      "emoji": "Emojis",
+      "color": "Cores"
+    },
+    "labels": {
+      "icon": "Ícone",
+      "color": "Cor"
+    },
+    "colors": {
+      "gray": "Cinza",
+      "blue": "Azul",
+      "green": "Verde",
+      "yellow": "Amarelo",
+      "red": "Vermelho",
+      "purple": "Roxo",
+      "pink": "Rosa",
+      "turquoise": "Turquesa",
+      "orange": "Laranja",
+      "lightGreen": "Verde Claro",
+      "indigo": "Índigo",
+      "magenta": "Magenta"
+    },
+    "selection": {
+      "selected": "{{count}} selecionado",
+      "selected_plural": "{{count}} selecionados"
+    },
+    "actions": {
+      "createFolderSuccess": "Pasta criada com sucesso",
+      "createFolderError": "Erro ao criar pasta",
+      "deleteSuccess": "Excluído com sucesso"
+    },
+    "createFolder": {
+      "title": "Nova Pasta",
+      "description": "Crie uma nova pasta para organizar seus arquivos",
+      "name": "Nome da pasta",
+      "namePlaceholder": "Digite o nome da pasta"
+    },
+    "editFolder": {
+      "title": "Editar Pasta",
+      "description": "Modificar propriedades da pasta",
+      "success": "Pasta atualizada com sucesso",
+      "error": "Erro ao atualizar pasta"
+    },
+    "categories": {
+      "allFiles": "Todos os Arquivos"
+    },
+    "navigation": {
+      "back": "Voltar"
+    },
+    "dropzone": {
+      "title": "Solte os arquivos aqui",
+      "subtitle": "Faça upload de arquivos para esta pasta"
+    },
+    "suggestions": {
+      "404": {
+        "first": "• Verifique se a URL está correta",
+        "third": "- Voltar para a página inicial",
+        "second": "Voltar para a página inicial"
+      }
+    },
+    "error": {
+      "404": {
+        "title": "Página não encontrada",
+        "description": "A página que você está procurando não existe"
+      },
+      "suggestions": "Sugestões"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "email": "E-mail",
+      "password": "Senha",
+      "submit": "Entrar",
+      "forgotPassword": "Esqueceu sua senha?",
+      "noAccount": "Não tem uma conta?",
+      "signUp": "Cadastre-se"
+    },
+    "register": {
+      "title": "Criar Conta",
+      "email": "E-mail",
+      "password": "Senha",
+      "confirmPassword": "Confirmar Senha",
+      "submit": "Criar Conta",
+      "hasAccount": "Já tem uma conta?",
+      "signIn": "Entrar"
+    },
+    "forgotPassword": {
+      "title": "Esqueci a Senha",
+      "email": "E-mail",
+      "submit": "Enviar E-mail de Recuperação",
+      "backToLogin": "Voltar para Login"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "profileUpdated": "Perfil atualizado com sucesso",
+    "sections": {
+      "profile": {
+        "title": "Perfil",
+        "description": "Gerencie suas informações pessoais",
+        "name": "Nome completo",
+        "namePlaceholder": "Digite seu nome completo",
+        "email": "E-mail",
+        "avatar": "Foto do perfil"
+      },
+      "appearance": {
+        "title": "Aparência",
+        "description": "Personalize a aparência do aplicativo",
+        "theme": "Tema"
+      },
+      "storage": {
+        "title": "Armazenamento",
+        "usage": "Uso do Armazenamento",
+        "quota": "Cota"
+      },
+      "security": {
+        "title": "Segurança",
+        "description": "Gerencie suas configurações de segurança",
+        "password": "Senha",
+        "changePassword": "Alterar senha",
+        "twoFactor": "Autenticação de dois fatores",
+        "enable2FA": "Ativar autenticação de dois fatores"
+      }
+    }
+  },
+  "mediaPreview": {
+    "loading": "Carregando...",
+    "error": "Erro ao carregar arquivo",
+    "controls": {
+      "play": "Reproduzir",
+      "pause": "Pausar",
+      "mute": "Mutar",
+      "unmute": "Desmutar",
+      "fullscreen": "Tela cheia",
+      "exitFullscreen": "Sair da tela cheia",
+      "download": "Baixar",
+      "share": "Compartilhar",
+      "close": "Fechar"
+    }
+  },
+  "admin": {
+    "title": "Painel de Administração",
+    "description": "Gerencie as configurações e ajustes do aplicativo",
+    "unauthorized": {
+      "title": "Acesso Não Autorizado",
+      "description": "Você não tem permissão para acessar esta página"
+    },
+    "tabs": {
+      "storage": "Armazenamento",
+      "database": "Banco de Dados",
+      "settings": "Configurações"
+    },
+    "storage": {
+      "title": "Provedores de Armazenamento",
+      "description": "Gerencie seus provedores de armazenamento e configurações",
+      "addProvider": "Adicionar Provedor",
+      "addProviderDescription": "Configure um novo provedor de armazenamento para seu aplicativo",
+      "provider": "Provedor",
+      "accessKeyId": "ID da Chave de Acesso",
+      "secretAccessKey": "Chave de Acesso Secreta",
+      "region": "Região",
+      "bucket": "Bucket",
+      "accountId": "ID da Conta",
+      "projectId": "ID do Projeto",
+      "isActive": "Ativo",
+      "addSuccess": "Provedor Adicionado",
+      "providerAdded": "Provedor de armazenamento foi adicionado com sucesso",
+      "updateSuccess": "Provedor Atualizado",
+      "providerUpdated": "Provedor de armazenamento foi atualizado com sucesso",
+      "deleteSuccess": "Provedor Excluído",
+      "providerDeleted": "Provedor de armazenamento foi excluído com sucesso",
+      "providers": {
+        "aws": "Amazon S3",
+        "google": "Google Cloud Storage",
+        "backblaze": "Backblaze B2",
+        "wasabi": "Wasabi",
+        "cloudflare": "Cloudflare R2"
+      }
+    },
+    "database": {
+      "title": "Gerenciamento do Banco de Dados",
+      "comingSoon": "Recursos de gerenciamento do banco de dados em breve"
+    },
+    "settings": {
+      "title": "Configurações do Sistema",
+      "comingSoon": "Configurações adicionais do sistema em breve"
     }
   }
 }
