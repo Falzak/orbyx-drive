@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft, LockKeyhole } from "lucide-react";
 import {
   InputOTP,
   InputOTPGroup,
@@ -83,10 +83,10 @@ export default function TwoFactor() {
 
   return (
     <motion.div
-      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      className="min-h-screen flex flex-col items-center justify-center bg-background p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
       <Button
         variant="ghost"
@@ -97,66 +97,79 @@ export default function TwoFactor() {
         <ArrowLeft className="h-4 w-4" />
       </Button>
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border-border/50">
         <CardHeader className="space-y-4">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Shield className="h-6 w-6 text-primary" />
+          <motion.div 
+            className="flex justify-center mb-4"
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="p-3 rounded-full bg-secondary">
+              <Shield className="h-6 w-6 text-secondary-foreground" />
             </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-center">
+          </motion.div>
+          <CardTitle className="text-xl font-semibold text-center">
             Verificação em duas etapas
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-sm">
             Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleVerifyOTP} className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-              <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <InputOTP
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={setOtpCode}
-                  className="gap-2"
-                >
-                  <InputOTPGroup>
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <InputOTPSlot
-                        key={i}
-                        index={i}
-                        className="rounded-md border-border/50 bg-background/50 backdrop-blur-sm"
-                      />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </motion.div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading || otpCode.length !== 6}
-              className="w-full"
+            <motion.div 
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
             >
-              {isLoading ? (
-                <>
-                  <motion.div
-                    className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  />
-                  Verificando...
-                </>
-              ) : (
-                "Verificar"
-              )}
-            </Button>
+              <InputOTP
+                maxLength={6}
+                value={otpCode}
+                onChange={setOtpCode}
+                className="gap-2"
+              >
+                <InputOTPGroup>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className="rounded-md w-10 h-10 text-center text-base"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Button
+                type="submit"
+                disabled={isLoading || otpCode.length !== 6}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <motion.div
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    <span>Verificando...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <LockKeyhole className="h-4 w-4" />
+                    <span>Verificar</span>
+                  </div>
+                )}
+              </Button>
+            </motion.div>
           </form>
         </CardContent>
       </Card>
