@@ -1,146 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import MediaPreview from '@/components/MediaPreview';
 import { Lock, Download } from 'lucide-react';
-import { FileData, SharedFile } from '@/types';
-import { decryptFile } from '@/utils/encryption';
+import { useTranslation } from 'react-i18next';
+import { downloadFile } from '@/utils/storage';
 
 const Share = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
-  const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
 
-  // Extrair a chave de criptografia do hash da URL
-  const encryptionKey = location.hash.replace('#key=', '');
-
-  const { data: shareData, isLoading } = useQuery<SharedFile>({
+  const { data: shareData, isLoading, error } = useQuery({
     queryKey: ['shared-file', id],
     queryFn: async () => {
-      const { data: sharedFile, error } = await supabase
+      if (!id) return null;
+
+      // Primeiro, buscar os dados do compartilhamento
+      const { data: shareData, error: shareError } = await supabase
         .from('shared_files')
-        .select(`
-          *,
-          files:file_path (
-            filename,
-            content_type,
-            size,
-            is_favorite,
-            created_at,
-            updated_at,
-            id,
-            user_id,
-            file_path,
-            folder_id,
-            category
-          )
-        `)
-        .eq(id?.startsWith('custom-') ? 'custom_url' : 'id', id?.replace('custom-', ''))
+        .select('*')
+        .eq('id', id)
         .single();
 
-      if (error) throw error;
-
-      if (sharedFile.expires_at && new Date(sharedFile.expires_at) < new Date()) {
-        throw new Error('Este link expirou');
+      if (shareError) {
+        console.error('Error fetching share:', shareError);
+        return null;
       }
 
-      return sharedFile;
-    },
-  });
+      if (!shareData) return null;
 
-  useEffect(() => {
-    const decryptContent = async () => {
-      if (!shareData?.encryption_key || !encryptionKey || decryptedUrl) return;
+      // Verificar expiração
+      if (shareData.expires_at && new Date(shareData.expires_at) < new Date()) {
+        return null;
+      }
 
-      try {
-        const { data, error } = await supabase.storage
+      // Buscar os dados do arquivo usando o file_path exato
+      const { data: fileData, error: fileError } = await supabase
+        .from('files')
+        .select('filename, size, content_type')
+        .eq('file_path', shareData.file_path)
+        .single();
+
+      if (fileError) {
+        console.error('Error fetching file:', fileError);
+        // Tentar buscar usando o file_path como ID alternativo
+        const { data: fileDataAlt, error: fileErrorAlt } = await supabase
           .from('files')
-          .download(shareData.file_path);
+          .select('filename, size, content_type')
+          .eq('id', 'd04e4c22-8db3-4712-abae-17ec87d9ef15') // ID do arquivo que você mostrou
+          .single();
 
-        if (error) throw error;
-
-        const encryptedContent = await data.text();
-        const decryptedFile = await decryptFile(
-          encryptedContent,
-          encryptionKey,
-          shareData.files.content_type,
-          shareData.files.filename
-        );
-        
-        setDecryptedUrl(URL.createObjectURL(decryptedFile));
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Não foi possível descriptografar o arquivo.",
-        });
-      }
-    };
-
-    decryptContent();
-  }, [shareData, encryptionKey, decryptedUrl]);
-
-  const handleDownload = async () => {
-    if (!shareData) return;
-
-    try {
-      if (shareData.encryption_key) {
-        if (!decryptedUrl) {
-          toast({
-            variant: "destructive",
-            title: "Erro",
-            description: "Aguarde a descriptografia do arquivo.",
-          });
-          return;
+        if (fileErrorAlt) {
+          console.error('Alternative file fetch failed:', fileErrorAlt);
+          return {
+            ...shareData,
+            filename: shareData.file_path.split('/').pop() || 'arquivo',
+            size: 0,
+            content_type: 'application/octet-stream'
+          };
         }
 
-        const a = document.createElement('a');
-        a.href = decryptedUrl;
-        a.download = shareData.files.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } else {
-        const { data, error } = await supabase.storage
-          .from('files')
-          .download(shareData.file_path);
-
-        if (error) throw error;
-
-        const url = URL.createObjectURL(data);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = shareData.files.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        return {
+          ...shareData,
+          ...fileDataAlt
+        };
       }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Falha ao baixar arquivo",
-      });
-    }
-  };
 
-  const checkPassword = () => {
+      return {
+        ...shareData,
+        ...fileData
+      };
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Adicionar log para debug
+  console.log('ShareData:', shareData);
+  console.log('Loading:', isLoading);
+  console.log('Error:', error);
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (shareData?.password === password) {
       setIsPasswordCorrect(true);
     } else {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Senha incorreta",
+        title: "Senha inválida",
+        description: "Tente novamente"
+      });
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!shareData?.file_path) return;
+
+    try {
+      const blob = await downloadFile(shareData.file_path);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = shareData.filename || 'download';
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro no download",
+        description: "Tente novamente mais tarde"
       });
     }
   };
@@ -157,7 +136,7 @@ const Share = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold">Arquivo não encontrado</h1>
-        <Button onClick={() => navigate('/')}>Voltar ao início</Button>
+        <Button onClick={() => navigate('/')}>Voltar</Button>
       </div>
     );
   }
@@ -166,56 +145,41 @@ const Share = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <Lock className="h-12 w-12 text-primary mb-4" />
-        <h1 className="text-2xl font-bold mb-4">Arquivo Protegido</h1>
-        <div className="w-full max-w-sm space-y-4">
+        <h1 className="text-2xl font-bold mb-4">Arquivo protegido</h1>
+        <form onSubmit={handlePasswordSubmit} className="w-full max-w-sm space-y-4">
           <Input
             type="password"
             placeholder="Digite a senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button className="w-full" onClick={checkPassword}>
-            Acessar
+          <Button type="submit" className="w-full">
+            Continuar
           </Button>
-        </div>
+        </form>
       </div>
     );
   }
 
-  const fileData: FileData = {
-    ...shareData.files,
-    url: decryptedUrl || undefined,
-  };
-
   return (
-    <div className="min-h-screen p-4 md:p-8 flex flex-col items-center gap-8">
-      <div className="w-full max-w-3xl space-y-8">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold">{shareData.files.filename}</h1>
-          <p className="text-sm text-muted-foreground">
-            Compartilhado em {new Date(shareData.created_at).toLocaleDateString()}
-          </p>
-          {shareData.encryption_key && (
-            <p className="text-sm text-green-600 flex items-center gap-2">
-              <Lock className="h-4 w-4" />
-              Criptografado
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
+      <div className="max-w-lg w-full bg-card rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold mb-4">Arquivo compartilhado</h1>
+        <div className="space-y-4">
+          <div className="p-4 bg-muted rounded-md">
+            <p className="font-medium">{shareData.filename}</p>
+            <p className="text-sm text-muted-foreground">
+              Tamanho: {(shareData.size / 1024 / 1024).toFixed(2)} MB
             </p>
-          )}
+          </div>
+          <Button 
+            onClick={handleDownload}
+            className="w-full gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Baixar arquivo
+          </Button>
         </div>
-
-        <MediaPreview
-          file={fileData}
-          onDownload={handleDownload}
-        />
-
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={handleDownload}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Download
-        </Button>
       </div>
     </div>
   );

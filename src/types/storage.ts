@@ -1,11 +1,11 @@
-
-export type StorageProvider = 
+export type StorageProvider =
   | "aws"
   | "google"
   | "backblaze"
   | "wasabi"
   | "cloudflare";
 
+// Interface that directly matches the database column names
 export interface StorageProviderDatabase {
   id: string;
   name: string;
@@ -16,8 +16,28 @@ export interface StorageProviderDatabase {
   updated_at: string;
 }
 
-export interface StorageProviderConfig extends Omit<StorageProviderDatabase, 'is_active' | 'created_at' | 'updated_at'> {
+// Optional interface for component-friendly property names (if needed)
+export interface StorageProviderConfig {
+  id: string;
+  name: string;
+  provider: StorageProvider;
   isActive: boolean;
+  credentials: Record<string, any>;
   createdAt: string;
   updatedAt: string;
+}
+
+// Helper function to convert from database format to component format
+export function mapDatabaseToConfig(
+  provider: StorageProviderDatabase
+): StorageProviderConfig {
+  return {
+    id: provider.id,
+    name: provider.name,
+    provider: provider.provider,
+    isActive: provider.is_active,
+    credentials: provider.credentials,
+    createdAt: provider.created_at,
+    updatedAt: provider.updated_at,
+  };
 }

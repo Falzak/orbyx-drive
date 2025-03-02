@@ -75,6 +75,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { CreateFolderDialog } from "@/components/CreateFolderDialog";
+import { uploadFile, resetStorageProvider } from "@/utils/storage";
 
 const Index = () => {
   const session = useAuthRedirect();
@@ -104,25 +105,24 @@ const Index = () => {
       const fileExt = file.name.split(".").pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("files")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
+      try {
+        // Upload file using storage provider
+        await uploadFile(file, filePath);
+
+        // Add entry to database
+        const { error: dbError } = await supabase.from("files").insert({
+          filename: file.name,
+          file_path: filePath,
+          content_type: file.type,
+          size: file.size,
+          user_id: session.user.id,
+          folder_id: currentFolderId,
         });
 
-      if (uploadError) throw uploadError;
-
-      const { error: dbError } = await supabase.from("files").insert({
-        filename: file.name,
-        file_path: filePath,
-        content_type: file.type,
-        size: file.size,
-        user_id: session.user.id,
-        folder_id: currentFolderId,
-      });
-
-      if (dbError) throw dbError;
+        if (dbError) throw dbError;
+      } catch (error) {
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["files"] });
@@ -254,6 +254,8 @@ const Index = () => {
   };
 
   const handleRefreshFiles = () => {
+    // Reset storage provider to reflect any configuration changes
+    resetStorageProvider();
     queryClient.invalidateQueries({ queryKey: ["files"] });
     toast({
       title: t("dashboard.refresh.success"),

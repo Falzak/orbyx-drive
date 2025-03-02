@@ -127,7 +127,7 @@ const App = () => {
                   path="/auth" 
                   element={session ? <Navigate to="/" replace /> : <Auth />} 
                 />
-                <Route path="/s/:id" element={<Share />} />
+                <Route path="/share/:id" element={<Share />} />
                 <Route path="/two-factor" element={<TwoFactor />} />
                 <Route
                   path="/"

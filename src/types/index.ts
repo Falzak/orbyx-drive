@@ -27,14 +27,9 @@ export interface SharedFile {
   id: string;
   file_path: string;
   shared_by: string;
-  shared_with: string | null;
   is_public: boolean;
   password: string | null;
-  custom_url: string | null;
-  expires_at: string | null;
   created_at: string;
-  encryption_key: string | null;
-  files: FileData;
 }
 
 export type ViewMode = "grid" | "list";

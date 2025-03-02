@@ -45,3 +45,13 @@ export interface FileFilter {
   shared?: boolean;
   recent?: boolean;
 }
+
+export interface SharedFile {
+  id: string;
+  file_path: string;
+  shared_by: string;
+  is_public: boolean;
+  password: string | null;
+  expires_at: string | null;
+  created_at: string;
+}

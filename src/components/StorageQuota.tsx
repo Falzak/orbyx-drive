@@ -34,6 +34,10 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
       if (error) throw error;
       return data;
     },
+    // Adicionar refetch automático a cada 30 segundos
+    refetchInterval: 30000,
+    // Refetch quando a janela recuperar foco
+    refetchOnWindowFocus: true
   });
 
   if (isLoading) {

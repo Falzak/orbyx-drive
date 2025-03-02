@@ -54,6 +54,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
 import { ShareDialog } from "./ShareDialog";
 import { CreateFolderDialog } from "@/components/CreateFolderDialog";
+import { getFileUrl, removeFiles } from "@/utils/storage";
 
 interface FileExplorerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -91,11 +92,13 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     }, [session, navigate]);
 
-    const getSignedUrl = useCallback(async (filePath: string) => {
-      const { data } = await supabase.storage
-        .from("files")
-        .createSignedUrl(filePath, 3600);
-      return data?.signedUrl;
+    const getSignedUrlForFile = useCallback(async (filePath: string) => {
+      try {
+        return await getFileUrl(filePath);
+      } catch (error) {
+        console.error("Error getting signed URL:", error);
+        return null;
+      }
     }, []);
 
     const { data: folders = [], isLoading: isFoldersLoading } = useQuery({
@@ -157,7 +160,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         const filesWithUrls = await Promise.all(
           (data || []).map(async (file) => {
             try {
-              const url = await getSignedUrl(file.file_path);
+              const url = await getSignedUrlForFile(file.file_path);
               return {
                 ...file,
                 url: url || undefined,
@@ -301,7 +304,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         try {
           let url = previewUrls[file.id];
           if (!url) {
-            const signedUrl = await getSignedUrl(file.file_path);
+            const signedUrl = await getSignedUrlForFile(file.file_path);
             if (signedUrl) {
               url = signedUrl;
               setPreviewUrls((prev) => ({
@@ -331,7 +334,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       },
-      [previewUrls, getSignedUrl, t, toast]
+      [previewUrls, getSignedUrlForFile, t, toast]
     );
 
     const handlePreview = useCallback(
@@ -344,7 +347,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
           let url = previewUrls[file.id];
           if (!url) {
-            const signedUrl = await getSignedUrl(file.file_path);
+            const signedUrl = await getSignedUrlForFile(file.file_path);
             if (signedUrl) {
               url = signedUrl;
               setPreviewUrls((prev) => ({
@@ -366,7 +369,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       },
-      [previewUrls, getSignedUrl, handleFolderClick, toast]
+      [previewUrls, getSignedUrlForFile, handleFolderClick, toast]
     );
 
     const getFileIcon = (contentType: string) => {
@@ -417,11 +420,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               .map((f) => f.file_path)
               .filter(Boolean);
             if (filePaths.length > 0) {
-              const { error: storageError } = await supabase.storage
-                .from("files")
-                .remove(filePaths);
-
-              if (storageError) throw storageError;
+              await removeFiles(filePaths);
             }
 
             // Excluir os registros dos arquivos
@@ -480,44 +479,41 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       } else {
-        const { error: storageError } = await supabase.storage
-          .from("files")
-          .remove([file.file_path!]);
+        try {
+          await removeFiles([file.file_path!]);
 
-        if (storageError) {
+          const { error: dbError } = await supabase
+            .from("files")
+            .delete()
+            .eq("id", file.id);
+
+          if (dbError) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.deleteError"),
+            });
+            return;
+          }
+
+          setPreviewUrls((prev) => {
+            const newUrls = { ...prev };
+            delete newUrls[file.id];
+            return newUrls;
+          });
+
+          queryClient.invalidateQueries({ queryKey: ["files"] });
+          toast({
+            title: t("common.success"),
+            description: t("fileExplorer.actions.deleteSuccess"),
+          });
+        } catch (error) {
           toast({
             variant: "destructive",
             title: t("common.error"),
             description: t("fileExplorer.actions.deleteError"),
           });
-          return;
         }
-
-        const { error: dbError } = await supabase
-          .from("files")
-          .delete()
-          .eq("id", file.id);
-
-        if (dbError) {
-          toast({
-            variant: "destructive",
-            title: t("common.error"),
-            description: t("fileExplorer.actions.deleteError"),
-          });
-          return;
-        }
-
-        setPreviewUrls((prev) => {
-          const newUrls = { ...prev };
-          delete newUrls[file.id];
-          return newUrls;
-        });
-
-        queryClient.invalidateQueries({ queryKey: ["files"] });
-        toast({
-          title: t("common.success"),
-          description: t("fileExplorer.actions.deleteSuccess"),
-        });
       }
     };
 

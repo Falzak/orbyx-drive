@@ -1,9 +1,10 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileData } from "@/types";
 import { Download, Share2, Star, X, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 export interface MediaPreviewProps {
   file: FileData;
