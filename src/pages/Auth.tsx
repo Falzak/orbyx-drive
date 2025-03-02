@@ -3,11 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LogIn, UserPlus, Lock, Mail } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   InputOTP,
@@ -19,11 +25,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,12 +58,17 @@ export default function Auth() {
       if (error) throw error;
 
       // Check 2FA status before proceeding with navigation
-      const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data: mfaData } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const totpFactor = factors?.totp.length > 0 ? factors.totp[0] : null;
-      
-      if (mfaData?.currentLevel === 'aal1' && mfaData?.nextLevel === 'aal2' && totpFactor) {
-        navigate('/two-factor');
+
+      if (
+        mfaData?.currentLevel === "aal1" &&
+        mfaData?.nextLevel === "aal2" &&
+        totpFactor
+      ) {
+        navigate("/two-factor");
         return;
       }
 
@@ -62,9 +77,9 @@ export default function Auth() {
     } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Erro",
+        title: t("common.error"),
         description:
-          error instanceof Error ? error.message : "Ocorreu um erro",
+          error instanceof Error ? error.message : t("auth.errors.generic"),
       });
     } finally {
       setLoading(false);
@@ -76,8 +91,8 @@ export default function Auth() {
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "As senhas não coincidem",
+        title: t("common.error"),
+        description: t("auth.errors.passwordsDontMatch"),
       });
       return;
     }
@@ -93,15 +108,15 @@ export default function Auth() {
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Verifique seu email para confirmar sua conta",
+        title: t("common.success"),
+        description: t("auth.success.signUp"),
       });
     } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Erro",
+        title: t("common.error"),
         description:
-          error instanceof Error ? error.message : "Ocorreu um erro",
+          error instanceof Error ? error.message : t("auth.errors.generic"),
       });
     } finally {
       setLoading(false);
@@ -120,17 +135,17 @@ export default function Auth() {
       if (error) throw error;
 
       toast({
-        title: "Email enviado",
-        description: "Verifique seu email para redefinir sua senha",
+        title: t("common.success"),
+        description: t("auth.success.resetPassword"),
       });
-      
+
       setShowResetPassword(false);
     } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Erro",
+        title: t("common.error"),
         description:
-          error instanceof Error ? error.message : "Ocorreu um erro",
+          error instanceof Error ? error.message : t("auth.errors.generic"),
       });
     } finally {
       setLoading(false);
@@ -146,37 +161,41 @@ export default function Auth() {
       const totpFactor = factors.totp[0];
 
       if (!totpFactor) {
-        throw new Error("Fator TOTP não encontrado");
+        throw new Error(t("auth.errors.invalidCode"));
       }
 
-      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-        factorId: totpFactor.id
-      });
+      const { data: challengeData, error: challengeError } =
+        await supabase.auth.mfa.challenge({
+          factorId: totpFactor.id,
+        });
 
       if (challengeError) throw challengeError;
 
-      const { data: verifyData, error: verifyError } = await supabase.auth.mfa.verify({
-        factorId: totpFactor.id,
-        challengeId: challengeData.id,
-        code: otpCode
-      });
+      const { data: verifyData, error: verifyError } =
+        await supabase.auth.mfa.verify({
+          factorId: totpFactor.id,
+          challengeId: challengeData.id,
+          code: otpCode,
+        });
 
       if (verifyError) throw verifyError;
 
       // Check if verification was successful
-      const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      
-      if (mfaData?.currentLevel === 'aal2') {
+      const { data: mfaData } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+      if (mfaData?.currentLevel === "aal2") {
         setShowOtpDialog(false);
         navigate("/");
       } else {
-        throw new Error("Falha na verificação do código");
+        throw new Error(t("auth.errors.invalidCode"));
       }
     } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: error instanceof Error ? error.message : "Código inválido",
+        title: t("common.error"),
+        description:
+          error instanceof Error ? error.message : t("auth.errors.invalidCode"),
       });
     } finally {
       setLoading(false);
@@ -210,230 +229,469 @@ export default function Auth() {
   const passwordStrengthColor = getPasswordStrengthColor(passwordStrength);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-md p-8">
-        <Tabs
-          defaultValue="signin"
-          className="w-full"
-          onValueChange={resetForm}
-        >
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="signin">Entrar</TabsTrigger>
-            <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-          </TabsList>
+    <div className="flex items-center justify-center min-h-screen bg-[url('/auth-background.svg')] bg-cover bg-center bg-no-repeat">
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
 
-          <TabsContent value="signin">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div>
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  type="email"
-                  id="signin-email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="relative">
-                <Label htmlFor="signin-password">Senha</Label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    id="signin-password"
-                    placeholder="Senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="link"
-                className="p-0 h-auto font-normal"
-                onClick={() => setShowResetPassword(true)}
-              >
-                Esqueceu sua senha?
-              </Button>
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? "Carregando..." : "Entrar"}
-              </Button>
-            </form>
-          </TabsContent>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="z-10 w-full max-w-md p-4"
+      >
+        <Card className="overflow-hidden border border-border/40 shadow-xl bg-card/90 backdrop-blur">
+          <CardHeader className="pb-4">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Lock className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">
+              {t("auth.title")}
+            </CardTitle>
+            <CardDescription className="text-center">
+              {t("auth.description")}
+            </CardDescription>
+          </CardHeader>
 
-          <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div>
-                <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  type="email"
-                  id="signup-email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="signup-password">Senha</Label>
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      id="signup-password"
-                      placeholder="Senha"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
-                      onClick={() => setShowPassword(!showPassword)}
+          <CardContent>
+            <Tabs
+              defaultValue="signin"
+              className="w-full"
+              onValueChange={resetForm}
+            >
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger
+                  value="signin"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  {t("auth.signIn.title")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="signup"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {t("auth.signUp.title")}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="signin">
+                <motion.form
+                  onSubmit={handleSignIn}
+                  className="space-y-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="signin-email"
+                      className="text-sm font-medium"
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  {password && (
-                    <div className="space-y-1">
-                      <Progress
-                        value={passwordStrength}
-                        className={`h-1 ${passwordStrengthColor}`}
+                      {t("auth.signIn.email")}
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="email"
+                        id="signin-email"
+                        placeholder={t("auth.signIn.emailPlaceholder")}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-11 bg-background/50"
+                        required
                       />
-                      <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
-                        <li
-                          className={
-                            password.length >= 8 ? "text-green-500" : ""
-                          }
-                        >
-                          Mínimo de 8 caracteres
-                        </li>
-                        <li
-                          className={
-                            /[A-Z]/.test(password) ? "text-green-500" : ""
-                          }
-                        >
-                          Letra maiúscula
-                        </li>
-                        <li
-                          className={
-                            /[0-9]/.test(password) ? "text-green-500" : ""
-                          }
-                        >
-                          Número
-                        </li>
-                        <li
-                          className={
-                            /[^A-Za-z0-9]/.test(password)
-                              ? "text-green-500"
-                              : ""
-                          }
-                        >
-                          Caractere especial
-                        </li>
-                      </ul>
                     </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                <div className="relative">
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    id="confirm-password"
-                    placeholder="Confirmar Senha"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor="signin-password"
+                        className="text-sm font-medium"
+                      >
+                        {t("auth.signIn.password")}
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto text-xs font-normal"
+                        onClick={() => setShowResetPassword(true)}
+                      >
+                        {t("auth.signIn.forgotPassword")}
+                      </Button>
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        id="signin-password"
+                        placeholder={t("auth.signIn.passwordPlaceholder")}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 h-11 bg-background/50"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? "Carregando..." : "Cadastrar"}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
-      </Card>
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-11 mt-2 relative overflow-hidden group"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        {isLoading ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span>{t("auth.signIn.buttonLoading")}</span>
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            <span>{t("auth.signIn.button")}</span>
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  </motion.div>
+                </motion.form>
+              </TabsContent>
+
+              <TabsContent value="signup">
+                <motion.form
+                  onSubmit={handleSignUp}
+                  className="space-y-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="signup-email"
+                      className="text-sm font-medium"
+                    >
+                      {t("auth.signUp.email")}
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="email"
+                        id="signup-email"
+                        placeholder={t("auth.signUp.emailPlaceholder")}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-11 bg-background/50"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="signup-password"
+                      className="text-sm font-medium"
+                    >
+                      {t("auth.signUp.password")}
+                    </Label>
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          id="signup-password"
+                          placeholder={t("auth.signUp.passwordPlaceholder")}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 h-11 bg-background/50"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {password && (
+                        <div className="space-y-2">
+                          <Progress
+                            value={passwordStrength}
+                            className={`h-1 ${passwordStrengthColor}`}
+                          />
+                          <motion.ul
+                            className="text-xs text-muted-foreground grid grid-cols-2 gap-2"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <motion.li
+                              className={`flex items-center gap-1 ${
+                                password.length >= 8 ? "text-green-500" : ""
+                              }`}
+                              animate={{
+                                scale: password.length >= 8 ? [1, 1.05, 1] : 1,
+                                transition: { duration: 0.2 },
+                              }}
+                            >
+                              <div
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  password.length >= 8
+                                    ? "bg-green-500"
+                                    : "bg-muted-foreground"
+                                }`}
+                              ></div>
+                              {t("auth.passwordStrength.minLength")}
+                            </motion.li>
+                            <motion.li
+                              className={`flex items-center gap-1 ${
+                                /[A-Z]/.test(password) ? "text-green-500" : ""
+                              }`}
+                              animate={{
+                                scale: /[A-Z]/.test(password)
+                                  ? [1, 1.05, 1]
+                                  : 1,
+                                transition: { duration: 0.2 },
+                              }}
+                            >
+                              <div
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  /[A-Z]/.test(password)
+                                    ? "bg-green-500"
+                                    : "bg-muted-foreground"
+                                }`}
+                              ></div>
+                              {t("auth.passwordStrength.uppercase")}
+                            </motion.li>
+                            <motion.li
+                              className={`flex items-center gap-1 ${
+                                /[0-9]/.test(password) ? "text-green-500" : ""
+                              }`}
+                              animate={{
+                                scale: /[0-9]/.test(password)
+                                  ? [1, 1.05, 1]
+                                  : 1,
+                                transition: { duration: 0.2 },
+                              }}
+                            >
+                              <div
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  /[0-9]/.test(password)
+                                    ? "bg-green-500"
+                                    : "bg-muted-foreground"
+                                }`}
+                              ></div>
+                              {t("auth.passwordStrength.number")}
+                            </motion.li>
+                            <motion.li
+                              className={`flex items-center gap-1 ${
+                                /[^A-Za-z0-9]/.test(password)
+                                  ? "text-green-500"
+                                  : ""
+                              }`}
+                              animate={{
+                                scale: /[^A-Za-z0-9]/.test(password)
+                                  ? [1, 1.05, 1]
+                                  : 1,
+                                transition: { duration: 0.2 },
+                              }}
+                            >
+                              <div
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  /[^A-Za-z0-9]/.test(password)
+                                    ? "bg-green-500"
+                                    : "bg-muted-foreground"
+                                }`}
+                              ></div>
+                              {t("auth.passwordStrength.special")}
+                            </motion.li>
+                          </motion.ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="confirm-password"
+                      className="text-sm font-medium"
+                    >
+                      {t("auth.signUp.confirmPassword")}
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        id="confirm-password"
+                        placeholder={t(
+                          "auth.signUp.confirmPasswordPlaceholder"
+                        )}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="pl-10 h-11 bg-background/50"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-11 mt-2 relative overflow-hidden group"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        {isLoading ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span>{t("auth.signUp.buttonLoading")}</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            <span>{t("auth.signUp.button")}</span>
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  </motion.div>
+                </motion.form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <Dialog open={showOtpDialog} onOpenChange={setShowOtpDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md border border-border/40 shadow-lg bg-card/95 backdrop-blur">
           <DialogHeader>
-            <DialogTitle>Verificação em duas etapas</DialogTitle>
+            <DialogTitle className="text-center text-xl font-semibold">
+              {t("auth.twoFactor.title")}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {t("auth.twoFactor.description")}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleVerifyOTP} className="space-y-4">
             <div className="flex flex-col items-center space-y-4">
-              <p className="text-sm text-muted-foreground text-center">
-                Digite o código de verificação gerado pelo seu aplicativo autenticador
-              </p>
-              <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+              <InputOTP
+                maxLength={6}
+                value={otpCode}
+                onChange={setOtpCode}
+                className="gap-2"
+              >
                 <InputOTPGroup>
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <InputOTPSlot key={i} index={i} />
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className="h-12 w-12 rounded-md border-border/40 bg-background/50"
+                    />
                   ))}
                 </InputOTPGroup>
               </InputOTP>
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? "Verificando..." : "Verificar"}
+            <Button
+              type="submit"
+              disabled={isLoading || otpCode.length < 6}
+              className="w-full h-11 relative overflow-hidden group"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {isLoading ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    <span>{t("auth.twoFactor.buttonLoading")}</span>
+                  </>
+                ) : (
+                  <span>{t("auth.twoFactor.button")}</span>
+                )}
+              </span>
             </Button>
           </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showResetPassword} onOpenChange={setShowResetPassword}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md border border-border/40 shadow-lg bg-card/95 backdrop-blur">
           <DialogHeader>
-            <DialogTitle>Recuperar senha</DialogTitle>
+            <DialogTitle className="text-center text-xl font-semibold">
+              {t("auth.resetPassword.title")}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {t("auth.resetPassword.description")}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reset-email">Email</Label>
-              <Input
-                type="email"
-                id="reset-email"
-                placeholder="Digite seu email"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required
-              />
+              <Label htmlFor="reset-email" className="text-sm font-medium">
+                {t("auth.resetPassword.email")}
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  id="reset-email"
+                  placeholder={t("auth.resetPassword.emailPlaceholder")}
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="pl-10 h-11 bg-background/50"
+                  required
+                />
+              </div>
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? "Enviando..." : "Enviar email de recuperação"}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 relative overflow-hidden group"
+            >
+              <span className="relative z-10 flex items-center justify-center">
+                {isLoading ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    <span>{t("auth.resetPassword.buttonLoading")}</span>
+                  </>
+                ) : (
+                  <span>{t("auth.resetPassword.button")}</span>
+                )}
+              </span>
             </Button>
           </form>
         </DialogContent>

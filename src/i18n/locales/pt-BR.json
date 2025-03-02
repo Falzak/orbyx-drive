@@ -231,29 +231,70 @@
     }
   },
   "auth": {
-    "login": {
+    "title": "Secure File Safari",
+    "description": "Acesse sua conta para gerenciar seus arquivos com segurança",
+    "signIn": {
       "title": "Entrar",
-      "email": "E-mail",
+      "email": "Email",
       "password": "Senha",
-      "submit": "Entrar",
       "forgotPassword": "Esqueceu sua senha?",
-      "noAccount": "Não tem uma conta?",
-      "signUp": "Cadastre-se"
+      "button": "Entrar",
+      "buttonLoading": "Entrando...",
+      "emailPlaceholder": "Digite seu email",
+      "passwordPlaceholder": "Digite sua senha"
     },
-    "register": {
-      "title": "Criar Conta",
-      "email": "E-mail",
+    "signUp": {
+      "title": "Cadastrar",
+      "email": "Email",
       "password": "Senha",
       "confirmPassword": "Confirmar Senha",
-      "submit": "Criar Conta",
-      "hasAccount": "Já tem uma conta?",
-      "signIn": "Entrar"
+      "button": "Criar conta",
+      "buttonLoading": "Cadastrando...",
+      "emailPlaceholder": "Digite seu email",
+      "passwordPlaceholder": "Crie sua senha",
+      "confirmPasswordPlaceholder": "Confirme sua senha"
     },
-    "forgotPassword": {
-      "title": "Esqueci a Senha",
-      "email": "E-mail",
-      "submit": "Enviar E-mail de Recuperação",
-      "backToLogin": "Voltar para Login"
+    "resetPassword": {
+      "title": "Recuperar senha",
+      "description": "Enviaremos um email com instruções para recuperar sua senha",
+      "email": "Email",
+      "emailPlaceholder": "Digite seu email",
+      "button": "Enviar email de recuperação",
+      "buttonLoading": "Enviando..."
+    },
+    "newPassword": {
+      "title": "Redefinir Senha",
+      "description": "Digite sua nova senha para recuperar o acesso à sua conta",
+      "password": "Nova Senha",
+      "passwordPlaceholder": "Digite sua nova senha",
+      "button": "Atualizar Senha",
+      "buttonLoading": "Atualizando..."
+    },
+    "twoFactor": {
+      "title": "Verificação em duas etapas",
+      "description": "Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador",
+      "button": "Verificar",
+      "buttonLoading": "Verificando...",
+      "support": "Não consegue acessar seu autenticador?",
+      "contactSupport": "Entre em contato com o suporte"
+    },
+    "passwordStrength": {
+      "minLength": "Mín. 8 caracteres",
+      "uppercase": "Letra maiúscula",
+      "number": "Número",
+      "special": "Caractere especial"
+    },
+    "errors": {
+      "invalidEmail": "Email inválido",
+      "invalidCredentials": "Email ou senha incorretos",
+      "passwordsDontMatch": "As senhas não coincidem",
+      "invalidCode": "Código inválido",
+      "generic": "Ocorreu um erro. Tente novamente."
+    },
+    "success": {
+      "signUp": "Verifique seu email para confirmar sua conta",
+      "resetPassword": "Verifique seu email para redefinir sua senha",
+      "passwordUpdated": "Sua senha foi atualizada com sucesso"
     }
   },
   "settings": {

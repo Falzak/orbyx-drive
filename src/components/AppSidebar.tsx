@@ -485,9 +485,9 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                       {t("common.logout")}
                     </span>
                     <span className="text-xs text-destructive/70 group-hover:translate-x-0.5 transition-transform duration-200">
-                      Sair da sua conta
+                      {t("common.logoutDescription")}
                     </span>
-                  </div>
+                  </div>  
                 </DropdownMenuItem>
               </motion.div>
             </DropdownMenuContent>
