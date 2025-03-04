@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ export default function Auth() {
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [trustedDevices, setTrustedDevices] = useLocalStorage<string[]>("trusted_devices", []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,13 +65,59 @@ export default function Auth() {
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const totpFactor = factors?.totp.length > 0 ? factors.totp[0] : null;
 
+      // Check if this device is trusted
       if (
         mfaData?.currentLevel === "aal1" &&
         mfaData?.nextLevel === "aal2" &&
-        totpFactor
+        totpFactor &&
+        data.user
       ) {
-        navigate("/two-factor");
-        return;
+        const userId = data.user.id;
+        
+        // If this is a trusted device, try to auto-verify 2FA
+        if (trustedDevices.includes(userId)) {
+          try {
+            // Try to auto-verify without showing 2FA screen
+            const { data: challengeData, error: challengeError } =
+              await supabase.auth.mfa.challenge({
+                factorId: totpFactor.id,
+              });
+
+            if (challengeError) {
+              // If auto-verification fails, show 2FA screen
+              navigate("/two-factor");
+              return;
+            }
+
+            // Auto-verify with empty code to get to AAL2 without user input
+            const { error: verifyError } = await supabase.auth.mfa.verify({
+              factorId: totpFactor.id,
+              challengeId: challengeData.id,
+              code: "",
+              sessionId: data.session?.access_token,
+            });
+
+            if (verifyError) {
+              // If verification fails, show 2FA screen
+              navigate("/two-factor");
+              return;
+            }
+
+            // If auto-verification succeeds, navigate to dashboard
+            navigate("/");
+            return;
+          } catch (error) {
+            console.error("Error auto-verifying trusted device:", error);
+            // If auto-verification fails, remove from trusted devices and show 2FA screen
+            setTrustedDevices(trustedDevices.filter(id => id !== userId));
+            navigate("/two-factor");
+            return;
+          }
+        } else {
+          // If not a trusted device, show 2FA screen
+          navigate("/two-factor");
+          return;
+        }
       }
 
       // Only navigate to dashboard if 2FA is not required or already verified

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export default function TwoFactor() {
   const navigate = useNavigate();
@@ -25,6 +28,8 @@ export default function TwoFactor() {
   const { t } = useTranslation();
   const [isLoading, setLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [rememberDevice, setRememberDevice] = useState(false);
+  const [trustedDevices, setTrustedDevices] = useLocalStorage<string[]>("trusted_devices", []);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -37,18 +42,58 @@ export default function TwoFactor() {
       const { data: mfaData } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
+      // Check if this device is trusted
+      const userId = session.session.user.id;
+      if (trustedDevices.includes(userId)) {
+        try {
+          // Skip 2FA for trusted devices
+          const { data: factors } = await supabase.auth.mfa.listFactors();
+          const totpFactor = factors?.totp[0];
+
+          if (totpFactor) {
+            const { data: challengeData, error: challengeError } =
+              await supabase.auth.mfa.challenge({
+                factorId: totpFactor.id,
+              });
+
+            if (challengeError) throw challengeError;
+
+            // Auto-verify with empty code to get to AAL2 without user input
+            // This is just to update the authentication level on Supabase's side
+            await supabase.auth.mfa.verify({
+              factorId: totpFactor.id,
+              challengeId: challengeData.id,
+              code: "",
+              sessionId: session.session.access_token,
+            });
+          }
+          navigate("/");
+          return;
+        } catch (error) {
+          console.error("Error auto-verifying trusted device:", error);
+          // If auto-verification fails, remove from trusted devices
+          setTrustedDevices(trustedDevices.filter(id => id !== userId));
+        }
+      }
+
       if (mfaData?.currentLevel === "aal2" || mfaData?.nextLevel !== "aal2") {
         navigate("/");
       }
     };
 
     checkAuthStatus();
-  }, [navigate]);
+  }, [navigate, trustedDevices, setTrustedDevices]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
+
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        navigate("/auth");
+        return;
+      }
 
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const totpFactor = factors?.totp[0];
@@ -76,6 +121,14 @@ export default function TwoFactor() {
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
       if (mfaData?.currentLevel === "aal2") {
+        // If remember device is checked, add current user ID to trusted devices
+        if (rememberDevice && session.session) {
+          const userId = session.session.user.id;
+          if (!trustedDevices.includes(userId)) {
+            setTrustedDevices([...trustedDevices, userId]);
+          }
+        }
+        
         navigate("/");
       } else {
         throw new Error(t("auth.errors.invalidCode"));
@@ -154,6 +207,25 @@ export default function TwoFactor() {
                     ))}
                   </InputOTPGroup>
                 </InputOTP>
+              </motion.div>
+
+              <motion.div
+                className="flex items-center space-x-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+              >
+                <Checkbox 
+                  id="remember-device" 
+                  checked={rememberDevice}
+                  onCheckedChange={(checked) => setRememberDevice(checked === true)}
+                />
+                <label
+                  htmlFor="remember-device"
+                  className="text-sm text-muted-foreground cursor-pointer"
+                >
+                  {t("auth.twoFactor.rememberDevice")}
+                </label>
               </motion.div>
 
               <motion.div

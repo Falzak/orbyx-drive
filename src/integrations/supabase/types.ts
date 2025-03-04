@@ -124,39 +124,30 @@ export type Database = {
       shared_files: {
         Row: {
           created_at: string
-          custom_url: string | null
-          encryption_key: string | null
           expires_at: string | null
           file_path: string | null
           id: string
           is_public: boolean | null
           password: string | null
           shared_by: string
-          shared_with: string | null
         }
         Insert: {
           created_at?: string
-          custom_url?: string | null
-          encryption_key?: string | null
           expires_at?: string | null
           file_path?: string | null
           id?: string
           is_public?: boolean | null
           password?: string | null
           shared_by: string
-          shared_with?: string | null
         }
         Update: {
           created_at?: string
-          custom_url?: string | null
-          encryption_key?: string | null
           expires_at?: string | null
           file_path?: string | null
           id?: string
           is_public?: boolean | null
           password?: string | null
           shared_by?: string
-          shared_with?: string | null
         }
         Relationships: [
           {
