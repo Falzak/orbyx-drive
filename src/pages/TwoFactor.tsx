@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,13 @@ import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
+// Interface para o formato do dispositivo confiável
+interface TrustedDevice {
+  userId: string;
+  timestamp: number;
+  deviceInfo?: string;
+}
+
 export default function TwoFactor() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,7 +35,59 @@ export default function TwoFactor() {
   const [isLoading, setLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [rememberDevice, setRememberDevice] = useState(false);
-  const [trustedDevices, setTrustedDevices] = useLocalStorage<string[]>("trusted_devices", []);
+  const [trustedDevices, setTrustedDevices] = useLocalStorage<TrustedDevice[]>(
+    "trusted_devices_v2",
+    []
+  );
+
+  // Para compatibilidade, verificar se existem dispositivos no formato antigo
+  useEffect(() => {
+    const migrateOldTrustedDevices = async () => {
+      try {
+        const oldDevicesStr = localStorage.getItem("trusted_devices");
+        if (oldDevicesStr) {
+          const oldDevices = JSON.parse(oldDevicesStr);
+          if (Array.isArray(oldDevices) && oldDevices.length > 0) {
+            // Converter dispositivos antigos para o novo formato
+            const newDevices: TrustedDevice[] = [];
+
+            oldDevices.forEach((item) => {
+              try {
+                if (typeof item === "string") {
+                  if (item.startsWith("{")) {
+                    // Já é um JSON
+                    const parsed = JSON.parse(item);
+                    newDevices.push({
+                      userId: parsed.userId,
+                      timestamp: parsed.timestamp || new Date().getTime(),
+                    });
+                  } else {
+                    // É apenas um ID de usuário
+                    newDevices.push({
+                      userId: item,
+                      timestamp: new Date().getTime(),
+                    });
+                  }
+                }
+              } catch (e) {
+                console.error("Error migrating device:", e);
+              }
+            });
+
+            if (newDevices.length > 0) {
+              setTrustedDevices(newDevices);
+              // Limpar o armazenamento antigo
+              localStorage.removeItem("trusted_devices");
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error migrating trusted devices:", e);
+      }
+    };
+
+    migrateOldTrustedDevices();
+  }, []);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -42,47 +100,33 @@ export default function TwoFactor() {
       const { data: mfaData } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
-      // Check if this device is trusted
-      const userId = session.session.user.id;
-      if (trustedDevices.includes(userId)) {
-        try {
-          // Skip 2FA for trusted devices
-          const { data: factors } = await supabase.auth.mfa.listFactors();
-          const totpFactor = factors?.totp[0];
-
-          if (totpFactor) {
-            const { data: challengeData, error: challengeError } =
-              await supabase.auth.mfa.challenge({
-                factorId: totpFactor.id,
-              });
-
-            if (challengeError) throw challengeError;
-
-            // Auto-verify with empty code to get to AAL2 without user input
-            // This is just to update the authentication level on Supabase's side
-            await supabase.auth.mfa.verify({
-              factorId: totpFactor.id,
-              challengeId: challengeData.id,
-              code: "",
-              sessionId: session.session.access_token,
-            });
-          }
-          navigate("/");
-          return;
-        } catch (error) {
-          console.error("Error auto-verifying trusted device:", error);
-          // If auto-verification fails, remove from trusted devices
-          setTrustedDevices(trustedDevices.filter(id => id !== userId));
-        }
+      // If user already has AAL2 level, redirect to dashboard
+      if (mfaData?.currentLevel === "aal2") {
+        navigate("/");
+        return;
       }
 
-      if (mfaData?.currentLevel === "aal2" || mfaData?.nextLevel !== "aal2") {
+      // If user doesn't need 2FA, redirect to dashboard
+      if (mfaData?.nextLevel !== "aal2") {
         navigate("/");
+        return;
+      }
+
+      // Check if this device is trusted
+      const userId = session.session.user.id;
+      const isTrusted = trustedDevices.some(
+        (device) => device.userId === userId
+      );
+
+      if (isTrusted) {
+        // Essa verificação é apenas uma otimização de UX - o verdadeiro bypass
+        // do 2FA acontece no TwoFactorProtectedRoute
+        console.log("Este dispositivo já está marcado como confiável");
       }
     };
 
     checkAuthStatus();
-  }, [navigate, trustedDevices, setTrustedDevices]);
+  }, [navigate, trustedDevices]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,11 +168,30 @@ export default function TwoFactor() {
         // If remember device is checked, add current user ID to trusted devices
         if (rememberDevice && session.session) {
           const userId = session.session.user.id;
-          if (!trustedDevices.includes(userId)) {
-            setTrustedDevices([...trustedDevices, userId]);
-          }
+
+          // Store device info in the new format
+          const newTrustedDevice: TrustedDevice = {
+            userId,
+            timestamp: new Date().getTime(),
+            deviceInfo: navigator.userAgent,
+          };
+
+          // Filter out any existing entries for this user
+          const updatedTrustedDevices = trustedDevices.filter(
+            (device) => device.userId !== userId
+          );
+
+          // Add the new trust data
+          setTrustedDevices([...updatedTrustedDevices, newTrustedDevice]);
+
+          // Show confirmation toast
+          toast({
+            title: "Dispositivo lembrado",
+            description:
+              "Este dispositivo será lembrado para futuras autenticações",
+          });
         }
-        
+
         navigate("/");
       } else {
         throw new Error(t("auth.errors.invalidCode"));
@@ -215,10 +278,12 @@ export default function TwoFactor() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
               >
-                <Checkbox 
-                  id="remember-device" 
+                <Checkbox
+                  id="remember-device"
                   checked={rememberDevice}
-                  onCheckedChange={(checked) => setRememberDevice(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setRememberDevice(checked === true)
+                  }
                 />
                 <label
                   htmlFor="remember-device"

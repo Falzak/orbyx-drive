@@ -276,7 +276,10 @@
       "button": "Verificar",
       "buttonLoading": "Verificando...",
       "support": "Não consegue acessar seu autenticador?",
-      "contactSupport": "Entre em contato com o suporte"
+      "contactSupport": "Entre em contato com o suporte",
+      "rememberDevice": "Lembrar este dispositivo",
+      "deviceRemembered": "Dispositivo lembrado",
+      "deviceRememberedDesc": "Este dispositivo será lembrado para futuras autenticações"
     },
     "passwordStrength": {
       "minLength": "Mín. 8 caracteres",
@@ -295,6 +298,10 @@
       "signUp": "Verifique seu email para confirmar sua conta",
       "resetPassword": "Verifique seu email para redefinir sua senha",
       "passwordUpdated": "Sua senha foi atualizada com sucesso"
+    },
+    "trustedDevice": {
+      "recognized": "Dispositivo reconhecido",
+      "description": "Autenticação em dois fatores pulada para este dispositivo"
     }
   },
   "settings": {
@@ -325,7 +332,10 @@
         "password": "Senha",
         "changePassword": "Alterar senha",
         "twoFactor": "Autenticação de dois fatores",
-        "enable2FA": "Ativar autenticação de dois fatores"
+        "enable2FA": "Ativar autenticação de dois fatores",
+        "trustedDevices": "Dispositivos confiáveis",
+        "manageTrustedDevices": "Gerenciar dispositivos confiáveis",
+        "removeTrustedDevice": "Remover dispositivo confiável"
       }
     }
   },
@@ -390,6 +400,97 @@
     "settings": {
       "title": "Configurações do Sistema",
       "comingSoon": "Configurações adicionais do sistema em breve"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Armazenamento e compartilhamento de arquivos seguro e intuitivo",
+      "description": "Proteja, organize e compartilhe seus arquivos importantes com segurança de nível empresarial e interface fácil de usar.",
+      "startNow": "Começar Agora",
+      "seeFeatures": "Ver Recursos"
+    },
+    "features": {
+      "title": "Recursos que impulsionam sua produtividade",
+      "description": "Conheça as ferramentas poderosas que fazem do Secure File Safari a melhor escolha para gerenciamento de arquivos.",
+      "security": {
+        "title": "Segurança Avançada",
+        "description": "Criptografia de ponta a ponta para seus arquivos mais valiosos, com autenticação de dois fatores"
+      },
+      "organization": {
+        "title": "Organização Intuitiva",
+        "description": "Organize seus arquivos em pastas com cores personalizadas e visualize-os em grade ou lista"
+      },
+      "sharing": {
+        "title": "Compartilhamento Seguro",
+        "description": "Compartilhe arquivos de forma segura com links protegidos por senha e expiração automática"
+      },
+      "anywhere": {
+        "title": "Acesso em Qualquer Lugar",
+        "description": "Acesse seus arquivos em qualquer dispositivo com uma interface responsiva e intuitiva"
+      }
+    },
+    "interface": {
+      "title": "Interface intuitiva e poderosa",
+      "description": "Uma experiência de usuário cuidadosamente projetada que combina beleza, funcionalidade e segurança.",
+      "customizable": {
+        "title": "Visualização personalizável",
+        "description": "Alterne entre visualizações em lista e grade para melhor organização"
+      },
+      "previews": {
+        "title": "Previsualizações integradas",
+        "description": "Visualize documentos, imagens e vídeos sem precisar baixá-los"
+      },
+      "oneClick": {
+        "title": "Compartilhamento em um clique",
+        "description": "Gere links de compartilhamento seguros com controles de acesso"
+      }
+    },
+    "security": {
+      "title": "Segurança sem comprometer a experiência",
+      "description": "Protegemos seus dados com as mais avançadas tecnologias de segurança, mantendo uma experiência simples e agradável.",
+      "twoFactor": {
+        "title": "Autenticação de dois fatores",
+        "description": "Com opção de lembrar dispositivos confiáveis para maior conveniência"
+      },
+      "encryption": {
+        "title": "Criptografia de ponta a ponta",
+        "description": "Seus arquivos são criptografados durante o upload e em repouso"
+      },
+      "links": {
+        "title": "Links expiráveis",
+        "description": "Defina por quanto tempo os links compartilhados permanecem válidos"
+      }
+    },
+    "testimonials": {
+      "title": "O que nossos usuários dizem",
+      "description": "Veja o que as pessoas estão falando sobre sua experiência com o Secure File Safari"
+    },
+    "cta": {
+      "title": "Pronto para proteger seus arquivos?",
+      "description": "Registre-se gratuitamente hoje e desfrute de armazenamento seguro e organizado.",
+      "createAccount": "Criar Conta Grátis",
+      "login": "Fazer Login"
+    },
+    "footer": {
+      "product": "Produto",
+      "features": "Recursos",
+      "pricing": "Preços",
+      "security": "Segurança",
+      "company": "Empresa",
+      "about": "Sobre Nós",
+      "blog": "Blog",
+      "contact": "Contato",
+      "legal": "Legal",
+      "privacy": "Privacidade",
+      "terms": "Termos",
+      "copyright": "Todos os direitos reservados",
+      "tagline": "A melhor solução para armazenar e compartilhar seus arquivos com segurança e simplicidade."
+    },
+    "nav": {
+      "features": "Recursos",
+      "pricing": "Preços",
+      "login": "Login",
+      "register": "Registrar"
     }
   }
 }
