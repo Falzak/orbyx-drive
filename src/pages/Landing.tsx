@@ -101,28 +101,34 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header Moderno e Elegante */}
-      <header 
+      <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled 
-            ? "py-3 bg-background/95 backdrop-blur-md shadow-sm border-b border-muted/40" 
+          scrolled
+            ? "py-3 bg-background/95 backdrop-blur-md shadow-sm border-b border-muted/40"
             : "py-5 bg-transparent"
         }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between relative">
             {/* Logo com animação sutil */}
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="flex items-center gap-2 z-20 group transition-transform duration-300 hover:scale-105"
             >
-              <Shield className={`h-6 w-6 transition-colors duration-300 ${scrolled ? "text-primary" : "text-primary"}`} />
-              <span className={`text-lg font-bold transition-all duration-300 ${
-                scrolled ? "text-foreground" : "text-foreground"
-              } group-hover:text-primary`}>
+              <Shield
+                className={`h-6 w-6 transition-colors duration-300 ${
+                  scrolled ? "text-primary" : "text-primary"
+                }`}
+              />
+              <span
+                className={`text-lg font-bold transition-all duration-300 ${
+                  scrolled ? "text-foreground" : "text-foreground"
+                } group-hover:text-primary`}
+              >
                 Secure File Safari
               </span>
             </Link>
-            
+
             {/* Menu Desktop Elegante */}
             <div className="hidden md:flex items-center gap-8">
               <nav className="flex items-center space-x-4">
@@ -203,7 +209,11 @@ export default function Landing() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`rounded-full transition-colors duration-300 ${mobileMenuOpen ? 'bg-primary/10 text-primary' : 'hover:bg-primary/10'}`}
+                className={`rounded-full transition-colors duration-300 ${
+                  mobileMenuOpen
+                    ? "bg-primary/10 text-primary"
+                    : "hover:bg-primary/10"
+                }`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
               >
@@ -246,12 +256,23 @@ export default function Landing() {
                   {t("landing.nav.pricing")}
                 </Button>
                 <div className="h-px bg-muted my-2"></div>
-                <Link to="/auth" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full py-3 transition-all duration-300 hover:border-primary">
+                <Link
+                  to="/auth"
+                  className="w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Button
+                    variant="outline"
+                    className="w-full py-3 transition-all duration-300 hover:border-primary"
+                  >
                     {t("landing.nav.login")}
                   </Button>
                 </Link>
-                <Link to="/auth?signup=true" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                <Link
+                  to="/auth?signup=true"
+                  className="w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <Button className="w-full py-3 transition-all duration-300 hover:bg-primary/90">
                     {t("landing.nav.register")}
                   </Button>
