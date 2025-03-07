@@ -2,9 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Shield, Menu, X, Globe, Sun, Moon } from "lucide-react";
+import { Shield, Menu, X, Globe, Sun, Moon, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavigationProps {
   scrollToFeatures: () => void;
@@ -35,34 +41,34 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "py-3 bg-background/95 backdrop-blur-md shadow-sm border-b border-muted/40"
+          ? "py-3 bg-background/80 backdrop-blur-xl shadow-sm border-b border-muted/40"
           : "py-5 bg-transparent"
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between relative">
-          {/* Logo com animação sutil */}
+          {/* Logo com animação sutil e efeito hover melhorado */}
           <Link
             to="/"
             className="flex items-center gap-2 z-20 group transition-transform duration-300 hover:scale-105"
           >
-            <Shield
-              className={`h-6 w-6 transition-colors duration-300 ${
-                scrolled ? "text-primary" : "text-primary"
-              }`}
-            />
-            <span
-              className={`text-lg font-bold transition-all duration-300 ${
-                scrolled ? "text-foreground" : "text-foreground"
-              } group-hover:text-primary`}
-            >
+            <div className="relative">
+              <Shield className="h-7 w-7 transition-colors duration-300 text-primary" />
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="absolute -inset-2 rounded-full bg-primary/5 -z-10"
+              />
+            </div>
+            <span className="text-lg font-bold transition-all duration-300 text-foreground group-hover:text-primary">
               Secure File Safari
             </span>
           </Link>
 
-          {/* Menu Desktop Elegante */}
+          {/* Menu Desktop Elegante com itens dropdown */}
           <div className="hidden md:flex items-center gap-8">
-            <nav className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-6">
               <Button
                 variant="ghost"
                 className="text-base font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-primary after:transition-all after:duration-300"
@@ -70,6 +76,31 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               >
                 {t("landing.nav.features")}
               </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-base font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary flex items-center gap-1.5 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-primary after:transition-all after:duration-300"
+                  >
+                    {t("landing.nav.solutions")}
+                    <ChevronDown className="h-4 w-4 opacity-70" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="center"
+                  className="w-48 bg-background/95 backdrop-blur-lg border-muted/50"
+                >
+                  <DropdownMenuItem>
+                    {t("landing.nav.personal")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>{t("landing.nav.teams")}</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    {t("landing.nav.enterprise")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button
                 variant="ghost"
                 className="text-base font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-primary after:transition-all after:duration-300"
@@ -82,7 +113,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full transition-all duration-300 hover:bg-primary/10 hover:text-primary"
+                className="rounded-full transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:scale-105"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 aria-label="Toggle theme"
               >
@@ -93,14 +124,26 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
                 )}
               </Button>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full transition-all duration-300 hover:bg-primary/10 hover:text-primary"
-                aria-label="Language"
-              >
-                <Globe className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:scale-105"
+                    aria-label="Select language"
+                  >
+                    <Globe className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-32 bg-background/95 backdrop-blur-lg border-muted/50"
+                >
+                  <DropdownMenuItem>English</DropdownMenuItem>
+                  <DropdownMenuItem>Português</DropdownMenuItem>
+                  <DropdownMenuItem>Español</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Botões de ação com efeitos refinados */}
@@ -108,13 +151,13 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               <Link to="/auth">
                 <Button
                   variant="ghost"
-                  className="px-5 py-2 font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary border-b-2 border-transparent hover:border-primary"
+                  className="px-5 py-2 font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:shadow-sm rounded-full"
                 >
                   {t("landing.nav.login")}
                 </Button>
               </Link>
               <Link to="/auth?signup=true">
-                <Button className="px-5 py-2 font-medium transition-all duration-300 bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md">
+                <Button className="px-6 py-2 font-medium transition-all duration-300 bg-primary hover:bg-primary/90 hover:shadow-lg rounded-full">
                   {t("landing.nav.register")}
                 </Button>
               </Link>
@@ -142,7 +185,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               size="icon"
               className={`rounded-full transition-colors duration-300 ${
                 mobileMenuOpen
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/20 text-primary"
                   : "hover:bg-primary/10"
               }`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -166,7 +209,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border shadow-md"
+            className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border shadow-md"
           >
             <div className="container mx-auto px-4 py-6 flex flex-col space-y-5">
               <Button
@@ -179,6 +222,34 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               >
                 {t("landing.nav.features")}
               </Button>
+
+              <div className="space-y-2">
+                <p className="px-4 text-sm font-medium text-muted-foreground">
+                  {t("landing.nav.solutions")}
+                </p>
+                <Button
+                  variant="ghost"
+                  className="justify-start pl-8 py-2 text-sm w-full hover:bg-primary/10 hover:text-primary transition-all duration-300 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("landing.nav.personal")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start pl-8 py-2 text-sm w-full hover:bg-primary/10 hover:text-primary transition-all duration-300 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("landing.nav.teams")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start pl-8 py-2 text-sm w-full hover:bg-primary/10 hover:text-primary transition-all duration-300 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("landing.nav.enterprise")}
+                </Button>
+              </div>
+
               <Button
                 variant="ghost"
                 className="justify-start px-4 py-3 font-medium hover:bg-primary/10 hover:text-primary transition-all duration-300 rounded-md"
@@ -186,7 +257,44 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               >
                 {t("landing.nav.pricing")}
               </Button>
-              <div className="h-px bg-muted my-2"></div>
+
+              <div className="h-px bg-muted my-1"></div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setTheme("light");
+                  }}
+                  className={`transition-all duration-200 ${
+                    theme === "light"
+                      ? "bg-primary/10 text-primary border-primary"
+                      : ""
+                  }`}
+                >
+                  <Sun className="h-4 w-4 mr-2" />
+                  Light
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setTheme("dark");
+                  }}
+                  className={`transition-all duration-200 ${
+                    theme === "dark"
+                      ? "bg-primary/10 text-primary border-primary"
+                      : ""
+                  }`}
+                >
+                  <Moon className="h-4 w-4 mr-2" />
+                  Dark
+                </Button>
+              </div>
+
+              <div className="h-px bg-muted my-1"></div>
+
               <Link
                 to="/auth"
                 className="w-full"
@@ -194,7 +302,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               >
                 <Button
                   variant="outline"
-                  className="w-full py-3 transition-all duration-300 hover:border-primary"
+                  className="w-full py-3 transition-all duration-300 hover:border-primary rounded-full"
                 >
                   {t("landing.nav.login")}
                 </Button>
@@ -204,7 +312,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
                 className="w-full"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Button className="w-full py-3 transition-all duration-300 hover:bg-primary/90">
+                <Button className="w-full py-3 transition-all duration-300 hover:bg-primary/90 rounded-full">
                   {t("landing.nav.register")}
                 </Button>
               </Link>
