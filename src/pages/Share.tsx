@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -5,9 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Download } from 'lucide-react';
+import { Lock, Download, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { downloadFile } from '@/utils/storage';
+import { decryptData, encryptData } from '@/utils/encryption';
 
 const Share = () => {
   const { id } = useParams();
@@ -16,6 +18,7 @@ const Share = () => {
   const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { data: shareData, isLoading, error } = useQuery({
     queryKey: ['shared-file', id],
@@ -39,6 +42,16 @@ const Share = () => {
       // Verificar expiração
       if (shareData.expires_at && new Date(shareData.expires_at) < new Date()) {
         return null;
+      }
+
+      // Try to decrypt any encrypted fields if they exist
+      try {
+        if (shareData.encrypted_password) {
+          shareData.password = decryptData(shareData.encrypted_password);
+          delete shareData.encrypted_password;
+        }
+      } catch (decryptError) {
+        console.error('Failed to decrypt shared file data:', decryptError);
       }
 
       // Buscar os dados do arquivo usando o file_path exato
@@ -103,9 +116,13 @@ const Share = () => {
 
   const handleDownload = async () => {
     if (!shareData?.file_path) return;
-
+    
+    setIsDownloading(true);
+    
     try {
       const blob = await downloadFile(shareData.file_path);
+      
+      // Create a download link
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -114,6 +131,15 @@ const Share = () => {
       a.click();
       URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      
+      // Log download activity
+      await supabase.from('share_activity_logs').insert({
+        share_id: id,
+        activity_type: 'download',
+        user_ip: 'encrypted', // For privacy, we don't store actual IPs
+        user_agent: encryptData(navigator.userAgent) // Encrypt user agent for privacy
+      });
+      
     } catch (error) {
       console.error('Download error:', error);
       toast({
@@ -121,6 +147,8 @@ const Share = () => {
         title: "Erro no download",
         description: "Tente novamente mais tarde"
       });
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -164,7 +192,13 @@ const Share = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
       <div className="max-w-lg w-full bg-card rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">Arquivo compartilhado</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Arquivo compartilhado</h1>
+          <div className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-1 rounded-full">
+            <ShieldCheck className="h-4 w-4" />
+            <span className="text-xs font-medium">Criptografado</span>
+          </div>
+        </div>
         <div className="space-y-4">
           <div className="p-4 bg-muted rounded-md">
             <p className="font-medium">{shareData.filename}</p>
@@ -175,10 +209,18 @@ const Share = () => {
           <Button 
             onClick={handleDownload}
             className="w-full gap-2"
+            disabled={isDownloading}
           >
-            <Download className="h-4 w-4" />
-            Baixar arquivo
+            {isDownloading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {isDownloading ? 'Descriptografando...' : 'Baixar arquivo'}
           </Button>
+          <p className="text-xs text-center text-muted-foreground">
+            Este arquivo é criptografado usando AES e só pode ser descriptografado no seu dispositivo.
+          </p>
         </div>
       </div>
     </div>

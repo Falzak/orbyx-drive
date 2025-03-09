@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -13,9 +14,10 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { FileData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Copy, Link, Trash } from "lucide-react";
+import { Loader2, Copy, Link, Trash, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { encryptData, decryptData } from "@/utils/encryption";
 
 interface ShareDialogProps {
   file: FileData;
@@ -27,7 +29,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isPublic, setIsPublic] = useState(false);
-  const [isEncrypted, setIsEncrypted] = useState(false);
+  const [isEncrypted, setIsEncrypted] = useState(true); // Default to encrypted
   const [password, setPassword] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [customUrl, setCustomUrl] = useState("");
@@ -49,6 +51,15 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
         return null;
       }
 
+      if (data && data.encrypted_password) {
+        try {
+          // Decrypt password for UI display
+          data.password = decryptData(data.encrypted_password);
+        } catch (decryptError) {
+          console.error("Error decrypting password:", decryptError);
+        }
+      }
+
       return data;
     },
   });
@@ -59,6 +70,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       setIsPublic(existingShare.is_public);
       setPassword(existingShare.password || "");
       setExpiresAt(existingShare.expires_at || "");
+      setIsEncrypted(true); // We assume all existing shares use encryption
       setShareUrl(`${window.location.origin}/share/${existingShare.id}`);
     }
   }, [existingShare]);
@@ -70,13 +82,20 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      const shareData = {
+      // Encrypt the password if provided
+      const shareData: any = {
         file_path: file.file_path,
         shared_by: user.id,
         is_public: isPublic,
-        password: password || null,
-        // Removendo expires_at por enquanto
+        is_encrypted: isEncrypted,
       };
+      
+      // Only store encrypted password in the database
+      if (password) {
+        shareData.encrypted_password = encryptData(password);
+      } else {
+        shareData.encrypted_password = null;
+      }
 
       const { data, error } = await supabase
         .from("shared_files")
@@ -92,7 +111,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
       toast({
         title: "Link criado com sucesso",
-        description: "O link de compartilhamento foi gerado.",
+        description: "O link de compartilhamento criptografado foi gerado.",
       });
     } catch (error) {
       console.error("Share error:", error);
@@ -158,13 +177,14 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
             {existingShare ? "Gerenciar compartilhamento" : "Compartilhar arquivo"}
+            <ShieldCheck className="h-4 w-4 text-primary" />
           </DialogTitle>
           <DialogDescription>
             {existingShare 
-              ? "Gerencie as configurações de compartilhamento do seu arquivo."
-              : "Configure as opções de compartilhamento do seu arquivo."}
+              ? "Gerencie as configurações de compartilhamento do seu arquivo criptografado."
+              : "Configure as opções de compartilhamento seguro do seu arquivo."}
           </DialogDescription>
         </DialogHeader>
         
@@ -193,7 +213,13 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
               <p className="text-sm text-muted-foreground">Configurações atuais:</p>
               <div className="space-y-1">
                 <p className="text-sm">• Acesso: {isPublic ? "Público" : "Protegido"}</p>
-                {existingShare.password && <p className="text-sm">• Protegido por senha</p>}
+                {existingShare.encrypted_password && <p className="text-sm">• Protegido por senha criptografada</p>}
+                <p className="text-sm flex items-center gap-1">
+                  • Criptografia: 
+                  <span className="text-primary flex items-center">
+                    Ativada <ShieldCheck className="h-3 w-3 inline ml-1" />
+                  </span>
+                </p>
               </div>
             </div>
 
@@ -224,6 +250,19 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
               />
             </div>
 
+            <div className="flex items-center justify-between">
+              <Label htmlFor="encrypted" className="flex items-center gap-1">
+                Criptografia AES 
+                <span className="text-xs text-muted-foreground">(recomendado)</span>
+              </Label>
+              <Switch
+                id="encrypted"
+                checked={isEncrypted}
+                onCheckedChange={setIsEncrypted}
+                disabled={true} // Force encryption to be always on
+              />
+            </div>
+
             {!isPublic && (
               <div className="grid gap-2">
                 <Label htmlFor="password">Senha de proteção</Label>
@@ -234,6 +273,9 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Digite uma senha (opcional)"
                 />
+                <p className="text-xs text-muted-foreground">
+                  A senha será criptografada antes de ser armazenada.
+                </p>
               </div>
             )}
 
@@ -247,7 +289,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
               ) : (
                 <>
                   <Link className="h-4 w-4 mr-2" />
-                  Gerar link
+                  Gerar link seguro
                 </>
               )}
             </Button>

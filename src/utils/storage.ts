@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { StorageProvider, StorageProviderDatabase } from "@/types/storage";
 import {
@@ -7,6 +8,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { encryptFile, decryptFile, encryptData, decryptData } from "./encryption";
 
 // Interface for storage providers
 interface IStorageProvider {
@@ -16,33 +18,81 @@ interface IStorageProvider {
   remove(paths: string[]): Promise<void>;
 }
 
-// Supabase storage provider implementation
+// Supabase storage provider implementation with encryption
 class SupabaseStorage implements IStorageProvider {
   private bucket: string = "files";
 
   async upload(file: File, path: string): Promise<void> {
-    const { error } = await supabase.storage
-      .from(this.bucket)
-      .upload(path, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) throw error;
+    try {
+      // Encrypt the file before uploading
+      const { encryptedBlob, encryptionData } = await encryptFile(file);
+      
+      // Upload the encrypted file
+      const { error: fileError } = await supabase.storage
+        .from(this.bucket)
+        .upload(path, encryptedBlob, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+      
+      if (fileError) throw fileError;
+      
+      // Store encryption data in metadata table
+      const { error: metaError } = await supabase
+        .from('file_encryption_metadata')
+        .insert({
+          file_path: path,
+          encryption_data: encryptData(encryptionData)
+        });
+        
+      if (metaError) {
+        // If metadata storage fails, remove the uploaded file
+        await this.remove([path]);
+        throw metaError;
+      }
+    } catch (error) {
+      console.error("Encrypted upload error:", error);
+      throw error;
+    }
   }
 
   async download(path: string): Promise<Blob> {
-    const { data, error } = await supabase.storage
-      .from(this.bucket)
-      .download(path);
+    try {
+      // Download the encrypted file
+      const { data: encryptedData, error: fileError } = await supabase.storage
+        .from(this.bucket)
+        .download(path);
 
-    if (error) throw error;
-    if (!data) throw new Error("Failed to download file");
-
-    return data;
+      if (fileError) throw fileError;
+      if (!encryptedData) throw new Error("Failed to download file");
+      
+      // Fetch the encryption metadata
+      const { data: metaData, error: metaError } = await supabase
+        .from('file_encryption_metadata')
+        .select('encryption_data')
+        .eq('file_path', path)
+        .single();
+        
+      if (metaError) throw metaError;
+      if (!metaData) throw new Error("Encryption metadata not found");
+      
+      // Decrypt the encryption data
+      const encryptionData = decryptData(metaData.encryption_data);
+      
+      // Decrypt the file
+      const { decryptedBlob } = await decryptFile(encryptedData, encryptionData);
+      
+      return decryptedBlob;
+    } catch (error) {
+      console.error("Encrypted download error:", error);
+      throw error;
+    }
   }
 
   async getUrl(path: string): Promise<string> {
+    // For encrypted files, we should force a download rather than providing a URL
+    // that could expose the encrypted data. Instead, we'll create a signed URL
+    // that the application must handle properly.
     const { data, error } = await supabase.storage
       .from(this.bucket)
       .createSignedUrl(path, 60 * 60); // 1 hour expiry
@@ -54,13 +104,28 @@ class SupabaseStorage implements IStorageProvider {
   }
 
   async remove(paths: string[]): Promise<void> {
-    const { error } = await supabase.storage.from(this.bucket).remove(paths);
-
-    if (error) throw error;
+    try {
+      // Remove the files from storage
+      const { error: fileError } = await supabase.storage.from(this.bucket).remove(paths);
+      if (fileError) throw fileError;
+      
+      // Remove the encryption metadata
+      for (const path of paths) {
+        const { error: metaError } = await supabase
+          .from('file_encryption_metadata')
+          .delete()
+          .eq('file_path', path);
+          
+        if (metaError) console.error(`Error removing metadata for ${path}:`, metaError);
+      }
+    } catch (error) {
+      console.error("Error removing encrypted files:", error);
+      throw error;
+    }
   }
 }
 
-// Cloudflare R2 storage provider implementation
+// Cloudflare R2 storage provider implementation with encryption
 class CloudflareR2Storage implements IStorageProvider {
   private client: S3Client;
   private bucket: string;
@@ -79,44 +144,71 @@ class CloudflareR2Storage implements IStorageProvider {
   }
 
   async upload(file: File, path: string): Promise<void> {
-    const arrayBuffer = await file.arrayBuffer();
-
-    const command = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: path,
-      Body: new Uint8Array(arrayBuffer),
-      ContentType: file.type,
-      ContentDisposition: `inline; filename="${file.name}"`,
-      // Adicionar headers CORS
-      ACL: 'public-read',
-    });
-
     try {
+      // Encrypt the file before uploading
+      const { encryptedBlob, encryptionData } = await encryptFile(file);
+      
+      // Convert the encrypted blob to ArrayBuffer
+      const arrayBuffer = await encryptedBlob.arrayBuffer();
+
+      const command = new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: path,
+        Body: new Uint8Array(arrayBuffer),
+        ContentType: 'application/encrypted',
+        ContentDisposition: `attachment; filename="encrypted"`,
+        ACL: 'public-read',
+        Metadata: {
+          // Store encrypted metadata in S3 object metadata
+          'encryption-data': encryptData(encryptionData)
+        }
+      });
+
       await this.client.send(command);
     } catch (error) {
-      console.error('Upload error:', error);
-      throw new Error(`Failed to upload file: ${error.message}`);
+      console.error('Encrypted upload error:', error);
+      throw new Error(`Failed to upload encrypted file: ${error.message}`);
     }
   }
 
   async download(path: string): Promise<Blob> {
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: path,
-    });
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: path,
+      });
 
-    const response = await this.client.send(command);
+      const response = await this.client.send(command);
 
-    if (!response.Body) {
-      throw new Error("Failed to download file");
+      if (!response.Body) {
+        throw new Error("Failed to download encrypted file");
+      }
+      
+      // Get the encryption data from metadata
+      const encryptionDataEncrypted = response.Metadata?.['encryption-data'];
+      if (!encryptionDataEncrypted) {
+        throw new Error("Encryption metadata not found");
+      }
+      
+      // Decrypt the encryption data
+      const encryptionData = decryptData(encryptionDataEncrypted);
+
+      // Convert the response body to a blob
+      const responseArrayBuffer = await response.Body.transformToByteArray();
+      const encryptedBlob = new Blob([responseArrayBuffer], { type: 'application/encrypted' });
+      
+      // Decrypt the file
+      const { decryptedBlob } = await decryptFile(encryptedBlob, encryptionData);
+      
+      return decryptedBlob;
+    } catch (error) {
+      console.error("Encrypted download error:", error);
+      throw error;
     }
-
-    // Convert the readable stream to a blob
-    const responseArrayBuffer = await response.Body.transformToByteArray();
-    return new Blob([responseArrayBuffer], { type: response.ContentType });
   }
 
   async getUrl(path: string): Promise<string> {
+    // For encrypted files, we should force download through our app
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: path,
