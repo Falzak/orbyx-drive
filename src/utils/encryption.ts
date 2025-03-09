@@ -80,18 +80,23 @@ export const decryptFile = async (
     const parsedData = JSON.parse(encryptionData);
     const { iv, filename, type } = parsedData;
     
-    // Read the encrypted blob as text (base64)
+    // Read the encrypted blob
     const encryptedBase64 = await blobToBase64(encryptedBlob);
+    
+    // Remove data URL prefix if present
+    const base64Data = encryptedBase64.includes('base64,') 
+      ? encryptedBase64.split('base64,')[1] 
+      : encryptedBase64;
     
     // Set up the decryption parameters
     const key = getOrCreateEncryptionKey();
     
     // Decrypt the file content
-    const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+    const decrypted = CryptoJS.AES.decrypt(base64Data, key, {
       iv: CryptoJS.enc.Hex.parse(iv)
     });
     
-    // Convert to ArrayBuffer and then to Blob
+    // Convert the decrypted data to a Blob
     const wordArray = decrypted.toUint8Array(); 
     const decryptedBlob = new Blob([wordArray], { type });
     

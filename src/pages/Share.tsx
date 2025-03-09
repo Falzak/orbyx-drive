@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Lock, Download, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { downloadFile } from '@/utils/storage';
-import { decryptData, encryptData } from '@/utils/encryption';
+import { decryptData } from '@/utils/encryption';
 
 const Share = () => {
   const { id } = useParams();
@@ -25,12 +25,12 @@ const Share = () => {
     queryFn: async () => {
       if (!id) return null;
 
-      // Primeiro, buscar os dados do compartilhamento
+      // First, fetch share data
       const { data: shareData, error: shareError } = await supabase
-        .from('shared_files')
-        .select('*')
-        .eq('id', id)
-        .single();
+        .from("shared_files")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
 
       if (shareError) {
         console.error('Error fetching share:', shareError);
@@ -39,12 +39,12 @@ const Share = () => {
 
       if (!shareData) return null;
 
-      // Verificar expiração
+      // Check expiration
       if (shareData.expires_at && new Date(shareData.expires_at) < new Date()) {
         return null;
       }
 
-      // Try to decrypt any encrypted fields if they exist
+      // Try to decrypt the encrypted password if it exists
       try {
         if (shareData.encrypted_password) {
           shareData.password = decryptData(shareData.encrypted_password);
@@ -54,35 +54,21 @@ const Share = () => {
         console.error('Failed to decrypt shared file data:', decryptError);
       }
 
-      // Buscar os dados do arquivo usando o file_path exato
+      // Fetch file data using the exact file_path
       const { data: fileData, error: fileError } = await supabase
         .from('files')
         .select('filename, size, content_type')
         .eq('file_path', shareData.file_path)
-        .single();
+        .maybeSingle();
 
       if (fileError) {
         console.error('Error fetching file:', fileError);
-        // Tentar buscar usando o file_path como ID alternativo
-        const { data: fileDataAlt, error: fileErrorAlt } = await supabase
-          .from('files')
-          .select('filename, size, content_type')
-          .eq('id', 'd04e4c22-8db3-4712-abae-17ec87d9ef15') // ID do arquivo que você mostrou
-          .single();
-
-        if (fileErrorAlt) {
-          console.error('Alternative file fetch failed:', fileErrorAlt);
-          return {
-            ...shareData,
-            filename: shareData.file_path.split('/').pop() || 'arquivo',
-            size: 0,
-            content_type: 'application/octet-stream'
-          };
-        }
-
+        // If the file is not found, return what we have with default values
         return {
           ...shareData,
-          ...fileDataAlt
+          filename: shareData.file_path.split('/').pop() || 'arquivo',
+          size: 0,
+          content_type: 'application/octet-stream'
         };
       }
 
@@ -96,7 +82,7 @@ const Share = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Adicionar log para debug
+  // Debug logs
   console.log('ShareData:', shareData);
   console.log('Loading:', isLoading);
   console.log('Error:', error);
@@ -120,6 +106,7 @@ const Share = () => {
     setIsDownloading(true);
     
     try {
+      // Download and automatically decrypt the file
       const blob = await downloadFile(shareData.file_path);
       
       // Create a download link

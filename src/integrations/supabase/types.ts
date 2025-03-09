@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      file_encryption_metadata: {
+        Row: {
+          created_at: string
+          encryption_data: string
+          file_path: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          encryption_data: string
+          file_path: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          encryption_data?: string
+          file_path?: string
+          id?: string
+        }
+        Relationships: []
+      }
       files: {
         Row: {
           category: string | null
@@ -121,9 +142,45 @@ export type Database = {
         }
         Relationships: []
       }
+      share_activity_logs: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          share_id: string
+          user_agent: string | null
+          user_ip: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          share_id: string
+          user_agent?: string | null
+          user_ip?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          share_id?: string
+          user_agent?: string | null
+          user_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_activity_logs_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "shared_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_files: {
         Row: {
           created_at: string
+          encrypted_password: string | null
           expires_at: string | null
           file_path: string | null
           id: string
@@ -133,6 +190,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          encrypted_password?: string | null
           expires_at?: string | null
           file_path?: string | null
           id?: string
@@ -142,6 +200,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          encrypted_password?: string | null
           expires_at?: string | null
           file_path?: string | null
           id?: string

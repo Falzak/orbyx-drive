@@ -44,9 +44,9 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
         .from("shared_files")
         .select("*")
         .eq("file_path", file.file_path)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error("Error fetching share:", error);
         return null;
       }
@@ -93,13 +93,15 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       // Only store encrypted password in the database
       if (password) {
         shareData.encrypted_password = encryptData(password);
+        shareData.password = null; // Don't store plaintext password
       } else {
         shareData.encrypted_password = null;
+        shareData.password = null;
       }
 
       const { data, error } = await supabase
         .from("shared_files")
-        .insert(shareData)
+        .upsert(shareData)
         .select()
         .single();
 
