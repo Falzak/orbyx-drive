@@ -65,7 +65,7 @@ export default function Auth() {
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const totpFactor = factors?.totp.length > 0 ? factors.totp[0] : null;
 
-      // Check if this device is trusted
+      // Check if this is a trusted device
       if (
         mfaData?.currentLevel === "aal1" &&
         mfaData?.nextLevel === "aal2" &&
@@ -89,12 +89,11 @@ export default function Auth() {
               return;
             }
 
-            // Auto-verify with empty code to get to AAL2 without user input
+            // Fix: Remove sessionId parameter as it's not accepted in MFAVerifyParams
             const { error: verifyError } = await supabase.auth.mfa.verify({
               factorId: totpFactor.id,
               challengeId: challengeData.id,
               code: "",
-              sessionId: data.session?.access_token,
             });
 
             if (verifyError) {

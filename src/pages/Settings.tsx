@@ -228,8 +228,8 @@ export default function Settings() {
 
   const handleDisable2FA = async () => {
     try {
-      const { data: factors } = await supabase.auth.mfa.list();
-      const totpFactor = factors.find(factor => factor.factor_type === 'totp');
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totpFactor = factors.totp.find(factor => factor.factor_type === 'totp');
 
       if (!totpFactor) {
         throw new Error("Fator TOTP não encontrado");

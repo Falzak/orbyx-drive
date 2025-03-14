@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Shield } from "lucide-react";
@@ -20,7 +21,8 @@ export function TrustedDeviceToast() {
           title,
           description,
           variant: "default",
-          icon: <Shield className="h-4 w-4 text-primary" />,
+          // Fix: Replace icon prop with jsx content directly
+          children: <Shield className="h-4 w-4 text-primary" />,
         });
       }
     };

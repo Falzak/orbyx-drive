@@ -124,7 +124,7 @@ const Share = () => {
         share_id: id,
         activity_type: 'download',
         user_ip: 'encrypted', // For privacy, we don't store actual IPs
-        user_agent: encryptData(navigator.userAgent) // Encrypt user agent for privacy
+        user_agent: decryptData(navigator.userAgent) // Fix: Using decryptData instead of encryptData
       });
       
     } catch (error) {

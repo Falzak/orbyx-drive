@@ -96,9 +96,31 @@ export const decryptFile = async (
       iv: CryptoJS.enc.Hex.parse(iv)
     });
     
-    // Convert the decrypted data to a Blob
-    const wordArray = decrypted.toUint8Array(); 
-    const decryptedBlob = new Blob([wordArray], { type });
+    // Fix: Convert the decrypted data to a Uint8Array manually instead of using toUint8Array
+    const wordArray = decrypted;
+    const words = wordArray.words;
+    const sigBytes = wordArray.sigBytes;
+    const u8 = new Uint8Array(sigBytes);
+    let offset = 0;
+    
+    for (let i = 0; i < sigBytes/4; i++) {
+      const word = words[i];
+      u8[offset++] = (word >>> 24);
+      u8[offset++] = (word >>> 16) & 0xff;
+      u8[offset++] = (word >>> 8) & 0xff;
+      u8[offset++] = word & 0xff;
+    }
+    
+    // Handle remaining bytes
+    const remainingBytes = sigBytes % 4;
+    if (remainingBytes) {
+      const word = words[sigBytes / 4 | 0];
+      for (let i = 0; i < remainingBytes; i++) {
+        u8[offset++] = (word >>> (24 - 8 * i)) & 0xff;
+      }
+    }
+    
+    const decryptedBlob = new Blob([u8], { type });
     
     return { decryptedBlob, filename, type };
   } catch (error) {
@@ -130,29 +152,5 @@ const base64ToBlob = (base64: string, type: string): Blob => {
   return new Blob([bytes], { type });
 };
 
-// Convert a CryptoJS WordArray to a Uint8Array
-CryptoJS.lib.WordArray.prototype.toUint8Array = function() {
-  const words = this.words;
-  const sigBytes = this.sigBytes;
-  const u8 = new Uint8Array(sigBytes);
-  let offset = 0;
-  
-  for (let i = 0; i < sigBytes/4; i++) {
-    const word = words[i];
-    u8[offset++] = (word >>> 24);
-    u8[offset++] = (word >>> 16) & 0xff;
-    u8[offset++] = (word >>> 8) & 0xff;
-    u8[offset++] = word & 0xff;
-  }
-  
-  // Handle remaining bytes
-  const remainingBytes = sigBytes % 4;
-  if (remainingBytes) {
-    const word = words[sigBytes / 4 | 0];
-    for (let i = 0; i < remainingBytes; i++) {
-      u8[offset++] = (word >>> (24 - 8 * i)) & 0xff;
-    }
-  }
-  
-  return u8;
-};
+// Fix: Remove the prototype extension since it's not supported in the current TypeScript configuration
+// And we've replaced its functionality with inline code above in the decryptFile function
