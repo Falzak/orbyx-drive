@@ -39,6 +39,7 @@ export default function TwoFactor() {
     "trusted_devices_v2",
     []
   );
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Para compatibilidade, verificar se existem dispositivos no formato antigo
   useEffect(() => {
@@ -48,21 +49,18 @@ export default function TwoFactor() {
         if (oldDevicesStr) {
           const oldDevices = JSON.parse(oldDevicesStr);
           if (Array.isArray(oldDevices) && oldDevices.length > 0) {
-            // Converter dispositivos antigos para o novo formato
             const newDevices: TrustedDevice[] = [];
 
             oldDevices.forEach((item) => {
               try {
                 if (typeof item === "string") {
                   if (item.startsWith("{")) {
-                    // Já é um JSON
                     const parsed = JSON.parse(item);
                     newDevices.push({
                       userId: parsed.userId,
                       timestamp: parsed.timestamp || new Date().getTime(),
                     });
                   } else {
-                    // É apenas um ID de usuário
                     newDevices.push({
                       userId: item,
                       timestamp: new Date().getTime(),
@@ -76,7 +74,6 @@ export default function TwoFactor() {
 
             if (newDevices.length > 0) {
               setTrustedDevices(newDevices);
-              // Limpar o armazenamento antigo
               localStorage.removeItem("trusted_devices");
             }
           }
@@ -90,6 +87,8 @@ export default function TwoFactor() {
   }, []);
 
   useEffect(() => {
+    if (isRedirecting) return;
+
     const checkAuthStatus = async () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
@@ -100,29 +99,28 @@ export default function TwoFactor() {
       const { data: mfaData } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
-      // If user already has AAL2 level, redirect to dashboard
       if (mfaData?.currentLevel === "aal2") {
+        setIsRedirecting(true);
         navigate("/dashboard");
         return;
       }
 
-      // If user doesn't need 2FA, redirect to dashboard
       if (mfaData?.nextLevel !== "aal2") {
+        setIsRedirecting(true);
         navigate("/dashboard");
         return;
       }
 
-      // Check if this device is trusted
       const userId = session.session.user.id;
       const isTrusted = trustedDevices.some(
         (device) => device.userId === userId
       );
 
       if (isTrusted) {
-        // Bypass 2FA for trusted devices and redirect to dashboard
-        navigate("/dashboard");
+        setIsRedirecting(true);
+        console.log("Dispositivo confiável detectado na página de 2FA, redirecionando...");
+        navigate("/dashboard", { replace: true });
         
-        // Show toast about trusted device
         setTimeout(() => {
           const toastEvent = new CustomEvent("toast", {
             detail: {
@@ -137,7 +135,7 @@ export default function TwoFactor() {
     };
 
     checkAuthStatus();
-  }, [navigate, trustedDevices]);
+  }, [navigate, trustedDevices, isRedirecting]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,26 +174,21 @@ export default function TwoFactor() {
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
       if (mfaData?.currentLevel === "aal2") {
-        // If remember device is checked, add current user ID to trusted devices
         if (rememberDevice && session.session) {
           const userId = session.session.user.id;
 
-          // Store device info in the new format
           const newTrustedDevice: TrustedDevice = {
             userId,
             timestamp: new Date().getTime(),
             deviceInfo: navigator.userAgent,
           };
 
-          // Filter out any existing entries for this user
           const updatedTrustedDevices = trustedDevices.filter(
             (device) => device.userId !== userId
           );
 
-          // Add the new trust data
           setTrustedDevices([...updatedTrustedDevices, newTrustedDevice]);
 
-          // Show confirmation toast
           toast({
             title: "Dispositivo lembrado",
             description:

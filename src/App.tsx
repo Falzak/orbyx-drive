@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -201,8 +200,12 @@ const TwoFactorRedirector = () => {
     []
   );
   const [isChecking, setIsChecking] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
+    // Evitar verificações múltiplas se já estiver redirecionando
+    if (isRedirecting) return;
+    
     const checkTrustedDevice = async () => {
       if (!session) {
         setIsChecking(false);
@@ -229,6 +232,8 @@ const TwoFactorRedirector = () => {
         }
 
         if (isTrusted) {
+          console.log("Dispositivo confiável detectado no TwoFactorRedirector");
+          setIsRedirecting(true);
           // Se for dispositivo confiável, tentar atualizar o nível de autenticação
           const { data: mfaData } =
             await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -238,7 +243,7 @@ const TwoFactorRedirector = () => {
             mfaData?.currentLevel === "aal2" ||
             mfaData?.nextLevel !== "aal2"
           ) {
-            navigate("/", { replace: true });
+            navigate("/dashboard", { replace: true });
 
             // Mostrar toast
             setTimeout(() => {
@@ -261,7 +266,7 @@ const TwoFactorRedirector = () => {
     };
 
     checkTrustedDevice();
-  }, [session, trustedDevicesV2, trustedDevicesLegacy, navigate]);
+  }, [session, trustedDevicesV2, trustedDevicesLegacy, navigate, isRedirecting]);
 
   // Mostrar loading apenas enquanto verifica
   if (isChecking) {
