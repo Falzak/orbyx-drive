@@ -102,13 +102,13 @@ export default function TwoFactor() {
 
       // If user already has AAL2 level, redirect to dashboard
       if (mfaData?.currentLevel === "aal2") {
-        navigate("/");
+        navigate("/dashboard");
         return;
       }
 
       // If user doesn't need 2FA, redirect to dashboard
       if (mfaData?.nextLevel !== "aal2") {
-        navigate("/");
+        navigate("/dashboard");
         return;
       }
 
@@ -119,9 +119,20 @@ export default function TwoFactor() {
       );
 
       if (isTrusted) {
-        // Essa verificação é apenas uma otimização de UX - o verdadeiro bypass
-        // do 2FA acontece no TwoFactorProtectedRoute
-        console.log("Este dispositivo já está marcado como confiável");
+        // Bypass 2FA for trusted devices and redirect to dashboard
+        navigate("/dashboard");
+        
+        // Show toast about trusted device
+        setTimeout(() => {
+          const toastEvent = new CustomEvent("toast", {
+            detail: {
+              title: "Dispositivo reconhecido",
+              description:
+                "Autenticação em dois fatores pulada para este dispositivo",
+            },
+          });
+          window.dispatchEvent(toastEvent);
+        }, 1000);
       }
     };
 
@@ -192,7 +203,7 @@ export default function TwoFactor() {
           });
         }
 
-        navigate("/");
+        navigate("/dashboard");
       } else {
         throw new Error(t("auth.errors.invalidCode"));
       }

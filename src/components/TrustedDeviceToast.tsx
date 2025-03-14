@@ -1,43 +1,38 @@
 
 import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Shield } from "lucide-react";
+import { toast } from "sonner";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { CheckCircle2 } from "lucide-react";
 
-/**
- * Componente que escuta eventos para mostrar um toast quando o usuário
- * é automaticamente autenticado em um dispositivo confiável
- */
-export function TrustedDeviceToast() {
-  const { toast } = useToast();
-
-  useEffect(() => {
-    // Função para lidar com o evento custom de toast
-    const handleToastEvent = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail) {
-        const { title, description } = customEvent.detail;
-
-        toast({
-          title,
-          description,
-          variant: "default",
-          // Fix: Replace icon prop with jsx content directly
-          children: <Shield className="h-4 w-4 text-primary" />,
-        });
-      }
-    };
-
-    // Adiciona o event listener
-    window.addEventListener("toast", handleToastEvent);
-
-    // Limpa o listener quando o componente é desmontado
-    return () => {
-      window.removeEventListener("toast", handleToastEvent);
-    };
-  }, [toast]);
-
-  // Este componente não renderiza nada visualmente
-  return null;
+// Interface para o formato do dispositivo confiável
+interface TrustedDevice {
+  userId: string;
+  timestamp: number;
+  deviceInfo?: string;
 }
 
-export default TrustedDeviceToast;
+export default function TrustedDeviceToast() {
+  const [trustedDevices] = useLocalStorage<TrustedDevice[]>(
+    "trusted_devices_v2",
+    []
+  );
+
+  useEffect(() => {
+    // Listen for custom toast events
+    const handleToast = (event: CustomEvent) => {
+      const { title, description } = event.detail;
+      toast(title, {
+        description,
+        duration: 5000,
+        children: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+      });
+    };
+
+    window.addEventListener("toast", handleToast as EventListener);
+    return () => {
+      window.removeEventListener("toast", handleToast as EventListener);
+    };
+  }, [trustedDevices]);
+
+  return null;
+}

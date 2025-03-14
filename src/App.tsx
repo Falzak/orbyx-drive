@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -131,7 +132,7 @@ const TwoFactorProtectedRoute = ({
 
             // Verificar se o usuário está na página de 2FA e redirecionar se necessário
             if (location.pathname === "/two-factor") {
-              navigate("/", { replace: true });
+              navigate("/dashboard", { replace: true });
             }
 
             // Atualizar para o usuário que ele está entrando em um dispositivo confiável

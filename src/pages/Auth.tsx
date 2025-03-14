@@ -31,6 +31,12 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
+interface TrustedDevice {
+  userId: string;
+  timestamp: number;
+  deviceInfo?: string;
+}
+
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,7 +51,15 @@ export default function Auth() {
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [trustedDevices, setTrustedDevices] = useLocalStorage<string[]>("trusted_devices", []);
+  const [trustedDevices, setTrustedDevices] = useLocalStorage<TrustedDevice[]>(
+    "trusted_devices_v2",
+    []
+  );
+  
+  const [trustedDevicesLegacy] = useLocalStorage<string[]>(
+    "trusted_devices",
+    []
+  );
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,13 +73,11 @@ export default function Auth() {
 
       if (error) throw error;
 
-      // Check 2FA status before proceeding with navigation
       const { data: mfaData } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const totpFactor = factors?.totp.length > 0 ? factors.totp[0] : null;
 
-      // Check if this is a trusted device
       if (
         mfaData?.currentLevel === "aal1" &&
         mfaData?.nextLevel === "aal2" &&
@@ -74,53 +86,42 @@ export default function Auth() {
       ) {
         const userId = data.user.id;
         
-        // If this is a trusted device, try to auto-verify 2FA
-        if (trustedDevices.includes(userId)) {
-          try {
-            // Try to auto-verify without showing 2FA screen
-            const { data: challengeData, error: challengeError } =
-              await supabase.auth.mfa.challenge({
-                factorId: totpFactor.id,
-              });
-
-            if (challengeError) {
-              // If auto-verification fails, show 2FA screen
-              navigate("/two-factor");
-              return;
+        let isTrusted = trustedDevices.some(
+          (device) => device.userId === userId
+        );
+        
+        if (!isTrusted && trustedDevicesLegacy.length > 0) {
+          isTrusted = trustedDevicesLegacy.some((item) => {
+            try {
+              const parsed = JSON.parse(item);
+              return parsed.userId === userId;
+            } catch {
+              return item === userId;
             }
-
-            // Fix: Remove sessionId parameter as it's not accepted in MFAVerifyParams
-            const { error: verifyError } = await supabase.auth.mfa.verify({
-              factorId: totpFactor.id,
-              challengeId: challengeData.id,
-              code: "",
+          });
+        }
+        
+        if (isTrusted) {
+          navigate("/dashboard");
+          
+          setTimeout(() => {
+            const toastEvent = new CustomEvent("toast", {
+              detail: {
+                title: "Dispositivo reconhecido",
+                description:
+                  "Autenticação em dois fatores pulada para este dispositivo",
+              },
             });
-
-            if (verifyError) {
-              // If verification fails, show 2FA screen
-              navigate("/two-factor");
-              return;
-            }
-
-            // If auto-verification succeeds, navigate to dashboard
-            navigate("/");
-            return;
-          } catch (error) {
-            console.error("Error auto-verifying trusted device:", error);
-            // If auto-verification fails, remove from trusted devices and show 2FA screen
-            setTrustedDevices(trustedDevices.filter(id => id !== userId));
-            navigate("/two-factor");
-            return;
-          }
+            window.dispatchEvent(toastEvent);
+          }, 1000);
+          return;
         } else {
-          // If not a trusted device, show 2FA screen
           navigate("/two-factor");
           return;
         }
       }
 
-      // Only navigate to dashboard if 2FA is not required or already verified
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: unknown) {
       toast({
         variant: "destructive",
@@ -227,7 +228,6 @@ export default function Auth() {
 
       if (verifyError) throw verifyError;
 
-      // Check if verification was successful
       const { data: mfaData } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
