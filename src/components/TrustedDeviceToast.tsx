@@ -24,7 +24,7 @@ export default function TrustedDeviceToast() {
       toast(title, {
         description,
         duration: 5000,
-        children: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+        icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
       });
     };
 
