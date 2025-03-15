@@ -40,7 +40,9 @@ export type Database = {
           folder_id: string | null
           id: string
           is_favorite: boolean | null
+          original_id: string | null
           size: number | null
+          source: string | null
           updated_at: string
           user_id: string
         }
@@ -53,7 +55,9 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_favorite?: boolean | null
+          original_id?: string | null
           size?: number | null
+          source?: string | null
           updated_at?: string
           user_id: string
         }
@@ -66,7 +70,9 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_favorite?: boolean | null
+          original_id?: string | null
           size?: number | null
+          source?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -117,6 +123,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      google_drive_tokens: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          refresh_token: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          refresh_token: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
