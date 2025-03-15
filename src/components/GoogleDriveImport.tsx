@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { File, FileImport, HardDrive, Trash2, Download, Loader2 } from "lucide-react";
+import { File, Import, HardDrive, Trash2, Download, Loader2 } from "lucide-react";
 import { formatFileSize } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
@@ -340,7 +340,7 @@ const GoogleDriveImport = () => {
               {isLoading ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
-                <FileImport className="h-4 w-4 mr-2" />
+                <Import className="h-4 w-4 mr-2" />
               )}
               {t("googleDrive.connectButton")}
             </Button>
