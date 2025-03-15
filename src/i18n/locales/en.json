@@ -391,5 +391,26 @@
       "title": "System Settings",
       "comingSoon": "Additional system settings coming soon"
     }
+  },
+  "googleDrive": {
+    "importButton": "Import from Google Drive",
+    "importTitle": "Import from Google Drive",
+    "importDescription": "Select files from your Google Drive to import into your storage.",
+    "notConnected": "Not connected to Google Drive",
+    "connectDescription": "Connect your Google Drive account to import files.",
+    "connectButton": "Connect Google Drive",
+    "connectionSuccess": "Google Drive Connected",
+    "connectionSuccessDescription": "Your Google Drive account has been successfully connected.",
+    "connectionError": "Failed to connect to Google Drive",
+    "callbackError": "Failed to complete Google Drive authentication",
+    "searchPlaceholder": "Search files...",
+    "noFiles": "No files found in your Google Drive",
+    "noSearchResults": "No files matching your search",
+    "noFilesSelected": "No files selected",
+    "selectedFilesCount": "Selected {{count}} files",
+    "importSuccess": "Files Imported",
+    "importSuccessDescription": "Successfully imported {{count}} files from Google Drive",
+    "importPartialFailure": "Some Files Failed to Import",
+    "importFailureDescription": "Failed to import: {{files}}"
   }
 }

@@ -492,5 +492,26 @@
       "login": "Login",
       "register": "Registrar"
     }
+  },
+  "googleDrive": {
+    "importButton": "Importar do Google Drive",
+    "importTitle": "Importar do Google Drive",
+    "importDescription": "Selecione arquivos do seu Google Drive para importar para seu armazenamento.",
+    "notConnected": "Não conectado ao Google Drive",
+    "connectDescription": "Conecte sua conta do Google Drive para importar arquivos.",
+    "connectButton": "Conectar Google Drive",
+    "connectionSuccess": "Google Drive Conectado",
+    "connectionSuccessDescription": "Sua conta do Google Drive foi conectada com sucesso.",
+    "connectionError": "Falha ao conectar ao Google Drive",
+    "callbackError": "Falha ao completar a autenticação do Google Drive",
+    "searchPlaceholder": "Pesquisar arquivos...",
+    "noFiles": "Nenhum arquivo encontrado no seu Google Drive",
+    "noSearchResults": "Nenhum arquivo correspondente à sua pesquisa",
+    "noFilesSelected": "Nenhum arquivo selecionado",
+    "selectedFilesCount": "{{count}} arquivos selecionados",
+    "importSuccess": "Arquivos Importados",
+    "importSuccessDescription": "{{count}} arquivos importados com sucesso do Google Drive",
+    "importPartialFailure": "Alguns Arquivos Falharam ao Importar",
+    "importFailureDescription": "Falha ao importar: {{files}}"
   }
 }
