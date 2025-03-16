@@ -231,7 +231,7 @@
     }
   },
   "auth": {
-    "title": "Secure File Safari",
+    "title": "Orbyx Drive",
     "description": "Access your account to securely manage your files",
     "signIn": {
       "title": "Sign In",

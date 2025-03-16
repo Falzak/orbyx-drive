@@ -231,7 +231,7 @@
     }
   },
   "auth": {
-    "title": "Secure File Safari",
+    "title": "Orbyx Drive",
     "description": "Acesse sua conta para gerenciar seus arquivos com segurança",
     "signIn": {
       "title": "Entrar",
@@ -411,7 +411,7 @@
     },
     "features": {
       "title": "Recursos que impulsionam sua produtividade",
-      "description": "Conheça as ferramentas poderosas que fazem do Secure File Safari a melhor escolha para gerenciamento de arquivos.",
+      "description": "Conheça as ferramentas poderosas que fazem do Orbyx Drive a melhor escolha para gerenciamento de arquivos.",
       "security": {
         "title": "Segurança Avançada",
         "description": "Criptografia de ponta a ponta para seus arquivos mais valiosos, com autenticação de dois fatores"
@@ -463,7 +463,7 @@
     },
     "testimonials": {
       "title": "O que nossos usuários dizem",
-      "description": "Veja o que as pessoas estão falando sobre sua experiência com o Secure File Safari"
+      "description": "Veja o que as pessoas estão falando sobre sua experiência com o Orbyx Drive"
     },
     "cta": {
       "title": "Pronto para proteger seus arquivos?",

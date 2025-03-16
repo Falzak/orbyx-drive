@@ -62,7 +62,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
               />
             </div>
             <span className="text-lg font-bold transition-all duration-300 text-foreground group-hover:text-primary">
-              Secure File Safari
+              Orbyx Drive
             </span>
           </Link>
 

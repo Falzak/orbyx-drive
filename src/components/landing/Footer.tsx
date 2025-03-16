@@ -88,7 +88,7 @@ export const Footer = () => {
               className="flex items-center gap-2 mb-4"
             >
               <Shield className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold">Secure File Safari</span>
+              <span className="text-lg font-bold">Orbyx Drive</span>
             </motion.div>
 
             <motion.p
@@ -212,8 +212,7 @@ export const Footer = () => {
             viewport={{ once: true }}
             className="text-sm text-muted-foreground mb-4 md:mb-0"
           >
-            &copy; {currentYear} Secure File Safari.{" "}
-            {t("landing.footer.copyright")}
+            &copy; {currentYear} Orbyx Drive. {t("landing.footer.copyright")}
           </motion.p>
 
           <motion.div
@@ -226,7 +225,7 @@ export const Footer = () => {
             <span>Feito com</span>
             <div className="inline-flex items-center px-2 py-1 rounded-full bg-background/70 border">
               <Shield className="h-3 w-3 mr-1.5 text-primary" />
-              <span>Secure File Safari</span>
+              <span>Orbyx Drive</span>
             </div>
           </motion.div>
         </div>

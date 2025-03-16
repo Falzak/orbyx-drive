@@ -11,7 +11,7 @@ const testimonials = [
     name: "Maria Silva",
     role: "Gerente de Projetos",
     content:
-      "O Secure File Safari revolucionou a forma como gerenciamos documentos sensíveis em nossa empresa. A interface é intuitiva e a segurança é incomparável.",
+      "O Orbyx Drive revolucionou a forma como gerenciamos documentos sensíveis em nossa empresa. A interface é intuitiva e a segurança é incomparável.",
     avatar: "https://i.pravatar.cc/150?img=32",
     rating: 5,
   },
@@ -19,7 +19,7 @@ const testimonials = [
     name: "Carlos Mendes",
     role: "Advogado",
     content:
-      "Como profissional que lida com documentos confidenciais, encontrei no Secure File Safari a tranquilidade que precisava. A autenticação de dois fatores com lembrete de dispositivo é essencial.",
+      "Como profissional que lida com documentos confidenciais, encontrei no Orbyx Drive a tranquilidade que precisava. A autenticação de dois fatores com lembrete de dispositivo é essencial.",
     avatar: "https://i.pravatar.cc/150?img=67",
     rating: 5,
   },
@@ -60,41 +60,41 @@ export const TestimonialsSection = () => {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Transição suave da seção anterior */}
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background/80 to-transparent"></div>
-        
+
         {/* Decorative blobs posicionados estrategicamente */}
         <div className="absolute top-10 -left-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-60"></div>
         <div className="absolute bottom-10 -right-6 w-32 h-32 bg-secondary/10 rounded-full blur-3xl opacity-60"></div>
-        
+
         {/* Transição para a próxima seção */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-muted/10"></div>
 
         {/* Decorative quotes */}
-        <motion.div 
+        <motion.div
           className="absolute top-20 left-10 text-muted/5"
-          animate={{ 
-            rotate: [0, 10, 0], 
-            scale: [1, 1.05, 1] 
+          animate={{
+            rotate: [0, 10, 0],
+            scale: [1, 1.05, 1],
           }}
-          transition={{ 
+          transition={{
             duration: 10,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
         >
           <Quote size={120} />
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           className="absolute bottom-20 right-10 text-muted/5"
-          animate={{ 
-            rotate: [0, -10, 0], 
-            scale: [1, 1.05, 1] 
+          animate={{
+            rotate: [0, -10, 0],
+            scale: [1, 1.05, 1],
           }}
-          transition={{ 
+          transition={{
             duration: 12,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 2
+            delay: 2,
           }}
         >
           <Quote size={100} />
@@ -102,7 +102,7 @@ export const TestimonialsSection = () => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div 
+        <motion.div
           className="text-center max-w-3xl mx-auto mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
