@@ -63,50 +63,77 @@ const GoogleDriveImport = () => {
     }
   }, [searchQuery, files]);
 
-  const checkConnection = async () => {
-    if (!open) return;
-    
-    setError(null);
+  const handleApiRequest = async (endpoint: string, options = {}) => {
     try {
-      setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         throw new Error("No authenticated session");
       }
       
-      const response = await fetch("/api/google-drive/list-files", {
+      const response = await fetch(`/api/google-drive/${endpoint}`, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         },
+        ...options
       });
       
-      // Check HTTP status first
+      // First check if the response is OK
       if (!response.ok) {
         let errorMessage = `Server responded with status: ${response.status}`;
-        try {
+        const contentType = response.headers.get('content-type');
+        
+        // Check if response is JSON
+        if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
           if (errorData && errorData.error) {
             errorMessage = errorData.error;
           }
-        } catch (e) {
-          errorMessage = await response.text() || errorMessage;
+        } else {
+          // Handle non-JSON responses
+          const text = await response.text();
+          if (text) {
+            errorMessage = `Server error: ${text}`;
+          }
         }
         throw new Error(errorMessage);
       }
       
       // Now safely parse JSON
-      const data = await response.json();
+      const text = await response.text();
+      if (!text) {
+        return {}; // Empty response
+      }
       
-      // If we get a valid response, user is connected
-      if (!data.error) {
-        setIsConnected(true);
-        setFiles(data.files || []);
-        setFilteredFiles(data.files || []);
-      } else {
-        setIsConnected(false);
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error("Failed to parse JSON response:", text);
+        throw new Error("Invalid JSON response from server");
+      }
+    } catch (error) {
+      console.error("API request failed:", error);
+      throw error;
+    }
+  };
+
+  const checkConnection = async () => {
+    if (!open) return;
+    
+    setError(null);
+    try {
+      setIsLoading(true);
+      
+      const data = await handleApiRequest('list-files');
+      
+      if (data.error) {
         throw new Error(data.error);
       }
+      
+      setIsConnected(true);
+      setFiles(data.files || []);
+      setFilteredFiles(data.files || []);
     } catch (error) {
       console.error("Google Drive connection check failed:", error);
       setIsConnected(false);
@@ -120,36 +147,9 @@ const GoogleDriveImport = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error("No authenticated session");
-      }
       
       const redirectUri = `${window.location.origin}/dashboard`;
-      
-      const response = await fetch(`/api/google-drive/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      
-      // Check HTTP status first
-      if (!response.ok) {
-        let errorMessage = `Server responded with status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          if (errorData && errorData.error) {
-            errorMessage = errorData.error;
-          }
-        } catch (e) {
-          errorMessage = await response.text() || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-      
-      // Now safely parse JSON
-      const data = await response.json();
+      const data = await handleApiRequest(`auth-url?redirectUri=${encodeURIComponent(redirectUri)}`);
       
       if (data.error) {
         throw new Error(data.error);
@@ -191,36 +191,9 @@ const GoogleDriveImport = () => {
     }
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error("No authenticated session");
-      }
-      
       const redirectUri = `${window.location.origin}/dashboard`;
       
-      const response = await fetch(`/api/google-drive/callback?code=${code}&redirectUri=${encodeURIComponent(redirectUri)}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      
-      // Check HTTP status first
-      if (!response.ok) {
-        let errorMessage = `Server responded with status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          if (errorData && errorData.error) {
-            errorMessage = errorData.error;
-          }
-        } catch (e) {
-          errorMessage = await response.text() || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-      
-      // Now safely parse JSON
-      const data = await response.json();
+      const data = await handleApiRequest(`callback?code=${code}&redirectUri=${encodeURIComponent(redirectUri)}`);
       
       if (data.error) {
         throw new Error(data.error);
@@ -276,17 +249,6 @@ const GoogleDriveImport = () => {
     
     setIsImporting(true);
     setError(null);
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      toast({
-        variant: "destructive",
-        title: t("common.error"),
-        description: t("common.notAuthenticated"),
-      });
-      setIsImporting(false);
-      return;
-    }
     
     const successCount = {current: 0};
     const failedFiles = [];
@@ -297,35 +259,13 @@ const GoogleDriveImport = () => {
         
         if (!file) continue;
         
-        const response = await fetch("/api/google-drive/import-file", {
+        const data = await handleApiRequest("import-file", {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             fileId: file.id,
             fileName: file.name,
           }),
         });
-        
-        // Check HTTP status first
-        if (!response.ok) {
-          let errorMessage = `Server responded with status: ${response.status}`;
-          try {
-            const errorData = await response.json();
-            if (errorData && errorData.error) {
-              errorMessage = errorData.error;
-            }
-          } catch (e) {
-            errorMessage = await response.text() || errorMessage;
-          }
-          failedFiles.push(`${file.name}: ${errorMessage}`);
-          continue;
-        }
-        
-        // Now safely parse JSON
-        const data = await response.json();
         
         if (data.error) {
           failedFiles.push(`${file.name}: ${data.error}`);

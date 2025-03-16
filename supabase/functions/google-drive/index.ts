@@ -109,12 +109,24 @@ async function handleCallback(req: Request, userId: string) {
       }),
     })
 
-    const tokenData = await tokenResponse.json()
-    
     if (!tokenResponse.ok) {
-      throw new Error(`Failed to exchange code: ${tokenData.error || 'Unknown error'}`)
+      const errorText = await tokenResponse.text()
+      let errorMessage = `Failed to exchange code: ${tokenResponse.statusText}`
+      
+      try {
+        // Try to parse as JSON
+        const errorData = JSON.parse(errorText)
+        errorMessage = `Failed to exchange code: ${errorData.error || errorData.error_description || 'Unknown error'}`
+      } catch (e) {
+        // If not valid JSON, use text as is
+        errorMessage = `Failed to exchange code: ${errorText || 'Unknown error'}`
+      }
+      
+      throw new Error(errorMessage)
     }
 
+    const tokenData = await tokenResponse.json()
+    
     // Store tokens in database
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
@@ -195,8 +207,19 @@ async function getValidAccessToken(userId: string) {
       })
       
       if (!refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        throw new Error(`Failed to refresh token: ${refreshData.error || refreshResponse.statusText}`)
+        const refreshText = await refreshResponse.text()
+        let errorMessage = `Failed to refresh token: ${refreshResponse.statusText}`
+        
+        try {
+          // Try to parse as JSON
+          const refreshData = JSON.parse(refreshText)
+          errorMessage = `Failed to refresh token: ${refreshData.error || refreshData.error_description || 'Unknown error'}`
+        } catch (e) {
+          // If not valid JSON, use text as is
+          errorMessage = `Failed to refresh token: ${refreshText || 'Unknown error'}`
+        }
+        
+        throw new Error(errorMessage)
       }
       
       const refreshData = await refreshResponse.json()
@@ -231,21 +254,33 @@ async function handleListFiles(req: Request, userId: string) {
       },
     })
     
+    // Handle non-OK responses properly
     if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = 'Google Drive API error';
+      const errorText = await response.text()
+      let errorMessage = `Google Drive API error: ${response.statusText}`
       
       try {
-        const errorJson = JSON.parse(errorText);
+        // Try to parse the error response as JSON
+        const errorJson = JSON.parse(errorText)
         errorMessage = `Google Drive API error: ${errorJson.error?.message || 'Unknown error'}`;
       } catch (e) {
+        // If not valid JSON, use text as is
         errorMessage = `Google Drive API error: ${errorText || response.statusText}`;
       }
       
-      throw new Error(errorMessage);
+      throw new Error(errorMessage)
     }
     
-    const data = await response.json()
+    // Ensure we get valid JSON back
+    const responseText = await response.text()
+    let data
+    
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      console.error("Invalid JSON response:", responseText)
+      throw new Error("Invalid response from Google Drive API")
+    }
     
     return new Response(
       JSON.stringify(data),
@@ -282,17 +317,19 @@ async function handleImportFile(req: Request, userId: string) {
     })
     
     if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `Failed to download file: ${response.statusText}`;
+      const errorText = await response.text()
+      let errorMessage = `Failed to download file: ${response.statusText}`
       
       try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = `Failed to download file: ${errorJson.error?.message || response.statusText}`;
+        // Try to parse as JSON
+        const errorJson = JSON.parse(errorText)
+        errorMessage = `Failed to download file: ${errorJson.error?.message || response.statusText}`
       } catch (e) {
+        // If not valid JSON, use text as is
         // Keep the original error message if not JSON
       }
       
-      throw new Error(errorMessage);
+      throw new Error(errorMessage)
     }
     
     // Get file metadata to determine content type
@@ -303,20 +340,31 @@ async function handleImportFile(req: Request, userId: string) {
     })
     
     if (!metaResponse.ok) {
-      const errorText = await metaResponse.text();
-      let errorMessage = `Failed to get file metadata: ${metaResponse.statusText}`;
+      const errorText = await metaResponse.text()
+      let errorMessage = `Failed to get file metadata: ${metaResponse.statusText}`
       
       try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = `Failed to get file metadata: ${errorJson.error?.message || metaResponse.statusText}`;
+        // Try to parse as JSON
+        const errorJson = JSON.parse(errorText)
+        errorMessage = `Failed to get file metadata: ${errorJson.error?.message || metaResponse.statusText}`
       } catch (e) {
         // Keep the original error message if not JSON
       }
       
-      throw new Error(errorMessage);
+      throw new Error(errorMessage)
     }
     
-    const metadata = await metaResponse.json()
+    // Ensure we get valid JSON for metadata
+    const metadataText = await metaResponse.text()
+    let metadata
+    
+    try {
+      metadata = JSON.parse(metadataText)
+    } catch (e) {
+      console.error("Invalid JSON metadata:", metadataText)
+      throw new Error("Invalid metadata response from Google Drive API")
+    }
+    
     const fileContent = await response.arrayBuffer()
     
     // Generate a unique file path
