@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ export default function Auth() {
               factorId: totpFactor.id,
               challengeId: challengeData.id,
               code: "",
-              sessionId: data.session?.access_token,
+              // Remove the sessionId property as it's not supported in MFAVerifyParams
             });
 
             if (verifyError) {
@@ -224,6 +225,7 @@ export default function Auth() {
           factorId: totpFactor.id,
           challengeId: challengeData.id,
           code: otpCode,
+          // Remove the sessionId property as it's not supported in MFAVerifyParams
         });
 
       if (verifyError) throw verifyError;
