@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +12,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,13 +40,16 @@ const GoogleDriveImport = () => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   useEffect(() => {
-    checkConnection();
+    if (open) {
+      checkConnection();
+    }
   }, [open]);
 
   useEffect(() => {
@@ -65,6 +66,7 @@ const GoogleDriveImport = () => {
   const checkConnection = async () => {
     if (!open) return;
     
+    setError(null);
     try {
       setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
@@ -77,19 +79,38 @@ const GoogleDriveImport = () => {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-      }).then(res => res.json());
+      });
+      
+      // Check HTTP status first
+      if (!response.ok) {
+        let errorMessage = `Server responded with status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Now safely parse JSON
+      const data = await response.json();
       
       // If we get a valid response, user is connected
-      if (!response.error) {
+      if (!data.error) {
         setIsConnected(true);
-        setFiles(response.files || []);
-        setFilteredFiles(response.files || []);
+        setFiles(data.files || []);
+        setFilteredFiles(data.files || []);
       } else {
         setIsConnected(false);
+        throw new Error(data.error);
       }
     } catch (error) {
       console.error("Google Drive connection check failed:", error);
       setIsConnected(false);
+      setError(error.message || t("googleDrive.connectionError"));
     } finally {
       setIsLoading(false);
     }
@@ -98,6 +119,7 @@ const GoogleDriveImport = () => {
   const connectToGoogleDrive = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -110,19 +132,37 @@ const GoogleDriveImport = () => {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-      }).then(res => res.json());
+      });
       
-      if (response.error) {
-        throw new Error(response.error);
+      // Check HTTP status first
+      if (!response.ok) {
+        let errorMessage = `Server responded with status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Now safely parse JSON
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
       }
       
       // Store state in localStorage to verify when returning
-      localStorage.setItem("googleDriveAuthState", response.state);
+      localStorage.setItem("googleDriveAuthState", data.state);
       
       // Redirect to Google OAuth
-      window.location.href = response.url;
+      window.location.href = data.url;
     } catch (error) {
       console.error("Google Drive connection failed:", error);
+      setError(error.message || t("googleDrive.connectionError"));
       toast({
         variant: "destructive",
         title: t("common.error"),
@@ -163,10 +203,27 @@ const GoogleDriveImport = () => {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-      }).then(res => res.json());
+      });
       
-      if (response.error) {
-        throw new Error(response.error);
+      // Check HTTP status first
+      if (!response.ok) {
+        let errorMessage = `Server responded with status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Now safely parse JSON
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
       }
       
       toast({
@@ -218,6 +275,7 @@ const GoogleDriveImport = () => {
     }
     
     setIsImporting(true);
+    setError(null);
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -249,18 +307,36 @@ const GoogleDriveImport = () => {
             fileId: file.id,
             fileName: file.name,
           }),
-        }).then(res => res.json());
+        });
         
-        if (response.error) {
-          failedFiles.push(file.name);
-          console.error(`Error importing ${file.name}:`, response.error);
+        // Check HTTP status first
+        if (!response.ok) {
+          let errorMessage = `Server responded with status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            if (errorData && errorData.error) {
+              errorMessage = errorData.error;
+            }
+          } catch (e) {
+            errorMessage = await response.text() || errorMessage;
+          }
+          failedFiles.push(`${file.name}: ${errorMessage}`);
+          continue;
+        }
+        
+        // Now safely parse JSON
+        const data = await response.json();
+        
+        if (data.error) {
+          failedFiles.push(`${file.name}: ${data.error}`);
+          console.error(`Error importing ${file.name}:`, data.error);
         } else {
           successCount.current++;
         }
       } catch (error) {
         console.error(`Error importing file ${fileId}:`, error);
         const file = files.find(f => f.id === fileId);
-        if (file) failedFiles.push(file.name);
+        if (file) failedFiles.push(`${file.name}: ${error.message || 'Unknown error'}`);
       }
     }
     
@@ -336,6 +412,11 @@ const GoogleDriveImport = () => {
             <HardDrive className="h-16 w-16 mb-4 text-primary/50" />
             <h3 className="text-lg font-medium mb-2">{t("googleDrive.notConnected")}</h3>
             <p className="text-sm text-muted-foreground mb-4">{t("googleDrive.connectDescription")}</p>
+            {error && (
+              <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-md text-sm">
+                <p><strong>{t("common.error")}:</strong> {error}</p>
+              </div>
+            )}
             <Button onClick={connectToGoogleDrive} disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -356,6 +437,12 @@ const GoogleDriveImport = () => {
                 className="w-full"
               />
             </div>
+            
+            {error && (
+              <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-md text-sm">
+                <p><strong>{t("common.error")}:</strong> {error}</p>
+              </div>
+            )}
             
             {filteredFiles.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">

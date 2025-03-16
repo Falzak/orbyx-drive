@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
@@ -94,63 +93,74 @@ async function handleCallback(req: Request, userId: string) {
     throw new Error('Missing code or redirectUri parameter')
   }
 
-  // Exchange code for tokens
-  const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      code,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code',
-    }),
-  })
+  try {
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    })
 
-  const tokenData = await tokenResponse.json()
-  
-  if (!tokenResponse.ok) {
-    throw new Error(`Failed to exchange code: ${tokenData.error}`)
-  }
+    const tokenData = await tokenResponse.json()
+    
+    if (!tokenResponse.ok) {
+      throw new Error(`Failed to exchange code: ${tokenData.error || 'Unknown error'}`)
+    }
 
-  // Store tokens in database
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  
-  // Check if record exists
-  const { data: existing } = await supabase
-    .from('google_drive_tokens')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-  
-  if (existing) {
-    // Update existing record
-    await supabase
+    // Store tokens in database
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    
+    // Check if record exists
+    const { data: existing } = await supabase
       .from('google_drive_tokens')
-      .update({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token || existing.refresh_token, // Keep old refresh token if not provided
-        expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
-      })
+      .select('*')
       .eq('user_id', userId)
-  } else {
-    // Insert new record
-    await supabase
-      .from('google_drive_tokens')
-      .insert({
-        user_id: userId,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
-      })
+      .single()
+    
+    if (existing) {
+      // Update existing record
+      await supabase
+        .from('google_drive_tokens')
+        .update({
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token || existing.refresh_token, // Keep old refresh token if not provided
+          expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
+        })
+        .eq('user_id', userId)
+    } else {
+      // Insert new record
+      await supabase
+        .from('google_drive_tokens')
+        .insert({
+          user_id: userId,
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
+        })
+    }
+    
+    return new Response(
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  } catch (error) {
+    console.error('Callback error:', error);
+    return new Response(
+      JSON.stringify({ error: error.message || 'Failed to process callback' }),
+      { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
   }
-  
-  return new Response(
-    JSON.stringify({ success: true }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
 }
 
 async function getValidAccessToken(userId: string) {
@@ -169,36 +179,42 @@ async function getValidAccessToken(userId: string) {
   
   // Check if token is expired
   if (new Date(tokens.expires_at) <= new Date()) {
-    // Refresh token
-    const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        refresh_token: tokens.refresh_token,
-        grant_type: 'refresh_token',
-      }),
-    })
-    
-    const refreshData = await refreshResponse.json()
-    
-    if (!refreshResponse.ok) {
-      throw new Error(`Failed to refresh token: ${refreshData.error}`)
-    }
-    
-    // Update token in database
-    await supabase
-      .from('google_drive_tokens')
-      .update({
-        access_token: refreshData.access_token,
-        expires_at: new Date(Date.now() + refreshData.expires_in * 1000).toISOString(),
+    try {
+      // Refresh token
+      const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: GOOGLE_CLIENT_ID,
+          client_secret: GOOGLE_CLIENT_SECRET,
+          refresh_token: tokens.refresh_token,
+          grant_type: 'refresh_token',
+        }),
       })
-      .eq('user_id', userId)
-    
-    return refreshData.access_token
+      
+      if (!refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        throw new Error(`Failed to refresh token: ${refreshData.error || refreshResponse.statusText}`)
+      }
+      
+      const refreshData = await refreshResponse.json()
+      
+      // Update token in database
+      await supabase
+        .from('google_drive_tokens')
+        .update({
+          access_token: refreshData.access_token,
+          expires_at: new Date(Date.now() + refreshData.expires_in * 1000).toISOString(),
+        })
+        .eq('user_id', userId)
+      
+      return refreshData.access_token
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      throw new Error(`Failed to refresh access token: ${error.message}`);
+    }
   }
   
   return tokens.access_token
@@ -216,8 +232,17 @@ async function handleListFiles(req: Request, userId: string) {
     })
     
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(`Google Drive API error: ${error.error?.message || 'Unknown error'}`)
+      const errorText = await response.text();
+      let errorMessage = 'Google Drive API error';
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = `Google Drive API error: ${errorJson.error?.message || 'Unknown error'}`;
+      } catch (e) {
+        errorMessage = `Google Drive API error: ${errorText || response.statusText}`;
+      }
+      
+      throw new Error(errorMessage);
     }
     
     const data = await response.json()
@@ -227,8 +252,9 @@ async function handleListFiles(req: Request, userId: string) {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('List files error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Failed to list files' }),
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -239,7 +265,8 @@ async function handleListFiles(req: Request, userId: string) {
 
 async function handleImportFile(req: Request, userId: string) {
   try {
-    const { fileId, fileName } = await req.json()
+    const requestData = await req.json();
+    const { fileId, fileName } = requestData;
     
     if (!fileId || !fileName) {
       throw new Error('Missing fileId or fileName')
@@ -255,7 +282,17 @@ async function handleImportFile(req: Request, userId: string) {
     })
     
     if (!response.ok) {
-      throw new Error(`Failed to download file: ${response.statusText}`)
+      const errorText = await response.text();
+      let errorMessage = `Failed to download file: ${response.statusText}`;
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = `Failed to download file: ${errorJson.error?.message || response.statusText}`;
+      } catch (e) {
+        // Keep the original error message if not JSON
+      }
+      
+      throw new Error(errorMessage);
     }
     
     // Get file metadata to determine content type
@@ -266,7 +303,17 @@ async function handleImportFile(req: Request, userId: string) {
     })
     
     if (!metaResponse.ok) {
-      throw new Error(`Failed to get file metadata: ${metaResponse.statusText}`)
+      const errorText = await metaResponse.text();
+      let errorMessage = `Failed to get file metadata: ${metaResponse.statusText}`;
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = `Failed to get file metadata: ${errorJson.error?.message || metaResponse.statusText}`;
+      } catch (e) {
+        // Keep the original error message if not JSON
+      }
+      
+      throw new Error(errorMessage);
     }
     
     const metadata = await metaResponse.json()
@@ -315,8 +362,9 @@ async function handleImportFile(req: Request, userId: string) {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Import file error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Failed to import file' }),
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
