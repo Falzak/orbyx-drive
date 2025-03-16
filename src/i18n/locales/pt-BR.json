@@ -503,6 +503,7 @@
     "connectionSuccess": "Google Drive Conectado",
     "connectionSuccessDescription": "Sua conta do Google Drive foi conectada com sucesso.",
     "connectionError": "Falha ao conectar ao Google Drive",
+    "apiConfigError": "Erro de configuração da API. Entre em contato com o suporte.",
     "callbackError": "Falha ao completar a autenticação do Google Drive",
     "searchPlaceholder": "Pesquisar arquivos...",
     "noFiles": "Nenhum arquivo encontrado no seu Google Drive",
@@ -513,5 +514,16 @@
     "importSuccessDescription": "{{count}} arquivos importados com sucesso do Google Drive",
     "importPartialFailure": "Alguns Arquivos Falharam ao Importar",
     "importFailureDescription": "Falha ao importar: {{files}}"
+  },
+  "fileUpload": {
+    "title": "Enviar Arquivos",
+    "description": "Arraste e solte arquivos para enviar ou clique para navegar",
+    "dragAndDrop": "Arraste e solte arquivos aqui ou clique para navegar",
+    "dropHere": "Solte os arquivos aqui...",
+    "browse": "Procurar Arquivos",
+    "upload": "Enviar Arquivos",
+    "uploading": "Enviando...",
+    "success": "Arquivos enviados com sucesso",
+    "successCount": "{{count}} de {{total}} arquivos enviados com sucesso"
   }
 }

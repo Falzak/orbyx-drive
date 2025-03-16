@@ -43,6 +43,14 @@ serve(async (req) => {
         return handleListFiles(req, user.id)
       case 'import-file':
         return handleImportFile(req, user.id)
+      case 'health-check':
+        return new Response(
+          JSON.stringify({ status: 'ok' }),
+          { 
+            status: 200, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
       default:
         throw new Error('Unknown endpoint')
     }

@@ -17,8 +17,11 @@ import {
   RefreshCw,
   Globe,
   Check,
+  FileUp,
+  Import,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import FileUpload from "@/components/FileUpload";
 import {
   Sidebar,
   SidebarContent,
@@ -77,8 +80,9 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
   const { session } = useAuth();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const { t, i18n } = useTranslation(); // Adicionando i18n de volta
+  const { t, i18n } = useTranslation();
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
@@ -157,7 +161,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
     {
       title: t("sidebar.tools.uploadFiles"),
       icon: Upload,
-      path: "/?action=upload",
+      onClick: () => setIsUploadDialogOpen(true),
     },
     {
       title: t("sidebar.tools.newFolder"),
@@ -197,7 +201,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                   exit={{ width: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  File Safari
+                  Orbyx Drive
                 </motion.span>
               )}
             </AnimatePresence>
@@ -334,7 +338,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                               {item.title}
                             </motion.span>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 dark:from-accent/0 dark:via-accent/10 dark:to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </Button>
                       </TooltipTrigger>
                       {isCollapsed && (
@@ -363,15 +367,15 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                 className={cn(
                   "w-full gap-3 h-auto p-2",
                   isCollapsed ? "justify-center" : "justify-start",
-                  "hover:bg-accent/10 group",
+                  "hover:bg-accent/10 dark:hover:bg-accent/20 group",
                   "transition-all duration-200",
                   "relative overflow-hidden",
-                  "ring-1 ring-border/10 hover:ring-border/20"
+                  "ring-1 ring-border/10 hover:ring-border/20 dark:ring-border/5 dark:hover:ring-border/30"
                 )}
               >
                 <Avatar
                   className={cn(
-                    "h-8 w-8 ring-2 ring-border/50 group-hover:ring-border/80",
+                    "h-8 w-8 ring-2 ring-border/50 group-hover:ring-border/80 dark:ring-border/30 dark:group-hover:ring-primary/40",
                     "transition-all duration-200 group-hover:scale-105",
                     "border-2 border-background",
                     isCollapsed && "h-6 w-6"
@@ -402,7 +406,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align={isCollapsed ? "center" : "start"}
-              className="w-80 p-2 bg-background/80 dark:bg-black/80 backdrop-blur-xl border-border/50"
+              className="w-80 p-2 bg-background/80 dark:bg-background/90 backdrop-blur-xl border-border/50 dark:border-border/30 dark:shadow-lg dark:shadow-primary/5"
             >
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -412,7 +416,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
               >
                 <div className="flex items-start gap-4">
                   <div className="relative group">
-                    <Avatar className="h-16 w-16 ring-2 ring-border/50 transition-all duration-200 group-hover:ring-border/80 group-hover:scale-105 border-2 border-background">
+                    <Avatar className="h-16 w-16 ring-2 ring-border/50 dark:ring-border/70 transition-all duration-200 group-hover:ring-border/80 dark:group-hover:ring-primary/50 group-hover:scale-105 border-2 border-background">
                       <AvatarImage
                         src={session?.user?.user_metadata?.avatar_url}
                         alt={session?.user?.email || ""}
@@ -474,11 +478,11 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
               >
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="gap-3 p-3 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 transition-all duration-200 rounded-lg"
+                  className="gap-3 p-3 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-all duration-200 rounded-lg"
                 >
                   <div className="relative">
                     <LogOut className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
-                    <div className="absolute inset-0 blur-sm bg-destructive/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    <div className="absolute inset-0 blur-sm bg-destructive/20 dark:bg-destructive/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   </div>
                   <div className="flex flex-col gap-0.5 flex-1">
                     <span className="group-hover:translate-x-0.5 transition-transform duration-200">
@@ -487,7 +491,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                     <span className="text-xs text-destructive/70 group-hover:translate-x-0.5 transition-transform duration-200">
                       {t("common.logoutDescription")}
                     </span>
-                  </div>  
+                  </div>
                 </DropdownMenuItem>
               </motion.div>
             </DropdownMenuContent>
@@ -498,7 +502,19 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
       <CreateFolderDialog
         open={isCreateFolderOpen}
         onOpenChange={setIsCreateFolderOpen}
-        onSubmit={handleCreateFolder}
+        onCreateFolder={handleCreateFolder}
+      />
+      
+      <FileUpload 
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["files"] });
+          toast({
+            title: t("common.success"),
+            description: t("fileUpload.success"),
+          });
+        }}
       />
     </>
   );

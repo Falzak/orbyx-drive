@@ -134,17 +134,23 @@ const TwoFactorProtectedRoute = ({
               navigate("/dashboard", { replace: true });
             }
 
-            // Atualizar para o usuário que ele está entrando em um dispositivo confiável
-            setTimeout(() => {
-              const toastEvent = new CustomEvent("toast", {
-                detail: {
-                  title: "Dispositivo reconhecido",
-                  description:
-                    "Autenticação em dois fatores pulada para este dispositivo",
-                },
-              });
-              window.dispatchEvent(toastEvent);
-            }, 1000);
+            // Use uma flag para garantir que o toast seja mostrado apenas uma vez
+            const toastShownKey = `toast_shown_${userId}_${new Date().toDateString()}`;
+            if (!sessionStorage.getItem(toastShownKey)) {
+              sessionStorage.setItem(toastShownKey, "true");
+              
+              // Atraso para garantir que o toast apareça após a navegação
+              setTimeout(() => {
+                const toastEvent = new CustomEvent("toast", {
+                  detail: {
+                    title: "Dispositivo reconhecido",
+                    description:
+                      "Autenticação em dois fatores pulada para este dispositivo",
+                  },
+                });
+                window.dispatchEvent(toastEvent);
+              }, 1000);
+            }
           } else {
             console.log("Dispositivo não confiável, redirecionando para 2FA");
             // Não é um dispositivo confiável, redirecionar para 2FA

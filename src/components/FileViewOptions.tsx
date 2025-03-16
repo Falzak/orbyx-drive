@@ -19,7 +19,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import GoogleDriveImport from "@/components/GoogleDriveImport";
+// import GoogleDriveImport from "@/components/GoogleDriveImport";
 
 interface FileViewOptionsProps {
   view: "grid" | "list";
@@ -106,7 +106,6 @@ export function FileViewOptions({
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          <GoogleDriveImport />
           <Button
             variant="ghost"
             size="icon"

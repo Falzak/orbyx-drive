@@ -402,6 +402,7 @@
     "connectionSuccess": "Google Drive Connected",
     "connectionSuccessDescription": "Your Google Drive account has been successfully connected.",
     "connectionError": "Failed to connect to Google Drive",
+    "apiConfigError": "API configuration error. Please contact support.",
     "callbackError": "Failed to complete Google Drive authentication",
     "searchPlaceholder": "Search files...",
     "noFiles": "No files found in your Google Drive",
@@ -412,5 +413,16 @@
     "importSuccessDescription": "Successfully imported {{count}} files from Google Drive",
     "importPartialFailure": "Some Files Failed to Import",
     "importFailureDescription": "Failed to import: {{files}}"
+  },
+  "fileUpload": {
+    "title": "Upload Files",
+    "description": "Drag and drop files to upload or click to browse",
+    "dragAndDrop": "Drag and drop files here or click to browse",
+    "dropHere": "Drop files here...",
+    "browse": "Browse Files",
+    "upload": "Upload Files",
+    "uploading": "Uploading...",
+    "success": "Files uploaded successfully",
+    "successCount": "{{count}} of {{total}} files uploaded successfully"
   }
 }

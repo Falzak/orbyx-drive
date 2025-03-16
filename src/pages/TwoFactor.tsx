@@ -121,16 +121,22 @@ export default function TwoFactor() {
         console.log("Dispositivo confiável detectado na página de 2FA, redirecionando...");
         navigate("/dashboard", { replace: true });
         
-        setTimeout(() => {
-          const toastEvent = new CustomEvent("toast", {
-            detail: {
-              title: "Dispositivo reconhecido",
-              description:
-                "Autenticação em dois fatores pulada para este dispositivo",
-            },
-          });
-          window.dispatchEvent(toastEvent);
-        }, 1000);
+        // Use uma flag para garantir que o toast seja mostrado apenas uma vez
+        const toastShownKey = `toast_shown_${userId}_${new Date().toDateString()}`;
+        if (!sessionStorage.getItem(toastShownKey)) {
+          sessionStorage.setItem(toastShownKey, "true");
+          
+          setTimeout(() => {
+            const toastEvent = new CustomEvent("toast", {
+              detail: {
+                title: "Dispositivo reconhecido",
+                description:
+                  "Autenticação em dois fatores pulada para este dispositivo",
+              },
+            });
+            window.dispatchEvent(toastEvent);
+          }, 1000);
+        }
       }
     };
 
