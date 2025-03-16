@@ -34,4 +34,5 @@ refresh_token_reuse_interval = 10
 enabled = true
 
 [functions]
+[functions.serve]
 enabled = true
