@@ -8,12 +8,55 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { encryptFile, decryptFile, encryptData, decryptData } from "./encryption";
+import { 
+  encryptFile, 
+  decryptFile, 
+  encryptData, 
+  decryptData 
+} from "./encryption";
+
+// Security and compression options
+interface StorageOptions {
+  enhancedSecurity?: boolean;
+  passwordProtection?: boolean;
+  password?: string;
+  compress?: boolean;
+}
+
+// Global storage options
+let globalStorageOptions: StorageOptions = {
+  enhancedSecurity: false,
+  passwordProtection: false,
+  compress: false
+};
+
+// Update global storage options
+export const updateStorageOptions = (options: StorageOptions): void => {
+  globalStorageOptions = { ...globalStorageOptions, ...options };
+  // Save non-sensitive options to localStorage for persistence
+  localStorage.setItem('storage_compression', options.compress ? 'true' : 'false');
+  localStorage.setItem('storage_enhanced_security', options.enhancedSecurity ? 'true' : 'false');
+  console.log('Storage options updated:', globalStorageOptions);
+};
+
+// Load storage options from localStorage on initialization
+const initStorageOptions = (): void => {
+  const compress = localStorage.getItem('storage_compression') === 'true';
+  const enhancedSecurity = localStorage.getItem('storage_enhanced_security') === 'true';
+  globalStorageOptions = {
+    ...globalStorageOptions,
+    compress,
+    enhancedSecurity
+  };
+};
+
+// Initialize options
+initStorageOptions();
 
 // Interface for storage providers
 interface IStorageProvider {
-  upload(file: File, path: string): Promise<void>;
-  download(path: string): Promise<Blob>;
+  upload(file: File, path: string, options?: StorageOptions): Promise<void>;
+  download(path: string, password?: string): Promise<Blob>;
   getUrl(path: string): Promise<string>;
   remove(paths: string[]): Promise<void>;
 }
@@ -22,10 +65,20 @@ interface IStorageProvider {
 class SupabaseStorage implements IStorageProvider {
   private bucket: string = "files";
 
-  async upload(file: File, path: string): Promise<void> {
+  async upload(file: File, path: string, options?: StorageOptions): Promise<void> {
     try {
-      // Encrypt the file before uploading
-      const { encryptedBlob, encryptionData } = await encryptFile(file);
+      // Merge provided options with global options
+      const mergedOptions = {
+        ...globalStorageOptions,
+        ...options
+      };
+      
+      // Encrypt the file before uploading with proper options
+      const { encryptedBlob, encryptionData } = await encryptFile(file, {
+        enhancedSecurity: mergedOptions.enhancedSecurity,
+        password: mergedOptions.passwordProtection ? mergedOptions.password : undefined,
+        compress: mergedOptions.compress
+      });
       
       // Upload the encrypted file
       const { error: fileError } = await supabase.storage
@@ -56,7 +109,7 @@ class SupabaseStorage implements IStorageProvider {
     }
   }
 
-  async download(path: string): Promise<Blob> {
+  async download(path: string, password?: string): Promise<Blob> {
     try {
       // Download the encrypted file
       const { data: encryptedData, error: fileError } = await supabase.storage
@@ -79,8 +132,14 @@ class SupabaseStorage implements IStorageProvider {
       // Decrypt the encryption data
       const encryptionData = decryptData(metaData.encryption_data);
       
-      // Decrypt the file
-      const { decryptedBlob } = await decryptFile(encryptedData, encryptionData);
+      // Check if file is password protected
+      const parsedData = JSON.parse(encryptionData);
+      if (parsedData.passwordProtected && !password) {
+        throw new Error("password_required");
+      }
+      
+      // Decrypt the file with the password if needed
+      const { decryptedBlob } = await decryptFile(encryptedData, encryptionData, password);
       
       return decryptedBlob;
     } catch (error) {
@@ -143,10 +202,20 @@ class CloudflareR2Storage implements IStorageProvider {
     });
   }
 
-  async upload(file: File, path: string): Promise<void> {
+  async upload(file: File, path: string, options?: StorageOptions): Promise<void> {
     try {
-      // Encrypt the file before uploading
-      const { encryptedBlob, encryptionData } = await encryptFile(file);
+      // Merge provided options with global options
+      const mergedOptions = {
+        ...globalStorageOptions,
+        ...options
+      };
+      
+      // Encrypt the file before uploading with proper options
+      const { encryptedBlob, encryptionData } = await encryptFile(file, {
+        enhancedSecurity: mergedOptions.enhancedSecurity,
+        password: mergedOptions.passwordProtection ? mergedOptions.password : undefined,
+        compress: mergedOptions.compress
+      });
       
       // Convert the encrypted blob to ArrayBuffer
       const arrayBuffer = await encryptedBlob.arrayBuffer();
@@ -171,7 +240,7 @@ class CloudflareR2Storage implements IStorageProvider {
     }
   }
 
-  async download(path: string): Promise<Blob> {
+  async download(path: string, password?: string): Promise<Blob> {
     try {
       const command = new GetObjectCommand({
         Bucket: this.bucket,
@@ -192,13 +261,19 @@ class CloudflareR2Storage implements IStorageProvider {
       
       // Decrypt the encryption data
       const encryptionData = decryptData(encryptionDataEncrypted);
+      
+      // Check if file is password protected
+      const parsedData = JSON.parse(encryptionData);
+      if (parsedData.passwordProtected && !password) {
+        throw new Error("password_required");
+      }
 
       // Convert the response body to a blob
       const responseArrayBuffer = await response.Body.transformToByteArray();
       const encryptedBlob = new Blob([responseArrayBuffer], { type: 'application/encrypted' });
       
-      // Decrypt the file
-      const { decryptedBlob } = await decryptFile(encryptedBlob, encryptionData);
+      // Decrypt the file with the password if needed
+      const { decryptedBlob } = await decryptFile(encryptedBlob, encryptionData, password);
       
       return decryptedBlob;
     } catch (error) {
@@ -296,15 +371,15 @@ export function resetStorageProvider(): void {
   currentStorageProvider = null;
 }
 
-// Utility functions for easier use
-export async function uploadFile(file: File, path: string): Promise<void> {
+// Utility functions for easier use with options
+export async function uploadFile(file: File, path: string, options?: StorageOptions): Promise<void> {
   const provider = await getStorageProvider();
-  return provider.upload(file, path);
+  return provider.upload(file, path, options);
 }
 
-export async function downloadFile(path: string): Promise<Blob> {
+export async function downloadFile(path: string, password?: string): Promise<Blob> {
   const provider = await getStorageProvider();
-  return provider.download(path);
+  return provider.download(path, password);
 }
 
 export async function getFileUrl(path: string): Promise<string> {
