@@ -1,7 +1,7 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Lock, Shield, Key, Fingerprint } from "lucide-react";
+import { Lock, Shield, Key, Fingerprint, CheckCircle } from "lucide-react";
 
 // Importando imagens
 import securityPreview from "/security-preview.svg";
@@ -9,6 +9,25 @@ import placeholderImage from "/placeholder.svg";
 
 export const SecuritySection = () => {
   const { t } = useTranslation();
+  const sectionRef = useRef(null);
+  const contentRef = useRef(null);
+  const imageRef = useRef(null);
+  const isContentInView = useInView(contentRef, { once: true, amount: 0.3 });
+  const isImageInView = useInView(imageRef, { once: true, amount: 0.3 });
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Efeito de parallax suave
+  const y1 = useTransform(scrollYProgress, [0, 1], [-50, 50]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    [0.3, 1, 1, 0.3]
+  );
 
   // Animações para a lista de recursos de segurança
   const containerVariants = {
@@ -16,8 +35,8 @@ export const SecuritySection = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
       },
     },
   };
@@ -31,67 +50,75 @@ export const SecuritySection = () => {
         type: "spring",
         damping: 12,
         stiffness: 100,
+        duration: 0.6,
       },
     },
   };
 
   const securityFeatures = [
     {
-      icon: <Lock className="h-4 w-4 text-primary" />,
+      icon: <Lock className="h-5 w-5 text-primary" />,
       key: "twoFactor",
-      color: "bg-blue-500/10",
+      color: "bg-blue-500/15",
       borderColor: "border-blue-500/20",
+      hoverColor: "group-hover:border-blue-500/40 group-hover:bg-blue-500/20",
     },
     {
-      icon: <Key className="h-4 w-4 text-primary" />,
+      icon: <Key className="h-5 w-5 text-primary" />,
       key: "encryption",
-      color: "bg-purple-500/10",
+      color: "bg-purple-500/15",
       borderColor: "border-purple-500/20",
+      hoverColor:
+        "group-hover:border-purple-500/40 group-hover:bg-purple-500/20",
     },
     {
-      icon: <Shield className="h-4 w-4 text-primary" />,
+      icon: <Shield className="h-5 w-5 text-primary" />,
       key: "links",
-      color: "bg-green-500/10",
+      color: "bg-green-500/15",
       borderColor: "border-green-500/20",
+      hoverColor: "group-hover:border-green-500/40 group-hover:bg-green-500/20",
     },
   ];
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-muted/30 via-muted/40 to-background/80 relative overflow-hidden">
-      {/* Background decorations com transições suaves */}
+    <section
+      ref={sectionRef}
+      className="py-24 md:py-32 bg-gradient-to-b from-background via-muted/20 to-background relative overflow-hidden"
+    >
+      {/* Gradiente de fundo dinâmico */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Transição com a seção anterior */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-muted/30 to-muted/40"></div>
-        
-        {/* Transição com a próxima seção */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-muted/40 to-background/80"></div>
-        
-        {/* Efeito decorativo sutil na parte central */}
-        <div className="absolute left-0 right-0 top-1/3 bottom-1/3 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 opacity-80"></div>
+        <motion.div className="absolute inset-0 opacity-30" style={{ opacity }}>
+          <div className="absolute top-0 -left-20 w-[600px] h-[600px] bg-gradient-to-br from-primary/10 to-secondary/5 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-0 -right-20 w-[600px] h-[600px] bg-gradient-to-tr from-secondary/10 to-primary/5 rounded-full blur-[100px]"></div>
+        </motion.div>
+
+        {/* Linhas decorativas */}
+        <div className="absolute top-0 left-1/3 right-1/3 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+        <div className="absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
       </div>
 
-      {/* Animated security symbols in background */}
-      <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
+      {/* Animated security symbols in background - mais sutis e elegantes */}
+      <div className="absolute inset-0 overflow-hidden opacity-5 pointer-events-none mix-blend-color-dodge">
         {Array.from({ length: 8 }).map((_, index) => (
           <motion.div
             key={index}
             className="absolute text-primary"
             initial={{
-              opacity: 0.3,
+              opacity: 0.4,
               y: -20,
               scale: 0.8,
               x: Math.random() * 100 - 50,
             }}
             animate={{
-              opacity: [0.2, 0.3, 0.2],
-              y: ["10%", "70%"],
-              scale: [0.8, 1.1, 0.8],
+              opacity: [0.2, 0.5, 0.2],
+              y: ["5%", "75%"],
+              scale: [0.6, 0.9, 0.6],
             }}
             transition={{
-              duration: 15 + Math.random() * 10,
+              duration: 10 + Math.random() * 8,
               repeat: Infinity,
-              ease: "linear",
-              delay: index * 2,
+              ease: "easeInOut",
+              delay: index * 1.5,
             }}
             style={{
               left: `${Math.random() * 90 + 5}%`,
@@ -109,50 +136,67 @@ export const SecuritySection = () => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-14">
-          <div className="flex-1 max-w-lg">
+        <div className="flex flex-col lg:flex-row items-center gap-16 xl:gap-20">
+          <motion.div
+            ref={contentRef}
+            className="flex-1 max-w-lg"
+            style={{ y: y1 }}
+          >
             <motion.div
               initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.7 }}
-              viewport={{ once: true, margin: "-100px" }}
+              animate={isContentInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.6 }}
+              className="relative"
             >
-              <div className="inline-flex items-center rounded-full border px-4 py-1.5 mb-6 bg-background/50 backdrop-blur-md border-primary/20">
-                <Shield className="h-3.5 w-3.5 text-primary mr-2" />
+              <motion.div
+                className="inline-flex items-center rounded-full border px-4 py-1.5 mb-8 bg-background/70 backdrop-blur-md border-primary/20 shadow-sm"
+                initial={{ opacity: 0, y: -10 }}
+                animate={isContentInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.4 }}
+              >
+                <Shield className="h-4 w-4 text-primary mr-2" />
                 <span className="text-xs font-medium text-primary">
                   Proteção avançada
                 </span>
-              </div>
+              </motion.div>
 
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
+              <motion.h2
+                className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 tracking-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isContentInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
                 {t("landing.security.title")}
-              </h2>
+              </motion.h2>
 
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <motion.p
+                className="text-lg text-muted-foreground mb-10 leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isContentInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 {t("landing.security.description")}
-              </p>
+              </motion.p>
 
               <motion.ul
-                className="space-y-6"
+                className="space-y-7"
                 variants={containerVariants}
                 initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
+                animate={isContentInView ? "visible" : "hidden"}
               >
                 {securityFeatures.map((feature, index) => (
                   <motion.li
                     key={index}
-                    className="flex items-start gap-4"
+                    className="flex items-start gap-5 group"
                     variants={itemVariants}
-                    whileHover={{ x: 5 }}
                   >
                     <div
-                      className={`rounded-full ${feature.color} p-2.5 mt-0.5 border ${feature.borderColor}`}
+                      className={`rounded-xl ${feature.color} p-3 mt-0.5 border ${feature.borderColor} ${feature.hoverColor} transition-all duration-300`}
                     >
                       {feature.icon}
                     </div>
                     <div>
-                      <h4 className="font-medium text-lg mb-1">
+                      <h4 className="font-medium text-lg mb-2 group-hover:text-primary transition-colors duration-300">
                         {t(`landing.security.${feature.key}.title`)}
                       </h4>
                       <p className="text-muted-foreground leading-relaxed">
@@ -163,97 +207,126 @@ export const SecuritySection = () => {
                 ))}
               </motion.ul>
 
-              {/* Verificação de segurança */}
+              {/* Badge de verificação de segurança melhorada */}
               <motion.div
-                className="mt-10 bg-background/70 backdrop-blur-md border rounded-lg p-4 inline-flex items-center gap-3"
+                className="mt-12 bg-background/80 backdrop-blur-md border border-muted/60 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/20"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                viewport={{ once: true }}
+                animate={isContentInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                whileHover={{ y: -3, transition: { duration: 0.2 } }}
               >
-                <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
-                  <Fingerprint className="h-5 w-5" />
+                <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500 shadow-inner">
+                  <Fingerprint className="h-6 w-6" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">
-                    Verificação de segurança
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Todos os sistemas protegidos
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-semibold">
+                      Verificação de segurança
+                    </span>
+                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Todos os sistemas protegidos e atualizados
                   </span>
                 </div>
-                <div className="ml-auto h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                <div className="shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
               </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
 
-          <div className="flex-1">
+          <motion.div ref={imageRef} className="flex-1" style={{ y: y2 }}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, x: 50 }}
-              whileInView={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8, type: "spring" }}
-              viewport={{ once: true, margin: "-100px" }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={isImageInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{
+                duration: 0.8,
+                type: "spring",
+                bounce: 0.2,
+                delay: 0.1,
+              }}
               className="relative rounded-xl overflow-hidden shadow-2xl border border-muted/30 group"
             >
-              {/* Decorative glowing effect */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 via-background/0 to-primary/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl"></div>
+              {/* Efeito de brilho decorativo aprimorado */}
+              <div className="absolute -inset-3 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl"></div>
 
-              <div className="relative bg-background/80 backdrop-blur-md p-1 rounded-xl overflow-hidden">
-                {/* Security panel decorative header */}
-                <div className="bg-muted/70 rounded-t-lg p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
+              <div className="relative bg-background/90 backdrop-blur-md p-1.5 rounded-xl overflow-hidden">
+                {/* Cabeçalho decorativo do painel de segurança */}
+                <div className="bg-muted/80 rounded-t-lg p-3.5 flex items-center justify-between border-b border-muted/60">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <Shield className="h-5 w-5 text-primary" />
+                    </div>
                     <span className="text-sm font-medium">
-                      Painel de segurança
+                      Painel de Segurança
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                    <span className="text-xs text-muted-foreground">Ativo</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shadow-sm shadow-green-500/30"></div>
+                    <span className="text-xs text-muted-foreground">
+                      Protegido
+                    </span>
                   </div>
                 </div>
 
                 <div className="p-2">
-                  <img
-                    src={securityPreview}
-                    alt="Security Features"
-                    className="w-full h-auto rounded-md"
-                    onError={(e) => {
-                      e.currentTarget.classList.add("bg-muted", "aspect-video");
-                      e.currentTarget.src = placeholderImage;
-                    }}
-                  />
+                  <div className="rounded-lg overflow-hidden border border-muted/40 shadow-inner">
+                    <img
+                      src={securityPreview}
+                      alt="Security Features"
+                      className="w-full h-auto"
+                      onError={(e) => {
+                        e.currentTarget.classList.add(
+                          "bg-muted",
+                          "aspect-video"
+                        );
+                        e.currentTarget.src = placeholderImage;
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Animated security indicators */}
+              {/* Indicadores de segurança animados melhorados */}
               <motion.div
-                className="absolute top-1/4 right-6 rounded-full bg-green-500/20 border border-green-500/30 px-3 py-1.5 flex items-center gap-2 z-20"
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                viewport={{ once: true }}
+                className="absolute top-1/4 right-5 rounded-full bg-green-500/20 border border-green-500/30 px-3.5 py-2 flex items-center gap-2 z-20 shadow-sm"
+                initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                animate={isImageInView ? { opacity: 1, scale: 1, x: 0 } : {}}
+                transition={{ delay: 0.7, duration: 0.5, type: "spring" }}
+                whileHover={{
+                  y: -2,
+                  x: -2,
+                  scale: 1.05,
+                  transition: { duration: 0.2 },
+                }}
               >
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs font-medium text-green-500">
+                <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shadow-sm shadow-green-500/30"></div>
+                <span className="text-xs font-medium text-green-600">
                   2FA Ativo
                 </span>
               </motion.div>
 
               <motion.div
-                className="absolute bottom-1/4 left-6 rounded-full bg-primary/10 border border-primary/20 px-3 py-1.5 flex items-center gap-2 z-20"
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                viewport={{ once: true }}
+                className="absolute bottom-1/4 left-5 rounded-full bg-blue-500/15 border border-blue-500/30 px-3.5 py-2 flex items-center gap-2 z-20 shadow-sm"
+                initial={{ opacity: 0, scale: 0.8, x: -20 }}
+                animate={isImageInView ? { opacity: 1, scale: 1, x: 0 } : {}}
+                transition={{ delay: 0.9, duration: 0.5, type: "spring" }}
+                whileHover={{
+                  y: -2,
+                  x: 2,
+                  scale: 1.05,
+                  transition: { duration: 0.2 },
+                }}
               >
-                <span className="text-xs font-medium">
-                  Criptografia de ponta a ponta
+                <Lock className="h-3 w-3 text-blue-600" />
+                <span className="text-xs font-medium text-blue-600">
+                  Criptografado
                 </span>
               </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

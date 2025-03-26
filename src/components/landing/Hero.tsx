@@ -1,15 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import {
-  CheckCircle2,
-  ArrowRight,
-  ChevronDown,
-  Shield,
-  Lock,
-  FileText,
-} from "lucide-react";
+import { ArrowRight, ChevronDown, Lock, Shield, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -21,33 +14,60 @@ interface HeroProps {
   scrollToFeatures: () => void;
 }
 
+// Variantes de animação para o stagger effect
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1.0] },
+  },
+};
+
 // Componente para as partículas flutuantes no fundo
 const BackgroundParticles = () => {
   return (
     <>
-      {Array.from({ length: 16 }).map((_, index) => (
+      {Array.from({ length: 18 }).map((_, index) => (
         <motion.div
           key={index}
           className={cn(
-            "absolute rounded-full bg-primary/10 z-10",
-            index % 2 === 0 ? "h-4 w-4" : "h-6 w-6",
-            index % 3 === 0 ? "bg-secondary/10" : "bg-primary/10"
+            "absolute rounded-full z-10",
+            index % 2 === 0 ? "h-3 w-3" : "h-5 w-5",
+            index % 3 === 0
+              ? "bg-secondary/10"
+              : index % 4 === 0
+              ? "bg-accent/10"
+              : "bg-primary/10"
           )}
           initial={{
             x: Math.random() * 100 - 50,
             y: Math.random() * 100 - 50,
+            scale: Math.random() * 0.5 + 0.5,
             opacity: 0.1,
           }}
           animate={{
             x: Math.random() * 100 - 50,
             y: Math.random() * 100 - 50,
-            opacity: [0.1, 0.2, 0.1],
-            scale: [1, 1.1, 1],
+            opacity: [0.1, 0.3, 0.1],
+            scale: [1, Math.random() * 0.3 + 1, 1],
           }}
           transition={{
-            duration: 10 + Math.random() * 10,
+            duration: 6 + Math.random() * 8,
             repeat: Infinity,
             repeatType: "reverse",
+            ease: "easeInOut",
           }}
           style={{
             left: `${Math.random() * 90 + 5}%`,
@@ -61,6 +81,11 @@ const BackgroundParticles = () => {
 
 export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
   const { t } = useTranslation();
+  const { scrollY } = useScroll();
+
+  // Efeito de paralaxe
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0.5]);
 
   const heroFeatures = [
     {
@@ -78,84 +103,81 @@ export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
   ];
 
   return (
-    <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-background to-background/95 relative overflow-hidden">
-      {/* Efeito de fundo melhorado com opacidade ajustada para transição fluida */}
-      <div className="absolute inset-0 overflow-hidden opacity-40">
-        <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/20 rounded-full filter blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-secondary/20 rounded-full filter blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 right-1/4 w-48 h-48 bg-accent/20 rounded-full filter blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
+    <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-background via-background/98 to-background/95 relative overflow-hidden">
+      {/* Efeito de gradiente dinâmico */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 left-1/4 w-80 h-80 bg-primary/10 rounded-full filter blur-[100px] animate-blob" />
+        <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-secondary/10 rounded-full filter blur-[100px] animate-blob animation-delay-2000" />
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-accent/10 rounded-full filter blur-[100px] animate-blob animation-delay-4000" />
       </div>
 
       {/* Transição suave para a próxima seção */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-muted/20 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-background pointer-events-none"></div>
 
       {/* Partículas animadas */}
       <BackgroundParticles />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-          <div className="flex-1 max-w-2xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              <div className="inline-flex items-center rounded-full border px-4 py-1.5 mb-6 bg-background/50 backdrop-blur-md border-primary/20 text-primary">
+        <motion.div
+          className="flex flex-col lg:flex-row items-center gap-10 lg:gap-20"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div className="flex-1 max-w-2xl" style={{ opacity }}>
+            <motion.div className="relative z-10" variants={containerVariants}>
+              <motion.div
+                className="inline-flex items-center rounded-full border px-4 py-1.5 mb-8 bg-background/60 backdrop-blur-md border-primary/20 text-primary shadow-sm"
+                variants={itemVariants}
+                whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+              >
                 <span className="text-xs font-medium">
                   {t("landing.version.new")}
                 </span>
                 <div className="h-3 w-px bg-primary/20 mx-2"></div>
                 <span className="text-xs">{t("landing.version.released")}</span>
-              </div>
+              </motion.div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight leading-tight">
-                {t("landing.hero.title")
-                  .split(" seguro")
-                  .map((part, i) =>
-                    i === 0 ? (
-                      <React.Fragment key={i}>
-                        {part}
-                        <span className="text-primary relative">
-                          <span className="relative z-10"> seguro</span>
-                          <motion.span
-                            className="absolute bottom-1 left-0 h-3 w-full bg-primary/15 rounded-full -z-10"
-                            initial={{ width: 0 }}
-                            animate={{ width: "100%" }}
-                            transition={{ delay: 0.5, duration: 0.8 }}
-                          />
-                        </span>
-                      </React.Fragment>
-                    ) : (
-                      part
-                    )
-                  )}
-              </h1>
+              <motion.h1
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight leading-tight"
+                variants={itemVariants}
+              >
+                <div className="inline-block">
+                  <span>{t("landing.hero.title").split(" seguro")[0]}</span>{" "}
+                  <span className="relative inline-block">
+                    <span className="relative z-10 text-primary">seguro</span>
+                    <motion.span
+                      className="absolute bottom-2 left-0 h-4 w-full bg-primary/15 rounded-full -z-10"
+                      initial={{ width: 0 }}
+                      animate={{ width: "100%" }}
+                      transition={{
+                        delay: 0.7,
+                        duration: 0.5,
+                        ease: "easeOut",
+                      }}
+                    />
+                  </span>
+                  <span>
+                    {t("landing.hero.title").split(" seguro")[1] || ""}
+                  </span>
+                </div>
+              </motion.h1>
 
               <motion.p
                 className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.7 }}
+                variants={itemVariants}
               >
                 {t("landing.hero.description")}
               </motion.p>
 
               <motion.div
-                className="flex flex-col sm:flex-row gap-4 mb-8"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.7 }}
+                className="flex flex-col sm:flex-row gap-4 mb-10"
+                variants={itemVariants}
               >
                 <Link to="/auth?signup=true">
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                    className="w-full sm:w-auto px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 bg-gradient-to-r from-primary to-primary/90"
                   >
                     {t("landing.hero.startNow")}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -164,7 +186,7 @@ export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto px-6 rounded-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                  className="w-full sm:w-auto px-6 rounded-full transition-all duration-300 hover:shadow-md hover:-translate-y-1 border-muted-foreground/30 hover:border-primary/50 hover:bg-background"
                   onClick={scrollToFeatures}
                 >
                   {t("landing.hero.seeFeatures")}
@@ -173,35 +195,41 @@ export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
               </motion.div>
 
               <motion.div
+                variants={itemVariants}
                 className="flex flex-wrap items-center gap-x-6 gap-y-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.7 }}
               >
                 {heroFeatures.map((feature, index) => (
-                  <div
+                  <motion.div
                     key={index}
-                    className="flex items-center gap-2 text-sm text-muted-foreground bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-muted"
+                    className="flex items-center gap-2 text-sm text-muted-foreground bg-background/60 backdrop-blur-sm px-3.5 py-2 rounded-full border border-muted/50 shadow-sm hover:shadow hover:border-muted/80 transition-all duration-300"
+                    whileHover={{
+                      y: -2,
+                      scale: 1.02,
+                      transition: { duration: 0.2 },
+                    }}
                   >
-                    <div className="rounded-full bg-primary/10 p-1">
+                    <div className="rounded-full bg-primary/10 p-1.5">
                       {feature.icon}
                     </div>
                     <span>{feature.text}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
 
-          <div className="flex-1 w-full max-w-xl">
+          <motion.div className="flex-1 w-full max-w-xl" style={{ y, opacity }}>
             <motion.div
-              className="relative rounded-xl border-2 overflow-hidden shadow-2xl"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
+              className="relative rounded-xl overflow-hidden shadow-2xl border border-muted/30"
+              variants={itemVariants}
+              whileHover={{
+                scale: 1.02,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                transition: { duration: 0.3 },
+              }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 z-10 pointer-events-none"></div>
-              <div className="w-full relative aspect-[16/9] bg-gradient-to-br from-background to-muted rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 z-10 pointer-events-none"></div>
+              <div className="w-full relative aspect-[16/9] bg-gradient-to-br from-background to-muted/80 rounded-lg overflow-hidden">
                 <img
                   src={dashboardPreview}
                   alt="Dashboard Preview"
@@ -220,33 +248,33 @@ export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
 
               {/* Decoração animada ao redor da imagem */}
               <motion.div
-                className="absolute -bottom-2 -right-2 w-24 h-24 bg-primary/10 rounded-full filter blur-xl"
+                className="absolute -bottom-2 -right-2 w-32 h-32 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full filter blur-xl"
                 animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.5, 0.3],
+                  scale: [1, 1.3, 1],
+                  opacity: [0.2, 0.4, 0.2],
                 }}
                 transition={{
                   repeat: Infinity,
-                  duration: 5,
+                  duration: 7,
                   ease: "easeInOut",
                 }}
               />
               <motion.div
-                className="absolute -top-2 -left-2 w-20 h-20 bg-secondary/10 rounded-full filter blur-xl"
+                className="absolute -top-2 -left-2 w-24 h-24 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full filter blur-xl"
                 animate={{
                   scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.6, 0.3],
+                  opacity: [0.2, 0.5, 0.2],
                 }}
                 transition={{
                   repeat: Infinity,
-                  duration: 6,
+                  duration: 8,
                   delay: 1,
                   ease: "easeInOut",
                 }}
               />
             </motion.div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
