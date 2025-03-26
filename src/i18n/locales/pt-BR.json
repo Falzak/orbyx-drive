@@ -4,6 +4,7 @@
     "settings": "Configurações",
     "logout": "Sair",
     "language": "Idioma",
+    "languageSelector": "Selecionar idioma",
     "theme": {
       "light": "Claro",
       "dark": "Escuro"
@@ -405,92 +406,100 @@
   "landing": {
     "hero": {
       "title": "Armazenamento e compartilhamento de arquivos seguro e intuitivo",
-      "description": "Proteja, organize e compartilhe seus arquivos importantes com segurança de nível empresarial e interface fácil de usar.",
+      "description": "Proteja, organize e compartilhe seus documentos importantes com segurança de nível empresarial e uma interface amigável que facilita sua vida digital.",
       "startNow": "Começar Agora",
-      "seeFeatures": "Ver Recursos"
+      "seeFeatures": "Conhecer Recursos"
     },
     "features": {
-      "title": "Recursos que impulsionam sua produtividade",
-      "description": "Conheça as ferramentas poderosas que fazem do Orbyx Drive a melhor escolha para gerenciamento de arquivos.",
+      "title": "Recursos que transformam sua experiência digital",
+      "description": "Descubra as ferramentas poderosas que fazem do Orbyx Drive a escolha ideal para gerenciamento de arquivos no dia a dia.",
       "security": {
         "title": "Segurança Avançada",
-        "description": "Criptografia de ponta a ponta para seus arquivos mais valiosos, com autenticação de dois fatores"
+        "description": "Criptografia de ponta a ponta para seus arquivos mais valiosos, com autenticação de dois fatores para proteção extra"
       },
       "organization": {
         "title": "Organização Intuitiva",
-        "description": "Organize seus arquivos em pastas com cores personalizadas e visualize-os em grade ou lista"
+        "description": "Organize seus arquivos em pastas com cores personalizadas e etiquetas visuais para encontrar tudo rapidamente"
       },
       "sharing": {
-        "title": "Compartilhamento Seguro",
-        "description": "Compartilhe arquivos de forma segura com links protegidos por senha e expiração automática"
+        "title": "Compartilhamento Inteligente",
+        "description": "Compartilhe arquivos com segurança usando links protegidos por senha e data de expiração automática"
       },
       "anywhere": {
         "title": "Acesso em Qualquer Lugar",
-        "description": "Acesse seus arquivos em qualquer dispositivo com uma interface responsiva e intuitiva"
+        "description": "Tenha seus arquivos sempre à mão em qualquer dispositivo com nossa interface responsiva e sincronização automática"
       }
     },
     "interface": {
-      "title": "Interface intuitiva e poderosa",
-      "description": "Uma experiência de usuário cuidadosamente projetada que combina beleza, funcionalidade e segurança.",
+      "title": "Interface moderna e funcional",
+      "description": "Uma experiência de usuário cuidadosamente projetada que combina estética, funcionalidade e segurança em cada detalhe.",
       "customizable": {
-        "title": "Visualização personalizável",
-        "description": "Alterne entre visualizações em lista e grade para melhor organização"
+        "title": "Visualização personalizada",
+        "description": "Alterne entre visualizações em lista e grade para adaptar a interface ao seu jeito de trabalhar"
       },
       "previews": {
-        "title": "Previsualizações integradas",
-        "description": "Visualize documentos, imagens e vídeos sem precisar baixá-los"
+        "title": "Visualização integrada",
+        "description": "Veja documentos, imagens e vídeos diretamente no navegador sem necessidade de downloads"
       },
       "oneClick": {
-        "title": "Compartilhamento em um clique",
-        "description": "Gere links de compartilhamento seguros com controles de acesso"
+        "title": "Compartilhamento simplificado",
+        "description": "Crie links seguros com um clique e defina permissões de acesso personalizadas"
       }
     },
     "security": {
-      "title": "Segurança sem comprometer a experiência",
-      "description": "Protegemos seus dados com as mais avançadas tecnologias de segurança, mantendo uma experiência simples e agradável.",
+      "title": "Segurança que não complica sua vida",
+      "description": "Protegemos seus dados com tecnologia de ponta, mantendo uma experiência simples e agradável no dia a dia.",
       "twoFactor": {
         "title": "Autenticação de dois fatores",
-        "description": "Com opção de lembrar dispositivos confiáveis para maior conveniência"
+        "description": "Proteção extra com opção de reconhecer dispositivos confiáveis para maior praticidade"
       },
       "encryption": {
-        "title": "Criptografia de ponta a ponta",
-        "description": "Seus arquivos são criptografados durante o upload e em repouso"
+        "title": "Criptografia avançada",
+        "description": "Seus arquivos são protegidos com criptografia durante todo o processo, do upload ao armazenamento"
       },
       "links": {
-        "title": "Links expiráveis",
-        "description": "Defina por quanto tempo os links compartilhados permanecem válidos"
+        "title": "Links com controle total",
+        "description": "Defina por quanto tempo seus links compartilhados ficam ativos e quem pode acessá-los"
       }
     },
     "testimonials": {
-      "title": "O que nossos usuários dizem",
-      "description": "Veja o que as pessoas estão falando sobre sua experiência com o Orbyx Drive"
+      "title": "A opinião de quem já usa",
+      "description": "Veja o que nossos usuários dizem sobre sua experiência com o Orbyx Drive"
     },
     "cta": {
-      "title": "Pronto para proteger seus arquivos?",
-      "description": "Registre-se gratuitamente hoje e desfrute de armazenamento seguro e organizado.",
-      "createAccount": "Criar Conta Grátis",
-      "login": "Fazer Login"
+      "title": "Pronto para proteger o que importa?",
+      "description": "Crie sua conta gratuita hoje e desfrute de um armazenamento seguro, organizado e acessível.",
+      "createAccount": "Criar Conta Gratuita",
+      "login": "Acessar Minha Conta"
     },
     "footer": {
       "product": "Produto",
       "features": "Recursos",
-      "pricing": "Preços",
+      "pricing": "Planos e Preços",
       "security": "Segurança",
       "company": "Empresa",
       "about": "Sobre Nós",
       "blog": "Blog",
-      "contact": "Contato",
-      "legal": "Legal",
-      "privacy": "Privacidade",
-      "terms": "Termos",
+      "contact": "Fale Conosco",
+      "legal": "Informações Legais",
+      "privacy": "Política de Privacidade",
+      "terms": "Termos de Uso",
       "copyright": "Todos os direitos reservados",
-      "tagline": "A melhor solução para armazenar e compartilhar seus arquivos com segurança e simplicidade."
+      "tagline": "A solução definitiva para armazenar e compartilhar seus arquivos com segurança, simplicidade e eficiência."
     },
     "nav": {
       "features": "Recursos",
-      "pricing": "Preços",
-      "login": "Login",
-      "register": "Registrar"
+      "solutions": "Soluções",
+      "pricing": "Planos",
+      "login": "Entrar",
+      "register": "Criar Conta",
+      "personal": "Uso Pessoal",
+      "teams": "Equipes",
+      "enterprise": "Empresarial"
+    },
+    "version": {
+      "new": "Novidade",
+      "released": "Versão 2.0 lançada"
     }
   },
   "googleDrive": {

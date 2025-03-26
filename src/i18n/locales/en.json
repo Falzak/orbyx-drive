@@ -4,6 +4,7 @@
     "settings": "Settings",
     "logout": "Logout",
     "language": "Language",
+    "languageSelector": "Select language",
     "theme": {
       "light": "Light",
       "dark": "Dark"
@@ -424,5 +425,104 @@
     "uploading": "Uploading...",
     "success": "Files uploaded successfully",
     "successCount": "{{count}} of {{total}} files uploaded successfully"
+  },
+  "landing": {
+    "hero": {
+      "title": "Secure and intuitive file storage and sharing",
+      "description": "Protect, organize, and share your important documents with enterprise-grade security and a user-friendly interface that simplifies your digital life.",
+      "startNow": "Start Now",
+      "seeFeatures": "See Features"
+    },
+    "features": {
+      "title": "Features that transform your digital experience",
+      "description": "Discover the powerful tools that make Orbyx Drive the ideal choice for everyday file management.",
+      "security": {
+        "title": "Advanced Security",
+        "description": "End-to-end encryption for your most valuable files, with two-factor authentication for extra protection"
+      },
+      "organization": {
+        "title": "Intuitive Organization",
+        "description": "Organize your files in folders with custom colors and visual tags to find everything quickly"
+      },
+      "sharing": {
+        "title": "Smart Sharing",
+        "description": "Share files securely using password-protected links and automatic expiration dates"
+      },
+      "anywhere": {
+        "title": "Access Anywhere",
+        "description": "Have your files always at hand on any device with our responsive interface and automatic synchronization"
+      }
+    },
+    "interface": {
+      "title": "Modern and functional interface",
+      "description": "A carefully designed user experience that combines aesthetics, functionality, and security in every detail.",
+      "customizable": {
+        "title": "Customizable View",
+        "description": "Switch between list and grid views to adapt the interface to your way of working"
+      },
+      "previews": {
+        "title": "Integrated Previews",
+        "description": "View documents, images, and videos directly in the browser without the need for downloads"
+      },
+      "oneClick": {
+        "title": "Simplified Sharing",
+        "description": "Create secure links with one click and set custom access permissions"
+      }
+    },
+    "security": {
+      "title": "Security that doesn't complicate your life",
+      "description": "We protect your data with cutting-edge technology while maintaining a simple and pleasant everyday experience.",
+      "twoFactor": {
+        "title": "Two-Factor Authentication",
+        "description": "Extra protection with the option to remember trusted devices for greater convenience"
+      },
+      "encryption": {
+        "title": "Advanced Encryption",
+        "description": "Your files are protected with encryption throughout the entire process, from upload to storage"
+      },
+      "links": {
+        "title": "Links with Full Control",
+        "description": "Define how long your shared links stay active and who can access them"
+      }
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "description": "See what people are saying about their experience with Orbyx Drive"
+    },
+    "cta": {
+      "title": "Ready to protect what matters?",
+      "description": "Create your free account today and enjoy secure, organized, and accessible storage.",
+      "createAccount": "Create Free Account",
+      "login": "Access My Account"
+    },
+    "footer": {
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Plans & Pricing",
+      "security": "Security",
+      "company": "Company",
+      "about": "About Us",
+      "blog": "Blog",
+      "contact": "Contact Us",
+      "legal": "Legal Information",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "copyright": "All rights reserved",
+      "tagline": "The ultimate solution for storing and sharing your files with security, simplicity, and efficiency."
+    },
+    "nav": {
+      "features": "Features",
+      "solutions": "Solutions",
+      "pricing": "Plans",
+      "login": "Login",
+      "register": "Sign Up",
+      "personal": "Personal",
+      "teams": "Teams",
+      "enterprise": "Enterprise"
+    },
+    "version": {
+      "new": "New",
+      "released": "Version 2.0 released"
+    }
   }
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Shield, Menu, X, Globe, Sun, Moon, ChevronDown } from "lucide-react";
+import { Menu, X, Globe, Sun, Moon, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import {
@@ -12,12 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Importando o logo
+import driveLogo from "/drive.svg";
+
 interface NavigationProps {
   scrollToFeatures: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,6 +40,17 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
     };
   }, [scrolled]);
 
+  // Dados de idiomas disponíveis
+  const languages = [
+    { code: "en", name: "English", flag: "🇺🇸" },
+    { code: "pt-BR", name: "Português", flag: "🇧🇷" },
+  ];
+
+  // Função para alterar o idioma
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -53,7 +67,11 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
             className="flex items-center gap-2 z-20 group transition-transform duration-300 hover:scale-105"
           >
             <div className="relative">
-              <Shield className="h-7 w-7 transition-colors duration-300 text-primary" />
+              <img
+                src={driveLogo}
+                alt="Orbyx Drive"
+                className="h-7 w-auto transition-all duration-300"
+              />
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -129,19 +147,46 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:scale-105"
-                    aria-label="Select language"
+                    className="rounded-full transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:scale-105 relative"
+                    aria-label={t("common.languageSelector")}
                   >
                     <Globe className="h-5 w-5" />
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center">
+                      <span className="text-[8px]">
+                        {
+                          languages.find((lang) => lang.code === i18n.language)
+                            ?.flag
+                        }
+                      </span>
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-32 bg-background/95 backdrop-blur-lg border-muted/50"
+                  className="w-40 bg-background/95 backdrop-blur-lg border-muted/50"
                 >
-                  <DropdownMenuItem>English</DropdownMenuItem>
-                  <DropdownMenuItem>Português</DropdownMenuItem>
-                  <DropdownMenuItem>Español</DropdownMenuItem>
+                  {languages.map((language) => (
+                    <DropdownMenuItem
+                      key={language.code}
+                      onClick={() => handleLanguageChange(language.code)}
+                      className={`
+                        flex items-center gap-2 px-3 py-2 cursor-pointer
+                        hover:bg-accent/50 focus:bg-accent/50
+                        transition-colors duration-150
+                        ${
+                          i18n.language === language.code
+                            ? "bg-accent/30 font-medium"
+                            : ""
+                        }
+                      `}
+                    >
+                      <span className="text-base">{language.flag}</span>
+                      <span className="flex-1">{language.name}</span>
+                      {i18n.language === language.code && (
+                        <Check className="h-4 w-4 text-foreground/70" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -274,7 +319,7 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
                   }`}
                 >
                   <Sun className="h-4 w-4 mr-2" />
-                  Light
+                  {t("common.theme.light")}
                 </Button>
                 <Button
                   variant="outline"
@@ -289,8 +334,29 @@ export const Navigation: React.FC<NavigationProps> = ({ scrollToFeatures }) => {
                   }`}
                 >
                   <Moon className="h-4 w-4 mr-2" />
-                  Dark
+                  {t("common.theme.dark")}
                 </Button>
+              </div>
+
+              <div className="h-px bg-muted my-1"></div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {languages.map((language) => (
+                  <Button
+                    key={language.code}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleLanguageChange(language.code)}
+                    className={`transition-all duration-200 ${
+                      i18n.language === language.code
+                        ? "bg-primary/10 text-primary border-primary"
+                        : ""
+                    }`}
+                  >
+                    <span className="mr-2">{language.flag}</span>
+                    {language.name}
+                  </Button>
+                ))}
               </div>
 
               <div className="h-px bg-muted my-1"></div>

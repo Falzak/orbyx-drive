@@ -21,21 +21,6 @@ interface HeroProps {
   scrollToFeatures: () => void;
 }
 
-const heroFeatures = [
-  {
-    icon: <Lock className="h-4 w-4 text-primary" />,
-    text: "Criptografia de ponta a ponta",
-  },
-  {
-    icon: <Shield className="h-4 w-4 text-primary" />,
-    text: "Autenticação de dois fatores",
-  },
-  {
-    icon: <FileText className="h-4 w-4 text-primary" />,
-    text: "Sem limite de arquivos",
-  },
-];
-
 // Componente para as partículas flutuantes no fundo
 const BackgroundParticles = () => {
   return (
@@ -77,6 +62,21 @@ const BackgroundParticles = () => {
 export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
   const { t } = useTranslation();
 
+  const heroFeatures = [
+    {
+      icon: <Lock className="h-4 w-4 text-primary" />,
+      text: t("landing.security.encryption.title"),
+    },
+    {
+      icon: <Shield className="h-4 w-4 text-primary" />,
+      text: t("landing.security.twoFactor.title"),
+    },
+    {
+      icon: <FileText className="h-4 w-4 text-primary" />,
+      text: t("landing.features.anywhere.title"),
+    },
+  ];
+
   return (
     <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-background to-background/95 relative overflow-hidden">
       {/* Efeito de fundo melhorado com opacidade ajustada para transição fluida */}
@@ -107,9 +107,11 @@ export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
               <div className="inline-flex items-center rounded-full border px-4 py-1.5 mb-6 bg-background/50 backdrop-blur-md border-primary/20 text-primary">
-                <span className="text-xs font-medium">Novidade</span>
+                <span className="text-xs font-medium">
+                  {t("landing.version.new")}
+                </span>
                 <div className="h-3 w-px bg-primary/20 mx-2"></div>
-                <span className="text-xs">Versão 2.0 lançada</span>
+                <span className="text-xs">{t("landing.version.released")}</span>
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight leading-tight">
