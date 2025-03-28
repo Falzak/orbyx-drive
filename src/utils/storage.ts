@@ -1,3 +1,4 @@
+
 import {
   S3Client,
   PutObjectCommand,
@@ -29,7 +30,8 @@ const getS3Client = async () => {
     throw new Error("S3 configuration not found");
   }
 
-  const s3Config = JSON.parse(data.config);
+  // Parse credentials from the JSON field instead of accessing config
+  const s3Config = JSON.parse(data.credentials);
 
   s3Client = new S3Client({
     region: s3Config.region,
@@ -58,9 +60,12 @@ const getStorageProvider = async () => {
     throw new Error("No active storage provider found");
   }
 
+  // Extract the bucket name from credentials instead of a dedicated bucket field
+  const credentials = JSON.parse(data.credentials);
+
   return {
     provider: data.name,
-    bucket: data.bucket,
+    bucket: credentials.bucket || "files", // Default to "files" if not specified
   };
 };
 
@@ -216,6 +221,7 @@ export async function uploadFile(
     
     switch (provider) {
       case 'supabase':
+        // Supabase doesn't support onUploadProgress natively, so we'll handle it separately
         const { data, error } = await supabase.storage
           .from(bucket)
           .upload(filePath, fileData, {
@@ -232,10 +238,10 @@ export async function uploadFile(
         result = data.path;
         break;
       case 's3':
-        // Adicionar suporte para progresso de upload no S3
+        // Implement S3 upload with progress tracking
         const s3Client = await getS3Client();
         
-        // Preparar upload com progresso
+        // Prepare upload with progress
         const xhr = new XMLHttpRequest();
         const uploadPromise = new Promise<string>((resolve, reject) => {
           xhr.upload.addEventListener('progress', (event) => {
@@ -262,11 +268,14 @@ export async function uploadFile(
           });
         });
         
-        // Implementar o upload real para S3 usando presigned URL
+        // Convert ArrayBuffer to Buffer for AWS SDK
+        const buffer = Buffer.from(fileData);
+        
+        // Generate pre-signed URL for upload
         const command = new PutObjectCommand({
           Bucket: bucket,
           Key: filePath,
-          Body: fileData,
+          Body: buffer,
           ContentType: file.type,
         });
         

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-// import GoogleDriveImport from "@/components/GoogleDriveImport";
+import { uploadFile } from "@/utils/storage";
 
 interface FileUploadProps {
   open: boolean;
@@ -80,41 +80,33 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
           )
         );
 
-        const { data, error } = await supabase.storage
-          .from("files")
-          .upload(
-            `${session.user.id}/${fileObj.file.name}`,
-            fileObj.file,
-            {
-              cacheControl: "3600",
-              upsert: true,
-              onUploadProgress: (progress) => {
-                const percent = Math.round(
-                  (progress.loaded / progress.total) * 100
-                );
-                setFiles((prev) =>
-                  prev.map((f) =>
-                    f.id === fileObj.id ? { ...f, progress: percent } : f
-                  )
-                );
-              },
+        // Use the custom uploadFile function instead of supabase storage directly
+        const filePath = `${session.user.id}/${fileObj.file.name}`;
+        const path = await uploadFile(
+          fileObj.file,
+          filePath,
+          {
+            onUploadProgress: (progress) => {
+              setFiles((prev) =>
+                prev.map((f) =>
+                  f.id === fileObj.id ? { ...f, progress } : f
+                )
+              );
             }
-          );
-
-        if (error) throw error;
+          }
+        );
 
         // Get the public URL
         const { data: urlData } = supabase.storage
           .from("files")
-          .getPublicUrl(`${session.user.id}/${fileObj.file.name}`);
+          .getPublicUrl(filePath);
 
-        // Insert file record in database
+        // Insert file record in database - use correct field names matching the database schema
         const { error: dbError } = await supabase.from("files").insert({
-          name: fileObj.file.name,
+          filename: fileObj.file.name,
           size: fileObj.file.size,
-          type: fileObj.file.type,
-          path: `${session.user.id}/${fileObj.file.name}`,
-          url: urlData.publicUrl,
+          content_type: fileObj.file.type,
+          file_path: filePath,
           user_id: session.user.id,
         });
 
@@ -201,18 +193,6 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
             </Button>
           </div>
         </div>
-
-        {/* Remova estas linhas:
-        <div className="flex items-center gap-2 my-4">
-          <div className="flex-1 h-px bg-border"></div>
-          <span className="text-xs text-muted-foreground">{t("common.or")}</span>
-          <div className="flex-1 h-px bg-border"></div>
-        </div>
-
-        <div className="flex justify-center">
-          <GoogleDriveImport />
-        </div>
-        */}
 
         {files.length > 0 && (
           <div className="space-y-2 max-h-60 overflow-y-auto">
