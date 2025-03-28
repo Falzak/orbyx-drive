@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import {
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
 
 export interface MediaPreviewProps {
   file: FileData;
@@ -42,6 +42,15 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
                     file.content_type === 'application/msword';
     
     setCanPreview(isPdf || isOffice);
+
+    // Validar se temos uma URL de imagem
+    if (file.content_type.startsWith("image/") && !file.url) {
+      toast({
+        title: "Erro de visualização",
+        description: "URL da imagem não disponível. Tente recarregar a página.",
+        variant: "destructive"
+      });
+    }
 
     if (isPdf && file.url) {
       // For PDFs, we can directly use the URL
@@ -85,6 +94,11 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       };
     } catch (error) {
       console.error("Error loading document:", error);
+      toast({
+        title: "Erro ao carregar documento",
+        description: "Não foi possível carregar o documento. Tente novamente.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +110,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
 
   const renderPreview = () => {
     if (file.content_type.startsWith("image/")) {
-      return (
+      return file.url ? (
         <img
           src={file.url}
           alt={file.filename}
@@ -104,7 +118,23 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           style={{ 
             transform: `scale(${scale}) rotate(${rotation}deg)`,
           }}
+          onError={(e) => {
+            console.error("Image failed to load:", file.url);
+            toast({
+              title: "Erro ao carregar imagem",
+              description: "Não foi possível carregar a imagem. Tente recarregar a página.",
+              variant: "destructive"
+            });
+            (e.target as HTMLImageElement).src = "/placeholder.svg";
+          }}
         />
+      ) : (
+        <div className="flex flex-col items-center justify-center h-[80vh]">
+          <File size={64} className="text-muted-foreground mb-4" />
+          <p className="text-center text-muted-foreground">
+            Visualização não disponível
+          </p>
+        </div>
       );
     } else if (file.content_type.startsWith("video/")) {
       return (

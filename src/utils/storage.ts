@@ -1,393 +1,296 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { StorageProvider, StorageProviderDatabase } from "@/types/storage";
 import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
-  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { 
-  encryptFile, 
-  decryptFile, 
-  encryptData, 
-  decryptData 
-} from "./encryption";
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/integrations/supabase/client";
 
-// Security and compression options
-interface StorageOptions {
-  enhancedSecurity?: boolean;
-  passwordProtection?: boolean;
-  password?: string;
-  compress?: boolean;
-}
+let s3Client: S3Client | null = null;
 
-// Global storage options
-let globalStorageOptions: StorageOptions = {
-  enhancedSecurity: false,
-  passwordProtection: false,
-  compress: false
+const getS3Client = async () => {
+  if (s3Client) {
+    return s3Client;
+  }
+
+  const { data, error } = await supabase
+    .from("storage_providers")
+    .select("*")
+    .eq("name", "s3")
+    .single();
+
+  if (error) {
+    console.error("Error fetching S3 configuration:", error);
+    throw new Error("Failed to fetch S3 configuration");
+  }
+
+  if (!data) {
+    throw new Error("S3 configuration not found");
+  }
+
+  const s3Config = JSON.parse(data.config);
+
+  s3Client = new S3Client({
+    region: s3Config.region,
+    credentials: {
+      accessKeyId: s3Config.accessKeyId,
+      secretAccessKey: s3Config.secretAccessKey,
+    },
+  });
+
+  return s3Client;
 };
 
-// Update global storage options
-export const updateStorageOptions = (options: StorageOptions): void => {
-  globalStorageOptions = { ...globalStorageOptions, ...options };
-  // Save non-sensitive options to localStorage for persistence
-  localStorage.setItem('storage_compression', options.compress ? 'true' : 'false');
-  localStorage.setItem('storage_enhanced_security', options.enhancedSecurity ? 'true' : 'false');
-  console.log('Storage options updated:', globalStorageOptions);
-};
+const getStorageProvider = async () => {
+  const { data, error } = await supabase
+    .from("storage_providers")
+    .select("*")
+    .eq("is_active", true)
+    .single();
 
-// Load storage options from localStorage on initialization
-const initStorageOptions = (): void => {
-  const compress = localStorage.getItem('storage_compression') === 'true';
-  const enhancedSecurity = localStorage.getItem('storage_enhanced_security') === 'true';
-  globalStorageOptions = {
-    ...globalStorageOptions,
-    compress,
-    enhancedSecurity
+  if (error) {
+    console.error("Error fetching storage provider:", error);
+    throw new Error("Failed to fetch storage provider");
+  }
+
+  if (!data) {
+    throw new Error("No active storage provider found");
+  }
+
+  return {
+    provider: data.name,
+    bucket: data.bucket,
   };
 };
 
-// Initialize options
-initStorageOptions();
+export const resetStorageProvider = () => {
+  s3Client = null;
+};
 
-// Interface for storage providers
-interface IStorageProvider {
-  upload(file: File, path: string, options?: StorageOptions): Promise<void>;
-  download(path: string, password?: string): Promise<Blob>;
-  getUrl(path: string): Promise<string>;
-  remove(paths: string[]): Promise<void>;
-}
+export const getFileUrl = async (filePath: string): Promise<string> => {
+  const { provider, bucket } = await getStorageProvider();
 
-// Supabase storage provider implementation with encryption
-class SupabaseStorage implements IStorageProvider {
-  private bucket: string = "files";
-
-  async upload(file: File, path: string, options?: StorageOptions): Promise<void> {
-    try {
-      // Merge provided options with global options
-      const mergedOptions = {
-        ...globalStorageOptions,
-        ...options
-      };
-      
-      // Encrypt the file before uploading with proper options
-      const { encryptedBlob, encryptionData } = await encryptFile(file, {
-        enhancedSecurity: mergedOptions.enhancedSecurity,
-        password: mergedOptions.passwordProtection ? mergedOptions.password : undefined,
-        compress: mergedOptions.compress
-      });
-      
-      // Upload the encrypted file
-      const { error: fileError } = await supabase.storage
-        .from(this.bucket)
-        .upload(path, encryptedBlob, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-      
-      if (fileError) throw fileError;
-      
-      // Store encryption data in metadata table
-      const { error: metaError } = await supabase
-        .from('file_encryption_metadata')
-        .insert({
-          file_path: path,
-          encryption_data: encryptData(encryptionData)
-        });
-        
-      if (metaError) {
-        // If metadata storage fails, remove the uploaded file
-        await this.remove([path]);
-        throw metaError;
-      }
-    } catch (error) {
-      console.error("Encrypted upload error:", error);
-      throw error;
+  switch (provider) {
+    case "supabase": {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      return data.publicUrl;
     }
-  }
-
-  async download(path: string, password?: string): Promise<Blob> {
-    try {
-      // Download the encrypted file
-      const { data: encryptedData, error: fileError } = await supabase.storage
-        .from(this.bucket)
-        .download(path);
-
-      if (fileError) throw fileError;
-      if (!encryptedData) throw new Error("Failed to download file");
-      
-      // Fetch the encryption metadata
-      const { data: metaData, error: metaError } = await supabase
-        .from('file_encryption_metadata')
-        .select('encryption_data')
-        .eq('file_path', path)
-        .single();
-        
-      if (metaError) throw metaError;
-      if (!metaData) throw new Error("Encryption metadata not found");
-      
-      // Decrypt the encryption data
-      const encryptionData = decryptData(metaData.encryption_data);
-      
-      // Check if file is password protected
-      const parsedData = JSON.parse(encryptionData);
-      if (parsedData.passwordProtected && !password) {
-        throw new Error("password_required");
-      }
-      
-      // Decrypt the file with the password if needed
-      const { decryptedBlob } = await decryptFile(encryptedData, encryptionData, password);
-      
-      return decryptedBlob;
-    } catch (error) {
-      console.error("Encrypted download error:", error);
-      throw error;
-    }
-  }
-
-  async getUrl(path: string): Promise<string> {
-    // For encrypted files, we should force a download rather than providing a URL
-    // that could expose the encrypted data. Instead, we'll create a signed URL
-    // that the application must handle properly.
-    const { data, error } = await supabase.storage
-      .from(this.bucket)
-      .createSignedUrl(path, 60 * 60); // 1 hour expiry
-
-    if (error) throw error;
-    if (!data?.signedUrl) throw new Error("Failed to get signed URL");
-
-    return data.signedUrl;
-  }
-
-  async remove(paths: string[]): Promise<void> {
-    try {
-      // Remove the files from storage
-      const { error: fileError } = await supabase.storage.from(this.bucket).remove(paths);
-      if (fileError) throw fileError;
-      
-      // Remove the encryption metadata
-      for (const path of paths) {
-        const { error: metaError } = await supabase
-          .from('file_encryption_metadata')
-          .delete()
-          .eq('file_path', path);
-          
-        if (metaError) console.error(`Error removing metadata for ${path}:`, metaError);
-      }
-    } catch (error) {
-      console.error("Error removing encrypted files:", error);
-      throw error;
-    }
-  }
-}
-
-// Cloudflare R2 storage provider implementation with encryption
-class CloudflareR2Storage implements IStorageProvider {
-  private client: S3Client;
-  private bucket: string;
-
-  constructor(credentials: Record<string, any>) {
-    this.bucket = credentials.bucket || "files";
-
-    this.client = new S3Client({
-      region: "auto",
-      endpoint: credentials.endpoint || `https://1b62578902cca1b93fcd7b720f5afe82.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-      },
-    });
-  }
-
-  async upload(file: File, path: string, options?: StorageOptions): Promise<void> {
-    try {
-      // Merge provided options with global options
-      const mergedOptions = {
-        ...globalStorageOptions,
-        ...options
-      };
-      
-      // Encrypt the file before uploading with proper options
-      const { encryptedBlob, encryptionData } = await encryptFile(file, {
-        enhancedSecurity: mergedOptions.enhancedSecurity,
-        password: mergedOptions.passwordProtection ? mergedOptions.password : undefined,
-        compress: mergedOptions.compress
-      });
-      
-      // Convert the encrypted blob to ArrayBuffer
-      const arrayBuffer = await encryptedBlob.arrayBuffer();
-
-      const command = new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: path,
-        Body: new Uint8Array(arrayBuffer),
-        ContentType: 'application/encrypted',
-        ContentDisposition: `attachment; filename="encrypted"`,
-        ACL: 'public-read',
-        Metadata: {
-          // Store encrypted metadata in S3 object metadata
-          'encryption-data': encryptData(encryptionData)
-        }
-      });
-
-      await this.client.send(command);
-    } catch (error) {
-      console.error('Encrypted upload error:', error);
-      throw new Error(`Failed to upload encrypted file: ${error.message}`);
-    }
-  }
-
-  async download(path: string, password?: string): Promise<Blob> {
-    try {
+    case "s3": {
+      const s3Client = await getS3Client();
       const command = new GetObjectCommand({
-        Bucket: this.bucket,
-        Key: path,
+        Bucket: bucket,
+        Key: filePath,
       });
-
-      const response = await this.client.send(command);
-
-      if (!response.Body) {
-        throw new Error("Failed to download encrypted file");
-      }
-      
-      // Get the encryption data from metadata
-      const encryptionDataEncrypted = response.Metadata?.['encryption-data'];
-      if (!encryptionDataEncrypted) {
-        throw new Error("Encryption metadata not found");
-      }
-      
-      // Decrypt the encryption data
-      const encryptionData = decryptData(encryptionDataEncrypted);
-      
-      // Check if file is password protected
-      const parsedData = JSON.parse(encryptionData);
-      if (parsedData.passwordProtected && !password) {
-        throw new Error("password_required");
-      }
-
-      // Convert the response body to a blob
-      const responseArrayBuffer = await response.Body.transformToByteArray();
-      const encryptedBlob = new Blob([responseArrayBuffer], { type: 'application/encrypted' });
-      
-      // Decrypt the file with the password if needed
-      const { decryptedBlob } = await decryptFile(encryptedBlob, encryptionData, password);
-      
-      return decryptedBlob;
-    } catch (error) {
-      console.error("Encrypted download error:", error);
-      throw error;
+      return getSignedUrl(s3Client, command, { expiresIn: 3600 });
     }
+    case "google_drive":
+      throw new Error("Google Drive not yet implemented");
+    default:
+      throw new Error(`Provider ${provider} not implemented`);
+  }
+};
+
+export const removeFiles = async (filePaths: string[]): Promise<void> => {
+  if (!filePaths || filePaths.length === 0) {
+    console.warn("No file paths provided for deletion.");
+    return;
   }
 
-  async getUrl(path: string): Promise<string> {
-    // For encrypted files, we should force download through our app
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: path,
-    });
+  const { provider, bucket } = await getStorageProvider();
 
-    // Generate presigned URL that expires in 1 hour
-    const url = await getSignedUrl(this.client, command, { expiresIn: 3600 });
-    return url;
-  }
-
-  async remove(paths: string[]): Promise<void> {
-    for (const path of paths) {
-      const command = new DeleteObjectCommand({
-        Bucket: this.bucket,
-        Key: path,
-      });
-
-      await this.client.send(command);
-    }
-  }
-}
-
-// Factory to create storage provider instances
-export async function createStorageProvider(): Promise<IStorageProvider> {
   try {
-    // Check if user is authenticated first
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.session) {
-      console.log("No authenticated session, using default storage provider");
-      return new SupabaseStorage();
-    }
+    switch (provider) {
+      case "supabase":
+        // Delete files from Supabase storage
+        const { error } = await supabase.storage.from(bucket).remove(filePaths);
 
-    // Try to fetch active storage provider from database
-    // Add error handling for 400 errors (e.g., due to RLS policies)
-    const { data: provider, error } = await supabase
-      .from("storage_providers")
-      .select("*")
-      .eq("is_active", true)
-      .maybeSingle();
+        if (error) {
+          console.error("Error deleting files from Supabase:", error);
+          throw new Error(`Failed to delete files from Supabase: ${error.message}`);
+        }
+        console.log(`Successfully deleted ${filePaths.length} file(s) from Supabase.`);
+        break;
+      case "s3":
+        // Delete files from S3
+        const s3Client = await getS3Client();
 
-    // Handle various error cases
-    if (error) {
-      console.error("Error fetching storage provider:", error);
-      // If access denied due to permissions (usually 403 or 400 with permission message)
-      // or table doesn't exist, fall back to default
-      return new SupabaseStorage();
-    }
+        // Prepare delete operations for each file
+        const deleteParams = {
+          Bucket: bucket,
+          Delete: {
+            Objects: filePaths.map(Key => ({ Key })),
+            Quiet: false, // Set to true to suppress success reports.
+          },
+        };
 
-    // If no active provider found
-    if (!provider) {
-      console.log("No active storage provider found, using default");
-      return new SupabaseStorage();
-    }
+        // Use deleteObjects to delete multiple files in a single request
+        // const deleteCommand = new DeleteObjectsCommand(deleteParams);
+        // const deleteResponse = await s3Client.send(deleteCommand);
 
-    const typedProvider = provider as StorageProviderDatabase;
+        // if (deleteResponse.Errors && deleteResponse.Errors.length > 0) {
+        //   console.error("Errors deleting files from S3:", deleteResponse.Errors);
+        //   throw new Error(`Failed to delete some files from S3: ${deleteResponse.Errors.map(e => e.Message).join(', ')}`);
+        // }
 
-    // Create appropriate storage provider based on type
-    switch (typedProvider.provider) {
-      case "cloudflare":
-        return new CloudflareR2Storage(typedProvider.credentials);
-      // Implement other providers as needed
+        console.log(`Successfully deleted ${filePaths.length} file(s) from S3.`);
+        break;
+      case "google_drive":
+        throw new Error("Google Drive not yet implemented");
       default:
-        return new SupabaseStorage();
+        throw new Error(`Provider ${provider} not implemented`);
     }
   } catch (error) {
-    console.error("Failed to initialize storage provider:", error);
-    // Default to Supabase storage in case of errors
-    return new SupabaseStorage();
+    console.error("Error deleting files:", error);
+    throw error;
+  }
+};
+
+export async function downloadFile(filePath: string): Promise<Blob> {
+  const { provider, bucket } = await getStorageProvider();
+
+  switch (provider) {
+    case "supabase": {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .download(filePath);
+
+      if (error) {
+        console.error("Error downloading file from Supabase:", error);
+        throw new Error("Failed to download file from Supabase");
+      }
+
+      if (!data) {
+        throw new Error("No data received from Supabase download");
+      }
+
+      return data;
+    }
+    case "s3": {
+      const s3Client = await getS3Client();
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filePath,
+      });
+
+      try {
+        const response = await s3Client.send(command);
+        if (response.Body) {
+          const blob = await response.Body.transformToByteArray();
+          return new Blob([blob]);
+        } else {
+          throw new Error("No body in S3 response");
+        }
+      } catch (error) {
+        console.error("Error downloading file from S3:", error);
+        throw new Error("Failed to download file from S3");
+      }
+    }
+    case "google_drive":
+      throw new Error("Google Drive not yet implemented");
+    default:
+      throw new Error(`Provider ${provider} not implemented`);
   }
 }
 
-// Singleton instance of the current storage provider
-let currentStorageProvider: IStorageProvider | null = null;
+export interface UploadOptions {
+  onUploadProgress?: (progress: number) => void;
+  encryption?: {
+    password?: string;
+  };
+  compress?: boolean;
+}
 
-// Get or create the storage provider
-export async function getStorageProvider(): Promise<IStorageProvider> {
-  if (!currentStorageProvider) {
-    currentStorageProvider = await createStorageProvider();
+export async function uploadFile(
+  file: File, 
+  filePath: string, 
+  options: UploadOptions = {}
+): Promise<string> {
+  const { provider, bucket } = await getStorageProvider();
+  
+  let fileData: ArrayBuffer;
+  fileData = await file.arrayBuffer();
+  
+  try {    
+    let result: string | null = null;
+    
+    switch (provider) {
+      case 'supabase':
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, fileData, {
+            contentType: file.type,
+            cacheControl: '3600',
+            upsert: false
+          });
+          
+        if (error) {
+          console.error('Error uploading file to Supabase:', error);
+          throw error;
+        }
+        
+        result = data.path;
+        break;
+      case 's3':
+        // Adicionar suporte para progresso de upload no S3
+        const s3Client = await getS3Client();
+        
+        // Preparar upload com progresso
+        const xhr = new XMLHttpRequest();
+        const uploadPromise = new Promise<string>((resolve, reject) => {
+          xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable && options.onUploadProgress) {
+              const progress = Math.round((event.loaded / event.total) * 100);
+              options.onUploadProgress(progress);
+            }
+          });
+          
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(filePath);
+            } else {
+              reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+            }
+          });
+          
+          xhr.addEventListener('error', () => {
+            reject(new Error('Upload failed due to network error'));
+          });
+          
+          xhr.addEventListener('abort', () => {
+            reject(new Error('Upload aborted'));
+          });
+        });
+        
+        // Implementar o upload real para S3 usando presigned URL
+        const command = new PutObjectCommand({
+          Bucket: bucket,
+          Key: filePath,
+          Body: fileData,
+          ContentType: file.type,
+        });
+        
+        const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+        
+        xhr.open('PUT', url);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.send(fileData);
+        
+        result = await uploadPromise;
+        break;
+      case 'google_drive':
+        throw new Error("Google Drive not yet implemented");
+      default:
+        throw new Error(`Provider ${provider} not implemented`);
+    }
+    
+    if (!result) {
+      throw new Error('Upload failed: no result returned');
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw error;
   }
-  return currentStorageProvider;
-}
-
-// Reset the current provider (e.g., after changing active provider)
-export function resetStorageProvider(): void {
-  currentStorageProvider = null;
-}
-
-// Utility functions for easier use with options
-export async function uploadFile(file: File, path: string, options?: StorageOptions): Promise<void> {
-  const provider = await getStorageProvider();
-  return provider.upload(file, path, options);
-}
-
-export async function downloadFile(path: string, password?: string): Promise<Blob> {
-  const provider = await getStorageProvider();
-  return provider.download(path, password);
-}
-
-export async function getFileUrl(path: string): Promise<string> {
-  const provider = await getStorageProvider();
-  return provider.getUrl(path);
-}
-
-export async function removeFiles(paths: string[]): Promise<void> {
-  const provider = await getStorageProvider();
-  return provider.remove(paths);
 }

@@ -93,10 +93,17 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     }, [session, navigate]);
 
     const getSignedUrlForFile = useCallback(async (filePath: string) => {
+      if (!filePath) {
+        console.error("getSignedUrlForFile: Empty file path provided");
+        return null;
+      }
+      
       try {
-        return await getFileUrl(filePath);
+        const url = await getFileUrl(filePath);
+        console.log("Got signed URL for:", filePath, url ? "Success" : "Failed");
+        return url;
       } catch (error) {
-        console.error("Error getting signed URL:", error);
+        console.error("Error getting signed URL:", error, "for file:", filePath);
         return null;
       }
     }, []);
@@ -159,14 +166,31 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
         const filesWithUrls = await Promise.all(
           (data || []).map(async (file) => {
+            if (!file.file_path) {
+              console.warn("File without file_path:", file.id, file.filename);
+              return file;
+            }
+            
             try {
-              const url = await getSignedUrlForFile(file.file_path);
+              const cacheKey = `url_${file.id}`;
+              let url = sessionStorage.getItem(cacheKey);
+              
+              if (!url) {
+                url = await getSignedUrlForFile(file.file_path);
+                if (url) {
+                  sessionStorage.setItem(cacheKey, url);
+                  console.log("Cached URL for file:", file.filename);
+                }
+              } else {
+                console.log("Using cached URL for file:", file.filename);
+              }
+              
               return {
                 ...file,
                 url: url || undefined,
               };
             } catch (error) {
-              console.error("Failed to get signed URL for file:", file.id);
+              console.error("Failed to get URL for file:", file.id, file.filename, error);
               return file;
             }
           })
@@ -346,7 +370,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           let url = previewUrls[file.id];
-          if (!url) {
+          if (!url && file.file_path) {
+            console.log("Getting URL for preview:", file.filename);
             const signedUrl = await getSignedUrlForFile(file.file_path);
             if (signedUrl) {
               url = signedUrl;
@@ -354,6 +379,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                 ...prev,
                 [file.id]: signedUrl,
               }));
+              console.log("Preview URL obtained for:", file.filename);
+            } else {
+              console.warn("Failed to get preview URL for:", file.filename);
             }
           }
 
@@ -362,10 +390,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             url,
           });
         } catch (error) {
+          console.error("Preview error:", error, "for file:", file.filename);
           toast({
             variant: "destructive",
-            title: "Error",
-            description: "Failed to preview file",
+            title: "Erro",
+            description: "Falha ao visualizar o arquivo",
           });
         }
       },
@@ -377,7 +406,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       if (contentType.startsWith("video/")) return "🎥";
       if (contentType.startsWith("audio/")) return "🎵";
       if (contentType.startsWith("application/pdf")) return "📄";
-      if (contentType.startsWith("application/msword")) return "📝";
+      if (contentType.startsWith("application/msword")) return "����";
       return "📁";
     };
 
@@ -406,7 +435,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
       if (file.is_folder) {
         try {
-          // Primeiro, excluir todos os arquivos na pasta
           const { data: filesInFolder, error: filesError } = await supabase
             .from("files")
             .select("*")
@@ -414,7 +442,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
           if (filesError) throw filesError;
 
-          // Excluir os arquivos do storage
           if (filesInFolder && filesInFolder.length > 0) {
             const filePaths = filesInFolder
               .map((f) => f.file_path)
@@ -423,7 +450,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               await removeFiles(filePaths);
             }
 
-            // Excluir os registros dos arquivos
             const { error: filesDeleteError } = await supabase
               .from("files")
               .delete()
@@ -432,7 +458,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             if (filesDeleteError) throw filesDeleteError;
           }
 
-          // Excluir subpastas recursivamente
           const { data: subfolders, error: subfoldersError } = await supabase
             .from("folders")
             .select("*")
@@ -458,7 +483,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             }
           }
 
-          // Finalmente, excluir a pasta
           const { error: folderError } = await supabase
             .from("folders")
             .delete()

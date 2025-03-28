@@ -1,3 +1,4 @@
+
 import React, { forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,7 +13,7 @@ import { FileData } from "@/types";
 import { formatFileSize, getFileIcon, formatDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
-import { Star } from "lucide-react";
+import { Star, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileContextMenu } from "./FileContextMenu";
 
@@ -152,13 +153,17 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          {file.content_type.startsWith("image/") &&
-                          file.url ? (
+                          {file.content_type.startsWith("image/") && file.url ? (
                             <div className="w-10 h-10 rounded-lg overflow-hidden border border-border/50 bg-background/50 dark:bg-black/50">
                               <img
                                 src={file.url}
                                 alt={file.filename}
                                 className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+                                onError={(e) => {
+                                  console.log("Image failed to load:", file.filename);
+                                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                                  (e.target as HTMLImageElement).className = "w-full h-full object-contain p-1";
+                                }}
                               />
                             </div>
                           ) : (
