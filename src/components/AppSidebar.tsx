@@ -305,14 +305,11 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                           size={isCollapsed ? "icon" : "default"}
                           className={cn(
                             "w-full justify-start gap-3 transition-all duration-200",
-                            "hover:bg-accent/50 hover:text-accent-foreground",
                             "group relative overflow-hidden",
-                            "data-[active=true]:bg-accent/70 data-[active=true]:text-accent-foreground",
-                            isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3",
-                            location.pathname + location.search === item.path &&
-                              "bg-accent/50 text-accent-foreground font-medium"
+                            isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3"
                           )}
                           onClick={item.onClick || (() => navigate(item.path!))}
+                          data-sidebar="menu-button"
                           data-active={
                             location.pathname + location.search === item.path
                           }
@@ -320,8 +317,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                           <item.icon
                             className={cn(
                               "h-4 w-4 shrink-0",
-                              "transition-transform duration-200",
-                              "group-hover:scale-105",
                               location.pathname + location.search === item.path
                                 ? "text-accent-foreground"
                                 : "text-muted-foreground"
@@ -337,7 +332,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                               {item.title}
                             </motion.span>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 dark:from-accent/0 dark:via-accent/10 dark:to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </Button>
                       </TooltipTrigger>
                       {isCollapsed && (
@@ -366,11 +360,10 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                 className={cn(
                   "w-full gap-3 h-auto p-2",
                   isCollapsed ? "justify-center" : "justify-start",
-                  "hover:bg-accent/10 dark:hover:bg-accent/20 group",
-                  "transition-all duration-200",
-                  "relative overflow-hidden",
+                  "group relative overflow-hidden",
                   "ring-1 ring-border/10 hover:ring-border/20 dark:ring-border/5 dark:hover:ring-border/30"
                 )}
+                data-sidebar="menu-button"
               >
                 <Avatar
                   className={cn(
@@ -400,7 +393,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                     </span>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -449,7 +441,8 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                 <DropdownMenuGroup className="p-2">
                   <DropdownMenuItem
                     onClick={() => navigate("/settings")}
-                    className="gap-3 p-3 cursor-pointer group hover:bg-accent/50 transition-all duration-200 rounded-lg"
+                    className="gap-3 p-3 cursor-pointer group transition-all duration-200 rounded-lg"
+                    data-sidebar="menu-button"
                   >
                     <div className="relative">
                       <Settings className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
@@ -477,7 +470,8 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
               >
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="gap-3 p-3 cursor-pointer text-destructive focus:text-destructive group hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-all duration-200 rounded-lg"
+                  className="gap-3 p-3 cursor-pointer text-destructive focus:text-destructive group transition-all duration-200 rounded-lg"
+                  data-sidebar="menu-button"
                 >
                   <div className="relative">
                     <LogOut className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
