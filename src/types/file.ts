@@ -1,3 +1,4 @@
+
 export interface FileData {
   id: string;
   filename: string;
@@ -14,6 +15,7 @@ export interface FileData {
   is_folder?: boolean;
   name?: string;
   parent_id?: string | null;
+  provider_id?: string; // Add this to track which provider stores the file
 }
 
 export interface FolderData {
@@ -22,4 +24,10 @@ export interface FolderData {
   parent_id: string | null;
   user_id: string;
   created_at: string;
+}
+
+// Define file type mappings
+export interface FileTypeMapping {
+  fileType: string; // MIME type or extension pattern
+  providerId: string; // Which provider to use
 }
