@@ -54,6 +54,53 @@ const getS3Client = async () => {
   return s3Client;
 };
 
+// Create a custom function to get an S3 client for any S3-compatible provider
+const getS3CompatibleClient = async (providerName: string) => {
+  const { data, error } = await supabase
+    .from("storage_providers")
+    .select("*")
+    .eq("name", providerName)
+    .single();
+
+  if (error) {
+    console.error(`Error fetching ${providerName} configuration:`, error);
+    throw new Error(`Failed to fetch ${providerName} configuration`);
+  }
+
+  if (!data) {
+    throw new Error(`${providerName} configuration not found`);
+  }
+
+  // Parse credentials from the JSON field
+  let credentials;
+  try {
+    credentials = typeof data.credentials === 'string' 
+      ? JSON.parse(data.credentials) 
+      : data.credentials;
+  } catch (error) {
+    console.error(`Error parsing ${providerName} credentials:`, error);
+    throw new Error(`Failed to parse ${providerName} credentials`);
+  }
+
+  // Create an S3 client with the appropriate configuration for the provider
+  const clientConfig: any = {
+    region: credentials.region || 'auto',
+    credentials: {
+      accessKeyId: credentials.accessKeyId,
+      secretAccessKey: credentials.secretAccessKey,
+    }
+  };
+
+  // Add endpoint if available
+  if (credentials.endpoint) {
+    clientConfig.endpoint = credentials.endpoint;
+    // Force path style access for Cloudflare R2 and some other providers
+    clientConfig.forcePathStyle = true;
+  }
+
+  return new S3Client(clientConfig);
+};
+
 const getStorageProvider = async () => {
   try {
     const { data, error } = await supabase
@@ -120,9 +167,13 @@ export const getFileUrl = async (filePath: string): Promise<string> => {
         return getSignedUrl(s3Client, command, { expiresIn: 3600 });
       }
       case "cloudflare": {
-        // Handle cloudflare specific logic - using same logic as supabase for now
-        const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-        return data.publicUrl;
+        // Use the S3-compatible client for Cloudflare R2
+        const client = await getS3CompatibleClient("cloudflare");
+        const command = new GetObjectCommand({
+          Bucket: bucket,
+          Key: filePath,
+        });
+        return getSignedUrl(client, command, { expiresIn: 3600 });
       }
       case "google_drive":
         throw new Error("Google Drive not yet implemented");
@@ -155,15 +206,13 @@ export const removeFiles = async (filePaths: string[]): Promise<void> => {
         }
         console.log(`Successfully deleted ${filePaths.length} file(s) from Supabase.`);
         break;
-      case "s3":
-      case "cloudflare":
-        // Delete files from S3 or Cloudflare (they use similar S3-compatible APIs)
+      case "s3": {
+        // Delete files from S3
         const client = await getS3Client();
 
         // Process deletions one by one
         for (const filePath of filePaths) {
           try {
-            // Fixed: Using DeleteObjectCommand correctly
             const deleteCommand = new DeleteObjectCommand({
               Bucket: bucket,
               Key: filePath,
@@ -176,6 +225,27 @@ export const removeFiles = async (filePaths: string[]): Promise<void> => {
         }
         console.log(`Successfully processed deletion of ${filePaths.length} file(s).`);
         break;
+      }
+      case "cloudflare": {
+        // Use the S3-compatible client for Cloudflare
+        const client = await getS3CompatibleClient("cloudflare");
+
+        // Process deletions one by one
+        for (const filePath of filePaths) {
+          try {
+            const deleteCommand = new DeleteObjectCommand({
+              Bucket: bucket,
+              Key: filePath,
+            });
+            await client.send(deleteCommand);
+            console.log(`Deleted file: ${filePath}`);
+          } catch (error) {
+            console.error(`Error deleting file ${filePath}:`, error);
+          }
+        }
+        console.log(`Successfully processed deletion of ${filePaths.length} file(s).`);
+        break;
+      }
       case "google_drive":
         throw new Error("Google Drive not yet implemented");
       default:
@@ -211,8 +281,7 @@ export async function downloadFile(filePath: string): Promise<Blob> {
 
       return data;
     }
-    case "s3":
-    case "cloudflare": {
+    case "s3": {
       const s3Client = await getS3Client();
       const command = new GetObjectCommand({
         Bucket: bucket,
@@ -228,8 +297,28 @@ export async function downloadFile(filePath: string): Promise<Blob> {
           throw new Error("No body in S3 response");
         }
       } catch (error) {
-        console.error("Error downloading file from S3/Cloudflare:", error);
+        console.error("Error downloading file from S3:", error);
         throw new Error("Failed to download file");
+      }
+    }
+    case "cloudflare": {
+      const client = await getS3CompatibleClient("cloudflare");
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filePath,
+      });
+
+      try {
+        const response = await client.send(command);
+        if (response.Body) {
+          const blob = await response.Body.transformToByteArray();
+          return new Blob([blob]);
+        } else {
+          throw new Error("No body in Cloudflare R2 response");
+        }
+      } catch (error) {
+        console.error("Error downloading file from Cloudflare R2:", error);
+        throw new Error("Failed to download file from Cloudflare R2");
       }
     }
     case "google_drive":
@@ -278,58 +367,66 @@ export async function uploadFile(
         
         result = data.path;
         break;
-      case 's3':
-      case 'cloudflare':
-        // Implement S3/Cloudflare upload with progress tracking
+      case 's3': {
+        // Implement S3 upload with progress tracking
         const s3Client = await getS3Client();
-        
-        // Prepare upload with progress
-        const xhr = new XMLHttpRequest();
-        const uploadPromise = new Promise<string>((resolve, reject) => {
-          xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable && options.onUploadProgress) {
-              const progress = Math.round((event.loaded / event.total) * 100);
-              options.onUploadProgress(progress);
-            }
-          });
-          
-          xhr.addEventListener('load', () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve(filePath);
-            } else {
-              reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-            }
-          });
-          
-          xhr.addEventListener('error', () => {
-            reject(new Error('Upload failed due to network error'));
-          });
-          
-          xhr.addEventListener('abort', () => {
-            reject(new Error('Upload aborted'));
-          });
-        });
         
         // Fix: Convert ArrayBuffer to Uint8Array for AWS SDK
         const buffer = new Uint8Array(fileData);
         
-        // Generate pre-signed URL for upload
         const command = new PutObjectCommand({
           Bucket: bucket,
           Key: filePath,
           ContentType: file.type,
-          Body: buffer, // Fixed: using buffer (Uint8Array) instead of ArrayBuffer
+          Body: buffer,
         });
         
-        // For direct upload without XHR (alternative approach)
         try {
-          await s3Client.send(command);
+          if (options.onUploadProgress) {
+            // Since AWS SDK doesn't have native progress tracking, we'll simulate it
+            options.onUploadProgress(10);
+            await s3Client.send(command);
+            options.onUploadProgress(100);
+          } else {
+            await s3Client.send(command);
+          }
           result = filePath;
         } catch (uploadError) {
           console.error('Error during S3 upload:', uploadError);
           throw new Error('Failed to upload file to S3');
         }
         break;
+      }
+      case 'cloudflare': {
+        // Use the S3-compatible client for Cloudflare R2
+        const client = await getS3CompatibleClient("cloudflare");
+        
+        // Convert ArrayBuffer to Uint8Array for AWS SDK
+        const buffer = new Uint8Array(fileData);
+        
+        const command = new PutObjectCommand({
+          Bucket: bucket,
+          Key: filePath,
+          ContentType: file.type,
+          Body: buffer,
+        });
+        
+        try {
+          if (options.onUploadProgress) {
+            // Simulate progress since Cloudflare R2 doesn't have native progress tracking
+            options.onUploadProgress(10);
+            await client.send(command);
+            options.onUploadProgress(100);
+          } else {
+            await client.send(command);
+          }
+          result = filePath;
+        } catch (uploadError) {
+          console.error('Error during Cloudflare R2 upload:', uploadError);
+          throw new Error('Failed to upload file to Cloudflare R2');
+        }
+        break;
+      }
       case 'google_drive':
         throw new Error("Google Drive not yet implemented");
       default:
