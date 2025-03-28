@@ -451,7 +451,8 @@
       "anywhere": {
         "title": "Access Anywhere",
         "description": "Have your files always at hand on any device with our responsive interface and automatic synchronization"
-      }
+      },
+      "badge": "Functionality"
     },
     "interface": {
       "title": "Modern and functional interface",
@@ -522,7 +523,7 @@
     },
     "version": {
       "new": "New",
-      "released": "Version 2.0 released"
+      "released": "Beta released"
     }
   }
 }

@@ -3,38 +3,23 @@ import { motion, useInView } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Shield, FileText, Share2, Smartphone } from "lucide-react";
 
+// Simplified feature definitions
 const features = [
   {
     icon: <Shield className="h-10 w-10" />,
     key: "security",
-    color: "from-blue-500/30 to-indigo-500/30",
-    shadowColor: "shadow-blue-500/20",
-    iconBg: "bg-blue-500/10",
-    borderColor: "group-hover:border-blue-500/50",
   },
   {
     icon: <FileText className="h-10 w-10" />,
     key: "organization",
-    color: "from-green-500/30 to-emerald-500/30",
-    shadowColor: "shadow-green-500/20",
-    iconBg: "bg-green-500/10",
-    borderColor: "group-hover:border-green-500/50",
   },
   {
     icon: <Share2 className="h-10 w-10" />,
     key: "sharing",
-    color: "from-purple-500/30 to-pink-500/30",
-    shadowColor: "shadow-purple-500/20",
-    iconBg: "bg-purple-500/10",
-    borderColor: "group-hover:border-purple-500/50",
   },
   {
     icon: <Smartphone className="h-10 w-10" />,
     key: "anywhere",
-    color: "from-amber-500/30 to-orange-500/30",
-    shadowColor: "shadow-amber-500/20",
-    iconBg: "bg-amber-500/10",
-    borderColor: "group-hover:border-amber-500/50",
   },
 ];
 
@@ -72,32 +57,16 @@ export const Features = forwardRef<HTMLElement>((props, ref) => {
   const isTitleInView = useInView(titleRef, { once: true, amount: 0.3 });
   const isFeaturesInView = useInView(featuresRef, { once: true, amount: 0.1 });
 
-  // Título com animação de digitação
+  // Simplified title animation with smoother transitions
   const titleText = t("landing.features.title");
   const titleVariants = {
-    hidden: { opacity: 1 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.025,
-      },
-    },
-  };
-
-  const letterVariants = {
-    hidden: {
-      opacity: 0,
-      y: 10,
-      filter: "blur(2px)",
-    },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
       transition: {
-        type: "spring",
-        damping: 12,
-        stiffness: 120,
+        duration: 1,
+        ease: "easeOut", // Simpler easing function to prevent flickering
       },
     },
   };
@@ -106,118 +75,57 @@ export const Features = forwardRef<HTMLElement>((props, ref) => {
     <section
       ref={ref}
       id="features"
-      className="py-24 md:py-32 bg-gradient-to-b from-background via-muted/20 to-background relative overflow-hidden"
+      className="py-24 md:py-32 bg-background relative overflow-hidden"
     >
-      {/* Background decoration com efeitos melhorados */}
+      {/* Subtle monochromatic background elements - fixed opacity values */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute w-[600px] h-[600px] -top-[300px] -right-[150px] bg-gradient-to-br from-primary/5 to-accent/5 rounded-full blur-[120px] opacity-70"></div>
-        <div className="absolute w-[600px] h-[600px] -bottom-[300px] -left-[150px] bg-gradient-to-tr from-secondary/5 to-primary/5 rounded-full blur-[120px] opacity-70"></div>
-        <div className="absolute w-[400px] h-[400px] top-1/2 left-1/3 bg-gradient-to-r from-accent/5 to-secondary/5 rounded-full blur-[100px] opacity-60"></div>
+        <div className="absolute w-[800px] h-[800px] -top-[400px] -right-[200px] bg-primary/5 rounded-full blur-[150px] opacity-30"></div>
+        <div className="absolute w-[600px] h-[600px] -bottom-[300px] -left-[150px] bg-primary/5 rounded-full blur-[120px] opacity-20"></div>
 
-        {/* Linha decorativa refinada entre seções */}
-        <div className="absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+        {/* Minimal decorative line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div
-          ref={titleRef}
-          className="text-center max-w-3xl mx-auto mb-20"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="inline-flex items-center rounded-full border px-4 py-1.5 mb-8 bg-background/60 backdrop-blur-md border-primary/20 shadow-sm"
-            initial={{ opacity: 0, y: -10 }}
-            animate={isTitleInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.3 }}
-          >
-            <span className="text-xs font-medium text-primary">
-              Funcionalidades
+        <div ref={titleRef} className="text-center max-w-3xl mx-auto mb-20">
+          {/* Modern minimal badge */}
+          <div className="inline-flex items-center rounded-full px-4 py-1.5 mb-8 border border-primary/10 bg-primary/5">
+            <span className="text-xs font-medium text-primary/80">
+              {t("landing.features.badge")}
             </span>
-          </motion.div>
+          </div>
 
-          <motion.h2
-            className="text-3xl md:text-5xl font-bold mb-8 tracking-tight"
-            variants={titleVariants}
-            initial="hidden"
-            animate={isTitleInView ? "visible" : "hidden"}
-          >
-            {titleText.split("").map((char, index) => (
-              <motion.span
-                key={index}
-                className="inline-block"
-                variants={letterVariants}
-              >
-                {char === " " ? "\u00A0" : char}
-              </motion.span>
-            ))}
-          </motion.h2>
+          {/* Clean, modern heading */}
+          <h2 className="text-3xl md:text-5xl font-bold mb-8 tracking-tight">
+            {titleText}
+          </h2>
 
-          <motion.p
-            className="text-lg text-muted-foreground max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 10 }}
-            animate={isTitleInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t("landing.features.description")}
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
-        <motion.div
+        <div
           ref={featuresRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          animate={isFeaturesInView ? "visible" : "hidden"}
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
         >
           {features.map((feature, index) => (
-            <motion.div
+            <div
               key={index}
-              className={`group bg-background/80 backdrop-blur-md rounded-xl p-7 md:p-8 border border-muted/60 shadow-lg ${feature.shadowColor} hover:shadow-xl transition-all duration-500 hover:-translate-y-1`}
-              variants={featureVariants}
-              whileHover={{
-                scale: 1.02,
-                transition: { duration: 0.2 },
-              }}
+              className="group bg-background border border-primary/10 rounded-xl p-8 shadow-sm hover:shadow-md transition-all duration-500 ease-out hover:-translate-y-1"
             >
               <div className="flex gap-6">
+                {/* Modern monochromatic icon container */}
                 <div
-                  className={`relative h-16 w-16 shrink-0 rounded-xl flex items-center justify-center text-primary ${feature.iconBg} overflow-hidden group-hover:scale-110 transition-all duration-500`}
+                  className={`relative h-16 w-16 shrink-0 rounded-xl flex items-center justify-center text-primary bg-primary/5 overflow-hidden transition-all duration-500`}
                 >
-                  {/* Gradient glow effect */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                  ></div>
+                  {/* Subtle glow effect - smoother transition */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 bg-primary/10 rounded-xl"></div>
 
-                  {/* Animated circles */}
-                  <motion.div
-                    className="absolute inset-0 rounded-xl"
-                    animate={{
-                      background: [
-                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)",
-                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)",
-                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)",
-                      ],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 3,
-                      ease: "easeInOut",
-                    }}
-                  />
-
-                  {/* Icon with subtle motion */}
-                  <motion.div
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 4,
-                      ease: "easeInOut",
-                    }}
-                  >
+                  {/* Static icon with hover effect to eliminate animation flickering */}
+                  <div className="text-primary opacity-80 group-hover:opacity-100 transition-opacity duration-500">
                     {feature.icon}
-                  </motion.div>
+                  </div>
                 </div>
 
                 <div className="flex-1">
@@ -231,15 +139,11 @@ export const Features = forwardRef<HTMLElement>((props, ref) => {
                 </div>
               </div>
 
-              {/* Bottom border animation */}
-              <motion.div
-                className={`h-[2px] w-0 bg-gradient-to-r ${feature.color} absolute bottom-0 left-0 right-0 ${feature.borderColor} opacity-0 group-hover:opacity-100 group-hover:w-full transition-all duration-500`}
-                initial={{ width: 0 }}
-                whileHover={{ width: "100%" }}
-              />
-            </motion.div>
+              {/* Subtle bottom border animation - smoother transition */}
+              <div className="h-[1px] w-0 bg-primary/20 absolute bottom-0 left-0 opacity-0 group-hover:opacity-100 group-hover:w-full transition-all duration-700 ease-in-out"></div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

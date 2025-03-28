@@ -7,7 +7,6 @@ import {
   Star,
   Settings,
   LogOut,
-  Shield,
   Upload,
   FolderPlus,
   Sun,
@@ -189,7 +188,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
         <SidebarHeader className="border-b border-border/5 p-4 space-y-4">
           <motion.div layout className="flex items-center gap-3">
             <div className="relative">
-              <Shield className="h-6 w-6 text-primary" />
+              <img src="/drive.svg" alt="Orbyx Drive" className="h-6 w-6" />
               <div className="absolute inset-0 animate-pulse-slow blur-md bg-primary/30 rounded-full" />
             </div>
             <AnimatePresence>
@@ -504,8 +503,8 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
         onOpenChange={setIsCreateFolderOpen}
         onCreateFolder={handleCreateFolder}
       />
-      
-      <FileUpload 
+
+      <FileUpload
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
         onSuccess={() => {

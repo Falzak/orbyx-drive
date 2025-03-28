@@ -428,7 +428,8 @@
       "anywhere": {
         "title": "Acesso em Qualquer Lugar",
         "description": "Tenha seus arquivos sempre à mão em qualquer dispositivo com nossa interface responsiva e sincronização automática"
-      }
+      },
+      "badge": "Funcionalidades"
     },
     "interface": {
       "title": "Interface moderna e funcional",
@@ -499,7 +500,7 @@
     },
     "version": {
       "new": "Novidade",
-      "released": "Versão 2.0 lançada"
+      "released": "Beta lançada"
     }
   },
   "googleDrive": {

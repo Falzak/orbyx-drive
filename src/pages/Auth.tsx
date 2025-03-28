@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,10 @@ export default function Auth() {
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [trustedDevices, setTrustedDevices] = useLocalStorage<string[]>("trusted_devices", []);
+  const [trustedDevices, setTrustedDevices] = useLocalStorage<string[]>(
+    "trusted_devices",
+    []
+  );
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +76,7 @@ export default function Auth() {
         data.user
       ) {
         const userId = data.user.id;
-        
+
         // If this is a trusted device, try to auto-verify 2FA
         if (trustedDevices.includes(userId)) {
           try {
@@ -110,7 +112,7 @@ export default function Auth() {
           } catch (error) {
             console.error("Error auto-verifying trusted device:", error);
             // If auto-verification fails, remove from trusted devices and show 2FA screen
-            setTrustedDevices(trustedDevices.filter(id => id !== userId));
+            setTrustedDevices(trustedDevices.filter((id) => id !== userId));
             navigate("/two-factor");
             return;
           }
@@ -291,7 +293,35 @@ export default function Auth() {
         <Card className="overflow-hidden border border-border/40 shadow-xl bg-card/90 backdrop-blur">
           <CardHeader className="pb-4">
             <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Lock className="h-6 w-6 text-primary" />
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 108 72"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-primary"
+              >
+                <rect
+                  x="28.7276"
+                  y="57.168"
+                  width="46.0778"
+                  height="14.0931"
+                  fill="currentColor"
+                />
+                <circle
+                  cx="28.7272"
+                  cy="43.1063"
+                  r="28.1544"
+                  fill="currentColor"
+                />
+                <circle
+                  cx="72.4387"
+                  cy="35.6992"
+                  r="35.5613"
+                  fill="currentColor"
+                  opacity="0.8"
+                />
+              </svg>
             </div>
             <CardTitle className="text-2xl font-bold text-center">
               {t("auth.title")}
@@ -307,17 +337,17 @@ export default function Auth() {
               className="w-full"
               onValueChange={resetForm}
             >
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsList className="grid w-full grid-cols-2 mb-6 dark:bg-secondary/80 dark:text-foreground">
                 <TabsTrigger
                   value="signin"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=inactive]:text-foreground/70 dark:hover:text-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
                 >
                   <LogIn className="h-4 w-4 mr-2" />
                   {t("auth.signIn.title")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="signup"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground dark:data-[state=inactive]:text-foreground/70 dark:hover:text-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
                   {t("auth.signUp.title")}
@@ -335,7 +365,7 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="signin-email"
-                      className="text-sm font-medium"
+                      className="text-sm font-medium dark:text-foreground"
                     >
                       {t("auth.signIn.email")}
                     </Label>
@@ -356,14 +386,14 @@ export default function Auth() {
                     <div className="flex items-center justify-between">
                       <Label
                         htmlFor="signin-password"
-                        className="text-sm font-medium"
+                        className="text-sm font-medium dark:text-foreground"
                       >
                         {t("auth.signIn.password")}
                       </Label>
                       <Button
                         type="button"
                         variant="link"
-                        className="p-0 h-auto text-xs font-normal"
+                        className="p-0 h-auto text-xs font-normal dark:text-primary/90 dark:hover:text-primary"
                         onClick={() => setShowResetPassword(true)}
                       >
                         {t("auth.signIn.forgotPassword")}
@@ -434,7 +464,7 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="signup-email"
-                      className="text-sm font-medium"
+                      className="text-sm font-medium dark:text-foreground"
                     >
                       {t("auth.signUp.email")}
                     </Label>
@@ -454,7 +484,7 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="signup-password"
-                      className="text-sm font-medium"
+                      className="text-sm font-medium dark:text-foreground"
                     >
                       {t("auth.signUp.password")}
                     </Label>
@@ -491,7 +521,7 @@ export default function Auth() {
                             className={`h-1 ${passwordStrengthColor}`}
                           />
                           <motion.ul
-                            className="text-xs text-muted-foreground grid grid-cols-2 gap-2"
+                            className="text-xs text-muted-foreground dark:text-muted-foreground/90 grid grid-cols-2 gap-2"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.3 }}
@@ -584,7 +614,7 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="confirm-password"
-                      className="text-sm font-medium"
+                      className="text-sm font-medium dark:text-foreground"
                     >
                       {t("auth.signUp.confirmPassword")}
                     </Label>
@@ -711,7 +741,10 @@ export default function Auth() {
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reset-email" className="text-sm font-medium">
+              <Label
+                htmlFor="reset-email"
+                className="text-sm font-medium dark:text-foreground"
+              >
                 {t("auth.resetPassword.email")}
               </Label>
               <div className="relative">
