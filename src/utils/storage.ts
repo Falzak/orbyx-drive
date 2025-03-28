@@ -1,4 +1,3 @@
-
 import {
   S3Client,
   PutObjectCommand,
@@ -36,7 +35,17 @@ const fetchProviders = async (): Promise<StorageProviderDatabase[]> => {
     throw new Error("Failed to fetch storage providers");
   }
 
-  providers = data;
+  // Convert the JSON credentials to objects if needed
+  const processedData = data.map(provider => {
+    return {
+      ...provider,
+      credentials: typeof provider.credentials === 'string' 
+        ? JSON.parse(provider.credentials) 
+        : provider.credentials
+    } as StorageProviderDatabase;
+  });
+
+  providers = processedData;
   providersLastFetched = now;
   return providers;
 };

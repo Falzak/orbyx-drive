@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -75,7 +74,7 @@ import {
   PieChart,
   Loader
 } from "lucide-react";
-import { formatBytes } from "@/lib/format";
+import { formatFileSize } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -84,7 +83,6 @@ import {
   getProviderUsageStats 
 } from "@/utils/storage";
 
-// Initial empty state for the provider
 const emptyProvider: StorageProviderDatabase = {
   id: "",
   name: "",
@@ -100,7 +98,6 @@ const emptyProvider: StorageProviderDatabase = {
   client_id: null
 };
 
-// Provider template configurations for easier setup
 const providerTemplates = {
   aws: {
     provider: "aws",
@@ -152,7 +149,6 @@ const providerTemplates = {
   }
 };
 
-// File type patterns for mapping
 const fileTypePatterns = [
   { name: "All files", value: "*", description: "Match all file types" },
   { name: "Images", value: "image/*", description: "All image formats (JPEG, PNG, etc.)" },
@@ -160,7 +156,6 @@ const fileTypePatterns = [
   { name: "Videos", value: "video/*", description: "All video formats" },
   { name: "Audio", value: "audio/*", description: "All audio formats" },
   { name: "Text", value: "text/*", description: "Text files (txt, md, etc.)" },
-  // Add more as needed
 ];
 
 export const StorageProvidersPanel = () => {
@@ -182,7 +177,6 @@ export const StorageProvidersPanel = () => {
   const [selectedFileType, setSelectedFileType] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("");
 
-  // Create a new provider state separate from currentProvider
   const [newProvider, setNewProvider] = useState<StorageProviderDatabase>({...emptyProvider});
 
   const { data: providers, isLoading } = useQuery({
@@ -199,11 +193,9 @@ export const StorageProvidersPanel = () => {
     },
   });
 
-  // Get usage metrics for all providers
   const { data: usageMetrics, isLoading: isLoadingMetrics } = useQuery({
     queryKey: ["storage-usage-metrics"],
     queryFn: async () => {
-      // Example implementation - in a real app, you'd fetch actual metrics from your backend
       if (!providers) return {};
       
       const metrics: Record<string, UsageMetrics> = {};
@@ -442,7 +434,6 @@ export const StorageProvidersPanel = () => {
         });
       }
       
-      // Refresh data after migration
       queryClient.invalidateQueries({ queryKey: ["storage-usage-metrics"] });
     } catch (error) {
       toast({
@@ -465,42 +456,34 @@ export const StorageProvidersPanel = () => {
       return;
     }
 
-    // Find the selected provider
     const targetProvider = providers?.find(p => p.id === selectedProvider);
     if (!targetProvider) return;
 
-    // Create a new mapping
     const newMapping: FileTypeMapping = {
       type: 'mime',
       pattern: selectedFileType,
       providerId: selectedProvider
     };
 
-    // Add to the provider's mappings
     const updatedMappings = [...(targetProvider.file_type_patterns || []), newMapping];
 
-    // Update the provider
     updateProviderMutation.mutate({
       id: selectedProvider,
       data: { file_type_patterns: updatedMappings }
     });
 
-    // Close dialog and reset selection
     setMappingDialogOpen(false);
     setSelectedFileType("");
     setSelectedProvider("");
   };
 
   const handleRemoveFileTypeMapping = (providerId: string, index: number) => {
-    // Find the provider
     const targetProvider = providers?.find(p => p.id === providerId);
     if (!targetProvider || !targetProvider.file_type_patterns) return;
 
-    // Remove the mapping
     const updatedMappings = [...targetProvider.file_type_patterns];
     updatedMappings.splice(index, 1);
 
-    // Update the provider
     updateProviderMutation.mutate({
       id: providerId,
       data: { file_type_patterns: updatedMappings }
@@ -567,7 +550,6 @@ export const StorageProvidersPanel = () => {
             <Select
               value={newProvider.provider}
               onValueChange={(value: StorageProvider) => {
-                // Reset credentials when changing provider type
                 setNewProvider({ 
                   ...newProvider, 
                   provider: value,
@@ -768,7 +750,6 @@ export const StorageProvidersPanel = () => {
               <div className="grid grid-cols-3 gap-2">
                 <Select 
                   onValueChange={(value) => {
-                    // Add new mapping
                     const newMapping: FileTypeMapping = {
                       type: 'mime',
                       pattern: value,
@@ -1092,7 +1073,6 @@ export const StorageProvidersPanel = () => {
         </Dialog>
       </div>
 
-      {/* Storage Provider Overview Dashboard */}
       {!isLoading && providers && providers.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
@@ -1124,7 +1104,7 @@ export const StorageProvidersPanel = () => {
               ) : (
                 <div className="space-y-2">
                   <div className="text-2xl font-bold">
-                    {formatBytes(
+                    {formatFileSize(
                       Object.values(usageMetrics || {}).reduce(
                         (total, metrics) => total + (metrics?.totalStorage || 0), 
                         0
@@ -1239,7 +1219,6 @@ export const StorageProvidersPanel = () => {
                     </div>
                   </div>
                   
-                  {/* Storage Usage Metrics */}
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex items-center gap-2 mb-2">
                       <BarChart className="h-4 w-4 text-muted-foreground" />
@@ -1256,7 +1235,7 @@ export const StorageProvidersPanel = () => {
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground">Armazenamento</p>
                           <p className="text-lg font-semibold">
-                            {formatBytes(usageMetrics?.[provider.id]?.totalStorage || 0)}
+                            {formatFileSize(usageMetrics?.[provider.id]?.totalStorage || 0)}
                           </p>
                         </div>
                         <div className="bg-muted/30 p-3 rounded-lg">
@@ -1269,7 +1248,6 @@ export const StorageProvidersPanel = () => {
                     )}
                   </div>
                   
-                  {/* File Type Mappings */}
                   {provider.file_type_patterns && provider.file_type_patterns.length > 0 && (
                     <div className="mt-4 pt-4 border-t">
                       <div className="flex items-center gap-2 mb-2">
