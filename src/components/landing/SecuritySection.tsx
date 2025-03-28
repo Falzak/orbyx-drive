@@ -81,59 +81,18 @@ export const SecuritySection = () => {
   ];
 
   return (
-    <section
-      ref={sectionRef}
-      className="py-24 md:py-32 bg-gradient-to-b from-background via-muted/20 to-background relative overflow-hidden"
-    >
-      {/* Gradiente de fundo dinâmico */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div className="absolute inset-0 opacity-30" style={{ opacity }}>
-          <div className="absolute top-0 -left-20 w-[600px] h-[600px] bg-gradient-to-br from-primary/10 to-secondary/5 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-0 -right-20 w-[600px] h-[600px] bg-gradient-to-tr from-secondary/10 to-primary/5 rounded-full blur-[100px]"></div>
-        </motion.div>
+    <section className="py-24 md:py-32 bg-gradient-to-b from-background/80 via-background/90 to-background/80 relative overflow-hidden">
+      {/* Transição suave da seção anterior */}
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background/80 to-transparent pointer-events-none"></div>
 
-        {/* Linhas decorativas */}
-        <div className="absolute top-0 left-1/3 right-1/3 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
-        <div className="absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
+      {/* Elementos de fundo decorativos */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 -left-32 w-96 h-96 bg-primary/5 rounded-full filter blur-[100px]"></div>
+        <div className="absolute bottom-1/3 -right-32 w-96 h-96 bg-secondary/5 rounded-full filter blur-[100px]"></div>
       </div>
 
-      {/* Animated security symbols in background - mais sutis e elegantes */}
-      <div className="absolute inset-0 overflow-hidden opacity-5 pointer-events-none mix-blend-color-dodge">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <motion.div
-            key={index}
-            className="absolute text-primary"
-            initial={{
-              opacity: 0.4,
-              y: -20,
-              scale: 0.8,
-              x: Math.random() * 100 - 50,
-            }}
-            animate={{
-              opacity: [0.2, 0.5, 0.2],
-              y: ["5%", "75%"],
-              scale: [0.6, 0.9, 0.6],
-            }}
-            transition={{
-              duration: 10 + Math.random() * 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: index * 1.5,
-            }}
-            style={{
-              left: `${Math.random() * 90 + 5}%`,
-            }}
-          >
-            {index % 3 === 0 ? (
-              <Lock className="h-8 w-8" />
-            ) : index % 3 === 1 ? (
-              <Shield className="h-8 w-8" />
-            ) : (
-              <Key className="h-8 w-8" />
-            )}
-          </motion.div>
-        ))}
-      </div>
+      {/* Transição suave para a próxima seção */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background/80 pointer-events-none"></div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-16 xl:gap-20">

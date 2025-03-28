@@ -75,8 +75,14 @@ export const Features = forwardRef<HTMLElement>((props, ref) => {
     <section
       ref={ref}
       id="features"
-      className="py-24 md:py-32 bg-background relative overflow-hidden"
+      className="py-24 md:py-32 bg-gradient-to-b from-background via-background/98 to-background/90 relative overflow-hidden"
     >
+      {/* Transição suave da seção anterior */}
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent pointer-events-none"></div>
+
+      {/* Transição suave para a próxima seção */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background/90 pointer-events-none"></div>
+
       {/* Subtle monochromatic background elements - fixed opacity values */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-[800px] h-[800px] -top-[400px] -right-[200px] bg-primary/5 rounded-full blur-[150px] opacity-30"></div>

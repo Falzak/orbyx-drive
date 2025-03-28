@@ -103,7 +103,7 @@ export const Hero: React.FC<HeroProps> = ({ scrollToFeatures }) => {
   ];
 
   return (
-    <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-background via-background/98 to-background/95 relative overflow-hidden">
+    <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-background via-background to-background/95 relative overflow-hidden">
       {/* Efeito de gradiente dinâmico */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-24 left-1/4 w-80 h-80 bg-primary/10 rounded-full filter blur-[100px] animate-blob" />

@@ -80,19 +80,18 @@ export const PreviewSection = () => {
   }, []);
 
   return (
-    <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-background/80 via-background to-muted/30">
-      {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Superior connection with previous section */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-muted/20 to-transparent"></div>
+    <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-background/90 via-background/95 to-background/80">
+      {/* Transição suave da seção anterior */}
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background/90 to-transparent"></div>
 
-        {/* Decorative blobs */}
-        <div className="absolute h-96 w-96 -top-48 left-1/4 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute h-96 w-96 -right-48 bottom-0 bg-secondary/5 rounded-full blur-3xl"></div>
-
-        {/* Bottom transition to next section */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-muted/30"></div>
+      {/* Background elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-40 -left-24 w-96 h-96 bg-primary/5 rounded-full filter blur-[80px]"></div>
+        <div className="absolute bottom-40 -right-24 w-96 h-96 bg-secondary/5 rounded-full filter blur-[80px]"></div>
       </div>
+
+      {/* Transição suave para a próxima seção */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background/80"></div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12">
