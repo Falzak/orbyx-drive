@@ -256,29 +256,44 @@ export type Database = {
       }
       storage_providers: {
         Row: {
+          client_id: string | null
           created_at: string
           credentials: Json
+          description: string | null
+          file_type_patterns: Json | null
           id: string
           is_active: boolean | null
+          is_backup: boolean | null
           name: string
+          priority: number | null
           provider: Database["public"]["Enums"]["storage_provider"]
           updated_at: string
         }
         Insert: {
+          client_id?: string | null
           created_at?: string
           credentials: Json
+          description?: string | null
+          file_type_patterns?: Json | null
           id?: string
           is_active?: boolean | null
+          is_backup?: boolean | null
           name: string
+          priority?: number | null
           provider: Database["public"]["Enums"]["storage_provider"]
           updated_at?: string
         }
         Update: {
+          client_id?: string | null
           created_at?: string
           credentials?: Json
+          description?: string | null
+          file_type_patterns?: Json | null
           id?: string
           is_active?: boolean | null
+          is_backup?: boolean | null
           name?: string
+          priority?: number | null
           provider?: Database["public"]["Enums"]["storage_provider"]
           updated_at?: string
         }
