@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
@@ -95,11 +96,6 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
             }
           }
         );
-
-        // Get the public URL
-        const { data: urlData } = supabase.storage
-          .from("files")
-          .getPublicUrl(filePath);
 
         // Insert file record in database - using the correct field names
         const { error: dbError } = await supabase.from("files").insert({

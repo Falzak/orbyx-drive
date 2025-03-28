@@ -3,6 +3,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
@@ -54,37 +55,42 @@ const getS3Client = async () => {
 };
 
 const getStorageProvider = async () => {
-  const { data, error } = await supabase
-    .from("storage_providers")
-    .select("*")
-    .eq("is_active", true)
-    .single();
-
-  if (error) {
-    console.error("Error fetching storage provider:", error);
-    throw new Error("Failed to fetch storage provider");
-  }
-
-  if (!data) {
-    throw new Error("No active storage provider found");
-  }
-
-  // Parse credentials and extract bucket name
-  let credentials;
   try {
-    // Check if credentials is already a parsed object or needs to be parsed
-    credentials = typeof data.credentials === 'string' 
-      ? JSON.parse(data.credentials) 
-      : data.credentials;
-  } catch (error) {
-    console.error("Error parsing credentials:", error, "Raw data:", data.credentials);
-    throw new Error("Failed to parse storage provider credentials");
-  }
+    const { data, error } = await supabase
+      .from("storage_providers")
+      .select("*")
+      .eq("is_active", true)
+      .single();
 
-  return {
-    provider: data.name,
-    bucket: credentials.bucket || "files", // Default to "files" if not specified
-  };
+    if (error) {
+      console.error("Error fetching storage provider:", error);
+      throw new Error("Failed to fetch storage provider");
+    }
+
+    if (!data) {
+      throw new Error("No active storage provider found");
+    }
+
+    // Parse credentials and extract bucket name
+    let credentials;
+    try {
+      // Check if credentials is already a parsed object or needs to be parsed
+      credentials = typeof data.credentials === 'string' 
+        ? JSON.parse(data.credentials) 
+        : data.credentials;
+    } catch (error) {
+      console.error("Error parsing credentials:", error, "Raw data:", data.credentials);
+      throw new Error("Failed to parse storage provider credentials");
+    }
+
+    return {
+      provider: data.name,
+      bucket: credentials.bucket || "files", // Default to "files" if not specified
+    };
+  } catch (error) {
+    console.error("Error in getStorageProvider:", error);
+    throw error;
+  }
 };
 
 export const resetStorageProvider = () => {
@@ -114,7 +120,7 @@ export const getFileUrl = async (filePath: string): Promise<string> => {
         return getSignedUrl(s3Client, command, { expiresIn: 3600 });
       }
       case "cloudflare": {
-        // Handle cloudflare specific logic
+        // Handle cloudflare specific logic - using same logic as supabase for now
         const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
         return data.publicUrl;
       }
@@ -152,16 +158,17 @@ export const removeFiles = async (filePaths: string[]): Promise<void> => {
       case "s3":
       case "cloudflare":
         // Delete files from S3 or Cloudflare (they use similar S3-compatible APIs)
-        const s3Client = await getS3Client();
+        const client = await getS3Client();
 
         // Process deletions one by one
         for (const filePath of filePaths) {
           try {
-            const deleteCommand = new S3Client({
+            // Fixed: Using DeleteObjectCommand correctly
+            const deleteCommand = new DeleteObjectCommand({
               Bucket: bucket,
               Key: filePath,
             });
-            // await s3Client.send(deleteCommand);
+            await client.send(deleteCommand);
             console.log(`Deleted file: ${filePath}`);
           } catch (error) {
             console.error(`Error deleting file ${filePath}:`, error);
@@ -303,7 +310,7 @@ export async function uploadFile(
           });
         });
         
-        // Convert ArrayBuffer to Buffer for AWS SDK
+        // Fix: Convert ArrayBuffer to Uint8Array for AWS SDK
         const buffer = new Uint8Array(fileData);
         
         // Generate pre-signed URL for upload
@@ -311,15 +318,17 @@ export async function uploadFile(
           Bucket: bucket,
           Key: filePath,
           ContentType: file.type,
+          Body: buffer, // Fixed: using buffer (Uint8Array) instead of ArrayBuffer
         });
         
-        const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-        
-        xhr.open('PUT', url);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(fileData);
-        
-        result = await uploadPromise;
+        // For direct upload without XHR (alternative approach)
+        try {
+          await s3Client.send(command);
+          result = filePath;
+        } catch (uploadError) {
+          console.error('Error during S3 upload:', uploadError);
+          throw new Error('Failed to upload file to S3');
+        }
         break;
       case 'google_drive':
         throw new Error("Google Drive not yet implemented");
