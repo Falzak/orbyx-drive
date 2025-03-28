@@ -50,7 +50,8 @@ export default function Settings() {
   const { session } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const [showChangePasswordDialog, setShowChangePasswordDialog] = React.useState(false);
+  const [showChangePasswordDialog, setShowChangePasswordDialog] =
+    React.useState(false);
   const [showTwoFactorDialog, setShowTwoFactorDialog] = React.useState(false);
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -127,20 +128,26 @@ export default function Settings() {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao alterar a senha",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro ao alterar a senha",
       });
     }
   };
 
   const check2FAStatus = React.useCallback(async () => {
     try {
-      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      
+      const { data, error } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
       if (error) throw error;
 
-      setHas2FAEnabled(data.currentLevel === 'aal2' || data.nextLevel === 'aal2');
+      setHas2FAEnabled(
+        data.currentLevel === "aal2" || data.nextLevel === "aal2"
+      );
     } catch (error) {
-      console.error('Error checking 2FA status:', error);
+      console.error("Error checking 2FA status:", error);
     }
   }, []);
 
@@ -151,32 +158,35 @@ export default function Settings() {
   const handleEnable2FA = async () => {
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
-        factorType: 'totp',
-        issuer: 'FileVault',
-        friendlyName: `TOTP-${new Date().getTime()}`
+        factorType: "totp",
+        issuer: "FileVault",
+        friendlyName: `TOTP-${new Date().getTime()}`,
       });
 
       if (error) throw error;
 
       if (data?.totp) {
-        console.log('Factor enrolled:', data);
+        console.log("Factor enrolled:", data);
         setQrCode(data.totp.qr_code);
         setFactorId(data.id);
         setShowTwoFactorDialog(true);
       }
     } catch (error) {
-      console.error('Error enabling 2FA:', error);
+      console.error("Error enabling 2FA:", error);
       toast({
         variant: "destructive",
         title: "Erro",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao ativar 2FA",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro ao ativar 2FA",
       });
     }
   };
 
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!factorId) {
       toast({
         variant: "destructive",
@@ -188,19 +198,20 @@ export default function Settings() {
 
     try {
       setIsVerifying2FA(true);
-      
-      console.log('Challenging with factor ID:', factorId);
-      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-        factorId: factorId
-      });
+
+      console.log("Challenging with factor ID:", factorId);
+      const { data: challengeData, error: challengeError } =
+        await supabase.auth.mfa.challenge({
+          factorId: factorId,
+        });
 
       if (challengeError) throw challengeError;
 
-      console.log('Challenge response:', challengeData);
+      console.log("Challenge response:", challengeData);
       const { error: verifyError } = await supabase.auth.mfa.verify({
         factorId: factorId,
         challengeId: challengeData.id,
-        code: otpCode
+        code: otpCode,
       });
 
       if (verifyError) throw verifyError;
@@ -215,7 +226,7 @@ export default function Settings() {
       setFactorId(null);
       check2FAStatus();
     } catch (error) {
-      console.error('Error verifying 2FA:', error);
+      console.error("Error verifying 2FA:", error);
       toast({
         variant: "destructive",
         title: "Erro",
@@ -229,13 +240,17 @@ export default function Settings() {
   const handleDisable2FA = async () => {
     try {
       const { data: factors } = await supabase.auth.mfa.listFactors();
-      const totpFactor = factors.totp.find(factor => factor.factor_type === 'totp');
+      const totpFactor = factors.totp.find(
+        (factor) => factor.factor_type === "totp"
+      );
 
       if (!totpFactor) {
         throw new Error("Fator TOTP não encontrado");
       }
 
-      const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
+      const { error } = await supabase.auth.mfa.unenroll({
+        factorId: totpFactor.id,
+      });
 
       if (error) throw error;
 
@@ -246,223 +261,388 @@ export default function Settings() {
 
       setHas2FAEnabled(false);
     } catch (error) {
-      console.error('Error disabling 2FA:', error);
+      console.error("Error disabling 2FA:", error);
       toast({
         variant: "destructive",
         title: "Erro",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao desativar 2FA",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro ao desativar 2FA",
       });
     }
   };
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-6"
+      className="min-h-screen bg-gradient-to-br from-background via-background to-background/90 p-4 md:p-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/5 to-transparent opacity-70"></div>
+        <div className="absolute -top-24 left-1/4 w-96 h-96 bg-primary/5 rounded-full filter blur-[100px] opacity-60"></div>
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-secondary/5 rounded-full filter blur-[80px] opacity-50"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header with back button and title */}
+        <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
-            className="h-8 w-8"
+            className="h-10 w-10 rounded-full hover:bg-background/80 hover:text-primary transition-colors"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+          <motion.h1
+            className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+          >
+            {t("settings.title")}
+          </motion.h1>
         </div>
 
-        <Tabs value={section} className="space-y-6">
-          <TabsList>
-            <TabsTrigger
-              value="profile"
-              onClick={() => navigate("/settings/profile")}
-            >
-              <User className="h-4 w-4 mr-2" />
-              {t("settings.sections.profile.title")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="appearance"
-              onClick={() => navigate("/settings/appearance")}
-            >
-              <SettingsIcon className="h-4 w-4 mr-2" />
-              {t("settings.sections.appearance.title")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="security"
-              onClick={() => navigate("/settings/security")}
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              {t("settings.sections.security.title")}
-            </TabsTrigger>
-          </TabsList>
+        {/* Main content with sidebar layout */}
+        <div>
+          <Tabs
+            value={section}
+            orientation="vertical"
+            className="w-full grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6 lg:gap-10"
+          >
+            {/* Sidebar navigation */}
+            <div className="bg-card rounded-xl border shadow-sm p-4 h-fit sticky top-8">
+              <TabsList className="flex flex-col h-auto w-full bg-transparent space-y-1 p-0">
+                <TabsTrigger
+                  value="profile"
+                  onClick={() => navigate("/settings/profile")}
+                  className="w-full justify-start px-3 py-2 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                >
+                  <User className="h-4 w-4 mr-3" />
+                  {t("settings.sections.profile.title")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="appearance"
+                  onClick={() => navigate("/settings/appearance")}
+                  className="w-full justify-start px-3 py-2 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                >
+                  <SettingsIcon className="h-4 w-4 mr-3" />
+                  {t("settings.sections.appearance.title")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="security"
+                  onClick={() => navigate("/settings/security")}
+                  className="w-full justify-start px-3 py-2 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                >
+                  <Shield className="h-4 w-4 mr-3" />
+                  {t("settings.sections.security.title")}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <TabsContent value="profile">
-            <Card>
-              <form onSubmit={handleUpdateProfile}>
-                <CardHeader>
-                  <CardTitle>{t("settings.sections.profile.title")}</CardTitle>
-                  <CardDescription>
-                    {t("settings.sections.profile.description")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="avatar">
-                      {t("settings.sections.profile.avatar")}
-                    </Label>
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                        {session?.user?.user_metadata?.avatar_url ? (
-                          <img
-                            src={session.user.user_metadata.avatar_url}
-                            alt={session.user.email || ""}
-                            className="w-full h-full object-cover"
+            {/* Main content area */}
+            <div className="flex-1 w-full">
+              <TabsContent value="profile" className="mt-0 outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-6"
+                >
+                  <Card className="border-primary/10 shadow-md overflow-hidden">
+                    <form onSubmit={handleUpdateProfile}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <User className="h-5 w-5 text-primary" />
+                          {t("settings.sections.profile.title")}
+                        </CardTitle>
+                        <CardDescription>
+                          {t("settings.sections.profile.description")}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-4">
+                          <Label
+                            htmlFor="avatar"
+                            className="text-base font-medium"
+                          >
+                            {t("settings.sections.profile.avatar")}
+                          </Label>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                            <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-background shadow-md">
+                              {session?.user?.user_metadata?.avatar_url ? (
+                                <img
+                                  src={session.user.user_metadata.avatar_url}
+                                  alt={session.user.email || ""}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-3xl font-medium text-primary">
+                                  {session?.user?.email?.[0].toUpperCase()}
+                                </span>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
+                                <span className="text-xs text-white font-medium">
+                                  Change
+                                </span>
+                              </div>
+                            </div>
+                            <div className="space-y-3">
+                              <div className="bg-muted/50 rounded-lg px-4 py-2 text-sm">
+                                <p className="font-medium text-foreground">
+                                  {session?.user?.email}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Your account email cannot be changed
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled
+                                className="text-xs"
+                              >
+                                {t("common.upload")}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 pt-2">
+                          <Label
+                            htmlFor="full_name"
+                            className="text-base font-medium"
+                          >
+                            {t("settings.sections.profile.name")}
+                          </Label>
+                          <Input
+                            id="full_name"
+                            name="full_name"
+                            defaultValue={
+                              session?.user?.user_metadata?.full_name || ""
+                            }
+                            placeholder={t(
+                              "settings.sections.profile.namePlaceholder"
+                            )}
+                            className="max-w-md"
                           />
-                        ) : (
-                          <span className="text-2xl font-medium text-primary">
-                            {session?.user?.email?.[0].toUpperCase()}
-                          </span>
-                        )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="border-t bg-muted/10 flex justify-end py-4">
+                        <Button
+                          type="submit"
+                          disabled={updateProfileMutation.isPending}
+                          className="px-6"
+                        >
+                          {updateProfileMutation.isPending
+                            ? t("common.saving")
+                            : t("common.save")}
+                        </Button>
+                      </CardFooter>
+                    </form>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="appearance" className="mt-0 outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-6"
+                >
+                  <Card className="border-primary/10 shadow-md overflow-hidden">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <SettingsIcon className="h-5 w-5 text-primary" />
+                        {t("settings.sections.appearance.title")}
+                      </CardTitle>
+                      <CardDescription>
+                        {t("settings.sections.appearance.description")}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <Label className="text-base font-medium">
+                          {t("settings.sections.appearance.theme")}
+                        </Label>
+                        <div className="grid grid-cols-2 gap-4 max-w-md">
+                          <div
+                            className={cn(
+                              "border rounded-xl p-4 cursor-pointer transition-all duration-200 hover:border-primary/30",
+                              theme === "light"
+                                ? "border-primary bg-primary/5 shadow-sm"
+                                : "border-muted"
+                            )}
+                            onClick={() => setTheme("light")}
+                          >
+                            <div className="h-24 bg-white border rounded-md mb-3 flex items-center justify-center shadow-sm">
+                              <div className="w-8 h-8 rounded-full bg-black/10"></div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium">
+                                {t("common.theme.light")}
+                              </span>
+                              <div
+                                className={cn(
+                                  "w-4 h-4 rounded-full border-2",
+                                  theme === "light"
+                                    ? "border-primary bg-primary"
+                                    : "border-muted"
+                                )}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <div
+                            className={cn(
+                              "border rounded-xl p-4 cursor-pointer transition-all duration-200 hover:border-primary/30",
+                              theme === "dark"
+                                ? "border-primary bg-primary/5 shadow-sm"
+                                : "border-muted"
+                            )}
+                            onClick={() => setTheme("dark")}
+                          >
+                            <div className="h-24 bg-gray-900 border border-gray-800 rounded-md mb-3 flex items-center justify-center shadow-sm">
+                              <div className="w-8 h-8 rounded-full bg-white/20"></div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium">
+                                {t("common.theme.dark")}
+                              </span>
+                              <div
+                                className={cn(
+                                  "w-4 h-4 rounded-full border-2",
+                                  theme === "dark"
+                                    ? "border-primary bg-primary"
+                                    : "border-muted"
+                                )}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <Button variant="outline" disabled>
-                        {t("common.upload")}
-                      </Button>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </TabsContent>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="full_name">
-                      {t("settings.sections.profile.name")}
-                    </Label>
-                    <Input
-                      id="full_name"
-                      name="full_name"
-                      defaultValue={
-                        session?.user?.user_metadata?.full_name || ""
-                      }
-                      placeholder={t(
-                        "settings.sections.profile.namePlaceholder"
-                      )}
-                    />
-                  </div>
+              <TabsContent value="security" className="mt-0 outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-6"
+                >
+                  <Card className="border-primary/10 shadow-md overflow-hidden">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        {t("settings.sections.security.title")}
+                      </CardTitle>
+                      <CardDescription>
+                        {t("settings.sections.security.description")}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <Label className="text-base font-medium">
+                          {t("settings.sections.security.password")}
+                        </Label>
+                        <div className="bg-muted/30 rounded-lg p-4 max-w-md">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-medium">Password</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Change your account password
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={() => setShowChangePasswordDialog(true)}
+                              className="ml-4"
+                            >
+                              {t("settings.sections.security.changePassword")}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">
-                      {t("settings.sections.profile.email")}
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={session?.user?.email || ""}
-                      disabled
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    type="submit"
-                    disabled={updateProfileMutation.isPending}
-                  >
-                    {updateProfileMutation.isPending
-                      ? t("common.saving")
-                      : t("common.save")}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="appearance">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("settings.sections.appearance.title")}</CardTitle>
-                <CardDescription>
-                  {t("settings.sections.appearance.description")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t("settings.sections.appearance.theme")}</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={theme === "light" ? "default" : "outline"}
-                      onClick={() => setTheme("light")}
-                      className="flex-1"
-                    >
-                      {t("common.theme.light")}
-                    </Button>
-                    <Button
-                      variant={theme === "dark" ? "default" : "outline"}
-                      onClick={() => setTheme("dark")}
-                      className="flex-1"
-                    >
-                      {t("common.theme.dark")}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("settings.sections.security.title")}</CardTitle>
-                <CardDescription>
-                  {t("settings.sections.security.description")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t("settings.sections.security.password")}</Label>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setShowChangePasswordDialog(true)}
-                  >
-                    {t("settings.sections.security.changePassword")}
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t("settings.sections.security.twoFactor")}</Label>
-                  {has2FAEnabled ? (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={handleDisable2FA}
-                    >
-                      Desativar autenticação em dois fatores
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={handleEnable2FA}
-                    >
-                      {t("settings.sections.security.enable2FA")}
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                      <div className="space-y-4">
+                        <Label className="text-base font-medium">
+                          {t("settings.sections.security.twoFactor")}
+                        </Label>
+                        <div className="bg-muted/30 rounded-lg p-4 max-w-md">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium">
+                                  Two-factor authentication
+                                </h4>
+                                <div
+                                  className={`px-2 py-0.5 text-xs rounded-full ${
+                                    has2FAEnabled
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                  }`}
+                                >
+                                  {has2FAEnabled ? "Enabled" : "Disabled"}
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Add an extra layer of security to your account
+                              </p>
+                            </div>
+                            {has2FAEnabled ? (
+                              <Button
+                                variant="outline"
+                                onClick={handleDisable2FA}
+                                className="ml-4 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                              >
+                                Disable
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                onClick={handleEnable2FA}
+                                className="ml-4"
+                              >
+                                {t("settings.sections.security.enable2FA")}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
 
-      <Dialog open={showChangePasswordDialog} onOpenChange={setShowChangePasswordDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar senha</DialogTitle>
+      <Dialog
+        open={showChangePasswordDialog}
+        onOpenChange={setShowChangePasswordDialog}
+      >
+        <DialogContent className="sm:max-w-md border-primary/10">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Shield className="h-5 w-5 text-primary" />
+              Alterar senha
+            </DialogTitle>
             <DialogDescription>
-              Digite sua nova senha
+              Digite sua nova senha para atualizar suas credenciais
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleChangePassword} className="space-y-4">
+          <form onSubmit={handleChangePassword} className="space-y-5 py-3">
             <div className="space-y-2">
               <Label htmlFor="current-password">Senha atual</Label>
               <div className="relative">
@@ -538,24 +718,35 @@ export default function Settings() {
                 </Button>
               </div>
             </div>
-            <DialogFooter>
-              <Button type="submit">Alterar senha</Button>
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground mb-4">
+                A senha deve ter pelo menos 6 caracteres e incluir letras e
+                números para maior segurança.
+              </p>
+            </div>
+            <DialogFooter className="pt-2">
+              <Button type="submit" className="w-full sm:w-auto">
+                Alterar senha
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showTwoFactorDialog} onOpenChange={setShowTwoFactorDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Configurar autenticação em dois fatores</DialogTitle>
+        <DialogContent className="sm:max-w-md border-primary/10">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <QrCode className="h-5 w-5 text-primary" />
+              Configurar autenticação em dois fatores
+            </DialogTitle>
             <DialogDescription>
               Escaneie o QR code abaixo com seu aplicativo autenticador
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5 py-3">
             {qrCode && (
-              <div className="flex justify-center">
+              <div className="flex justify-center p-4 bg-muted/20 rounded-lg border">
                 <img src={qrCode} alt="QR Code" className="w-48 h-48" />
               </div>
             )}
@@ -570,8 +761,19 @@ export default function Settings() {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isVerifying2FA}>
+              <div className="pt-2">
+                <p className="text-xs text-muted-foreground mb-4">
+                  Use um aplicativo autenticador como Google Authenticator,
+                  Microsoft Authenticator ou Authy para escanear o código QR
+                  acima.
+                </p>
+              </div>
+              <DialogFooter className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={isVerifying2FA}
+                  className="w-full sm:w-auto"
+                >
                   {isVerifying2FA ? "Verificando..." : "Verificar"}
                 </Button>
               </DialogFooter>
