@@ -80,7 +80,7 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
           )
         );
 
-        // Use the custom uploadFile function instead of supabase storage directly
+        // Use the custom uploadFile function with proper upload progress handling
         const filePath = `${session.user.id}/${fileObj.file.name}`;
         const path = await uploadFile(
           fileObj.file,
@@ -101,7 +101,7 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
           .from("files")
           .getPublicUrl(filePath);
 
-        // Insert file record in database - use correct field names matching the database schema
+        // Insert file record in database - using the correct field names
         const { error: dbError } = await supabase.from("files").insert({
           filename: fileObj.file.name,
           size: fileObj.file.size,
