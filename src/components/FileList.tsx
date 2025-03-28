@@ -1,4 +1,3 @@
-
 import React, { forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -135,7 +134,11 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                     file.is_folder && "hover:bg-accent/10"
                   )}
                   onClick={() => {
-                    if (file.is_folder || isMediaFile(file.content_type)) {
+                    if (
+                      file.is_folder ||
+                      isMediaFile(file.content_type) ||
+                      file.content_type === "application/pdf"
+                    ) {
                       onPreview(file);
                     }
                   }}
@@ -153,16 +156,22 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          {file.content_type.startsWith("image/") && file.url ? (
+                          {file.content_type.startsWith("image/") &&
+                          file.url ? (
                             <div className="w-10 h-10 rounded-lg overflow-hidden border border-border/50 bg-background/50 dark:bg-black/50">
                               <img
                                 src={file.url}
                                 alt={file.filename}
                                 className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
                                 onError={(e) => {
-                                  console.log("Image failed to load:", file.filename);
-                                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                                  (e.target as HTMLImageElement).className = "w-full h-full object-contain p-1";
+                                  console.log(
+                                    "Image failed to load:",
+                                    file.filename
+                                  );
+                                  (e.target as HTMLImageElement).src =
+                                    "/placeholder.svg";
+                                  (e.target as HTMLImageElement).className =
+                                    "w-full h-full object-contain p-1";
                                 }}
                               />
                             </div>

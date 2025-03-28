@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileData, ViewMode } from "@/types";
 import MediaPreview from "./MediaPreview";
+import PDFViewer from "./PDFViewer";
 import {
   FileIcon,
   Grid,
@@ -97,13 +98,22 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         console.error("getSignedUrlForFile: Empty file path provided");
         return null;
       }
-      
+
       try {
         const url = await getFileUrl(filePath);
-        console.log("Got signed URL for:", filePath, url ? "Success" : "Failed");
+        console.log(
+          "Got signed URL for:",
+          filePath,
+          url ? "Success" : "Failed"
+        );
         return url;
       } catch (error) {
-        console.error("Error getting signed URL:", error, "for file:", filePath);
+        console.error(
+          "Error getting signed URL:",
+          error,
+          "for file:",
+          filePath
+        );
         return null;
       }
     }, []);
@@ -170,11 +180,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               console.warn("File without file_path:", file.id, file.filename);
               return file;
             }
-            
+
             try {
               const cacheKey = `url_${file.id}`;
               let url = sessionStorage.getItem(cacheKey);
-              
+
               if (!url) {
                 url = await getSignedUrlForFile(file.file_path);
                 if (url) {
@@ -184,13 +194,18 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               } else {
                 console.log("Using cached URL for file:", file.filename);
               }
-              
+
               return {
                 ...file,
                 url: url || undefined,
               };
             } catch (error) {
-              console.error("Failed to get URL for file:", file.id, file.filename, error);
+              console.error(
+                "Failed to get URL for file:",
+                file.id,
+                file.filename,
+                error
+              );
               return file;
             }
           })
@@ -772,29 +787,38 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           )}
         </div>
 
-        {selectedFile && (
-          <MediaPreview
+        {selectedFile && selectedFile.content_type === "application/pdf" ? (
+          <PDFViewer
             file={selectedFile}
             onClose={() => setSelectedFile(null)}
             onDownload={() => handleDownload(selectedFile)}
             onShare={() => handleShare(selectedFile)}
-            onToggleFavorite={async () => {
-              const { error } = await supabase
-                .from("files")
-                .update({
-                  is_favorite: !selectedFile.is_favorite,
-                })
-                .eq("id", selectedFile.id);
-
-              if (!error) {
-                setSelectedFile({
-                  ...selectedFile,
-                  is_favorite: !selectedFile.is_favorite,
-                });
-                queryClient.invalidateQueries({ queryKey: ["files"] });
-              }
-            }}
           />
+        ) : (
+          selectedFile && (
+            <MediaPreview
+              file={selectedFile}
+              onClose={() => setSelectedFile(null)}
+              onDownload={() => handleDownload(selectedFile)}
+              onShare={() => handleShare(selectedFile)}
+              onToggleFavorite={async () => {
+                const { error } = await supabase
+                  .from("files")
+                  .update({
+                    is_favorite: !selectedFile.is_favorite,
+                  })
+                  .eq("id", selectedFile.id);
+
+                if (!error) {
+                  setSelectedFile({
+                    ...selectedFile,
+                    is_favorite: !selectedFile.is_favorite,
+                  });
+                  queryClient.invalidateQueries({ queryKey: ["files"] });
+                }
+              }}
+            />
+          )
         )}
 
         {shareFile && (

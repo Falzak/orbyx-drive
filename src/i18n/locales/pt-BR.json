@@ -3,6 +3,7 @@
     "search": "Pesquisar arquivos...",
     "settings": "Configurações",
     "logout": "Sair",
+    "logoutDescription": "Desconectar da sua conta",
     "language": "Idioma",
     "languageSelector": "Selecionar idioma",
     "theme": {
@@ -354,6 +355,15 @@
       "share": "Compartilhar",
       "close": "Fechar"
     }
+  },
+  "pdfViewer": {
+    "loading": "Carregando PDF...",
+    "error": "Erro ao carregar PDF",
+    "downloadError": "Falha ao baixar o PDF",
+    "browserNotSupported": "Seu navegador não suporta a visualização de PDF.",
+    "tryAgain": "Tentar novamente",
+    "downloadPdf": "Baixar PDF",
+    "previewNotAvailable": "Visualização não disponível"
   },
   "admin": {
     "title": "Painel de Administração",

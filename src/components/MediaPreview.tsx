@@ -1,13 +1,25 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileData } from "@/types";
 import { downloadFile } from "@/utils/storage";
-import { 
-  Download, Share2, Star, X, ZoomIn, ZoomOut, 
-  RotateCw, File, FileText, Lock, Unlock, Archive, FileLock
+import {
+  Download,
+  Share2,
+  Star,
+  X,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  File,
+  FileText,
 } from "lucide-react";
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
@@ -35,42 +47,13 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
   const [canPreview, setCanPreview] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  useEffect(() => {
-    // Check if this is a previewable document
-    const isPdf = file.content_type === 'application/pdf';
-    const isOffice = file.content_type.includes('officedocument') || 
-                    file.content_type === 'application/msword';
-    
-    setCanPreview(isPdf || isOffice);
-
-    // Validar se temos uma URL de imagem
-    if (file.content_type.startsWith("image/") && !file.url) {
-      toast({
-        title: "Erro de visualização",
-        description: "URL da imagem não disponível. Tente recarregar a página.",
-        variant: "destructive"
-      });
-    }
-
-    if (isPdf && file.url) {
-      // For PDFs, we can directly use the URL
-      setDocumentUrl(file.url);
-    }
-    
-    // For other document types, we load the document in progress steps
-    // to show a loading indicator to the user
-    if (isOffice && !documentUrl) {
-      loadDocument();
-    }
-  }, [file]);
-  
   const loadDocument = async () => {
     setIsLoading(true);
-    
+
     try {
       // Simulated loading progress for UX
       const interval = setInterval(() => {
-        setLoadingProgress(prev => {
+        setLoadingProgress((prev) => {
           if (prev >= 90) {
             clearInterval(interval);
             return prev;
@@ -78,16 +61,16 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           return prev + 10;
         });
       }, 200);
-      
+
       // Download the file and create a blob URL
       const blob = await downloadFile(file.file_path!);
       const url = URL.createObjectURL(blob);
       setDocumentUrl(url);
-      
+
       // Clear interval and set to 100%
       clearInterval(interval);
       setLoadingProgress(100);
-      
+
       // Cleanup function to revoke the object URL when done
       return () => {
         URL.revokeObjectURL(url);
@@ -97,16 +80,40 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       toast({
         title: "Erro ao carregar documento",
         description: "Não foi possível carregar o documento. Tente novamente.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleZoomIn = () => setScale(prev => Math.min(prev + 0.25, 3));
-  const handleZoomOut = () => setScale(prev => Math.max(prev - 0.25, 0.5));
-  const handleRotate = () => setRotation(prev => (prev + 90) % 360);
+  useEffect(() => {
+    // Check if this is a previewable document
+    const isOffice =
+      file.content_type.includes("officedocument") ||
+      file.content_type === "application/msword";
+
+    setCanPreview(isOffice);
+
+    // Validar se temos uma URL de imagem
+    if (file.content_type.startsWith("image/") && !file.url) {
+      toast({
+        title: "Erro de visualização",
+        description: "URL da imagem não disponível. Tente recarregar a página.",
+        variant: "destructive",
+      });
+    }
+
+    // For office documents, we load the document in progress steps
+    // to show a loading indicator to the user
+    if (isOffice && !documentUrl) {
+      loadDocument();
+    }
+  }, [file, documentUrl]);
+
+  const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.25, 3));
+  const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.25, 0.5));
+  const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
 
   const renderPreview = () => {
     if (file.content_type.startsWith("image/")) {
@@ -115,15 +122,16 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           src={file.url}
           alt={file.filename}
           className="max-w-full max-h-[80vh] object-contain transition-transform duration-200"
-          style={{ 
+          style={{
             transform: `scale(${scale}) rotate(${rotation}deg)`,
           }}
           onError={(e) => {
             console.error("Image failed to load:", file.url);
             toast({
               title: "Erro ao carregar imagem",
-              description: "Não foi possível carregar a imagem. Tente recarregar a página.",
-              variant: "destructive"
+              description:
+                "Não foi possível carregar a imagem. Tente recarregar a página.",
+              variant: "destructive",
             });
             (e.target as HTMLImageElement).src = "/placeholder.svg";
           }}
@@ -138,41 +146,20 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       );
     } else if (file.content_type.startsWith("video/")) {
       return (
-        <video
-          src={file.url}
-          controls
-          className="max-w-full max-h-[80vh]"
-        >
+        <video src={file.url} controls className="max-w-full max-h-[80vh]">
           Your browser does not support the video tag.
         </video>
       );
     } else if (file.content_type.startsWith("audio/")) {
       return (
-        <audio
-          src={file.url}
-          controls
-          className="w-full"
-        >
+        <audio src={file.url} controls className="w-full">
           Your browser does not support the audio tag.
         </audio>
       );
-    } else if (file.content_type === "application/pdf") {
-      return documentUrl ? (
-        <iframe
-          ref={iframeRef}
-          src={`${documentUrl}#view=FitH`}
-          className="w-full h-[80vh]"
-          title={`PDF Preview: ${file.filename}`}
-        />
-      ) : (
-        <div className="flex flex-col items-center justify-center h-[80vh]">
-          <FileText size={64} className="text-muted-foreground mb-4" />
-          <p className="text-center text-muted-foreground">
-            Visualização não disponível
-          </p>
-        </div>
-      );
-    } else if (file.content_type.includes('officedocument') || file.content_type === 'application/msword') {
+    } else if (
+      file.content_type.includes("officedocument") ||
+      file.content_type === "application/msword"
+    ) {
       if (isLoading) {
         return (
           <div className="flex flex-col items-center justify-center h-[80vh] w-full">
@@ -186,7 +173,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           </div>
         );
       }
-      
+
       return documentUrl ? (
         <div className="h-[80vh] w-full bg-muted/20 rounded-md">
           <Tabs defaultValue="preview" className="w-full h-full">
@@ -197,12 +184,17 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
             <TabsContent value="preview" className="w-full h-[calc(80vh-40px)]">
               <iframe
                 ref={iframeRef}
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(documentUrl)}`}
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                  documentUrl
+                )}`}
                 className="w-full h-full"
                 title={`Document Preview: ${file.filename}`}
               />
             </TabsContent>
-            <TabsContent value="download" className="flex items-center justify-center h-[calc(80vh-40px)]">
+            <TabsContent
+              value="download"
+              className="flex items-center justify-center h-[calc(80vh-40px)]"
+            >
               <div className="flex flex-col items-center p-8">
                 <FileText size={64} className="text-primary mb-4" />
                 <h3 className="text-xl font-medium mb-2">{file.filename}</h3>
@@ -243,6 +235,13 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
   return (
     <Dialog open onOpenChange={() => onClose?.()}>
       <DialogContent className="max-w-7xl w-full bg-transparent border-none p-0">
+        <VisuallyHidden>
+          <DialogTitle>Visualização: {file.filename}</DialogTitle>
+          <DialogDescription>
+            Visualizador de arquivos para {file.content_type}
+          </DialogDescription>
+        </VisuallyHidden>
+
         <div className="absolute right-4 top-4 flex items-center gap-2 z-50 bg-background/30 backdrop-blur-md rounded-lg p-2">
           {onToggleFavorite && (
             <Button

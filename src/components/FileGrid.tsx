@@ -118,7 +118,11 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
                 onClick={() => {
-                  if (file.is_folder || isMediaFile(file.content_type)) {
+                  if (
+                    file.is_folder ||
+                    isMediaFile(file.content_type) ||
+                    file.content_type === "application/pdf"
+                  ) {
                     onPreview(file);
                   }
                 }}

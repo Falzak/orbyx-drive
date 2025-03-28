@@ -3,6 +3,7 @@
     "search": "Search files...",
     "settings": "Settings",
     "logout": "Logout",
+    "logoutDescription": "Disconnect from your account",
     "language": "Language",
     "languageSelector": "Select language",
     "theme": {
@@ -344,6 +345,15 @@
       "share": "Share",
       "close": "Close"
     }
+  },
+  "pdfViewer": {
+    "loading": "Loading PDF...",
+    "error": "Error loading PDF",
+    "downloadError": "Failed to download PDF",
+    "browserNotSupported": "Your browser does not support PDF viewing.",
+    "tryAgain": "Try again",
+    "downloadPdf": "Download PDF",
+    "previewNotAvailable": "Preview not available"
   },
   "admin": {
     "title": "Admin Dashboard",
