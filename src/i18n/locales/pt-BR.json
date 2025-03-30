@@ -1,568 +1,214 @@
+
 {
   "common": {
-    "search": "Pesquisar arquivos...",
-    "settings": "Configurações",
-    "logout": "Sair",
-    "logoutDescription": "Desconectar da sua conta",
-    "language": "Idioma",
-    "languageSelector": "Selecionar idioma",
-    "theme": {
-      "light": "Claro",
-      "dark": "Escuro"
-    },
-    "error": "Erro",
-    "success": "Sucesso",
-    "loading": "Carregando...",
     "cancel": "Cancelar",
-    "save": "Salvar",
-    "saving": "Salvando...",
-    "uploading": "Enviando...",
+    "continue": "Continuar",
+    "create": "Criar",
     "delete": "Excluir",
     "edit": "Editar",
-    "upload": "Upload",
-    "logoutError": "Falha ao sair",
-    "create": "Criar",
-    "creating": "Criando..."
+    "error": "Erro",
+    "loading": "Carregando...",
+    "logout": "Sair",
+    "logoutError": "Erro ao sair",
+    "retry": "Tentar novamente",
+    "save": "Salvar",
+    "search": "Buscar",
+    "settings": "Configurações",
+    "success": "Sucesso"
   },
   "dashboard": {
-    "title": "Painel",
-    "welcome": "Bem-vindo(a), {{name}}",
-    "uploadHint": "Arraste arquivos para a área de upload ou navegue",
-    "uploadInProgress": "Upload em andamento",
-    "uploadWait": "Aguarde o upload atual terminar",
-    "uploadSuccess": "Arquivo enviado com sucesso",
-    "uploadError": "Falha ao fazer upload do arquivo: {{error}}",
-    "upload": {
-      "button": "Upload",
-      "cancel": "Cancelar Upload",
-      "complete": "Upload concluído",
-      "uploading": "Enviando",
-      "cancelled": "Upload cancelado",
-      "cancelledDescription": "O upload foi cancelado"
-    },
-    "folder": {
-      "createSuccess": "Pasta criada",
-      "createDescription": "Nova pasta foi criada",
-      "created": "Pasta criada"
-    },
-    "dropzone": {
-      "title": "Solte os arquivos aqui ou clique para selecionar",
-      "subtitle": "Suporta imagens, vídeos, áudio e documentos",
-      "dragActive": "Solte os arquivos aqui para fazer upload"
-    },
-    "contextMenu": {
-      "refresh": "Atualizar arquivos",
-      "createFolder": "Nova pasta",
-      "uploadFile": "Fazer upload",
-      "selectAll": "Selecionar tudo",
-      "sortBy": "Ordenar por",
-      "view": "Visualizar",
-      "gridView": "Grade",
-      "listView": "Lista",
-      "settings": "Configurações",
-      "newTab": "Abrir em nova aba",
-      "copyPath": "Copiar caminho",
-      "properties": "Propriedades",
-      "help": "Ajuda",
-      "shortcuts": "Atalhos de teclado",
-      "feedback": "Enviar feedback"
-    },
+    "noFiles": "Nenhum arquivo encontrado",
     "refresh": {
-      "success": "Arquivos atualizados",
-      "description": "Lista de arquivos atualizada com sucesso"
+      "description": "Os arquivos foram atualizados com sucesso.",
+      "success": "Arquivos atualizados"
     },
     "selection": {
-      "allSelected": "Todos os itens selecionados"
+      "allSelected": "Todos os arquivos foram selecionados"
     },
     "clipboard": {
       "pathCopied": "Caminho copiado para a área de transferência"
     },
-    "shortcuts": {
-      "comingSoon": "Atalhos de teclado em breve"
-    }
+    "contextMenu": {
+      "refresh": "Atualizar",
+      "createFolder": "Criar pasta",
+      "uploadFile": "Enviar arquivo",
+      "selectAll": "Selecionar tudo",
+      "sortBy": "Ordenar por",
+      "view": "Visualização",
+      "gridView": "Grade",
+      "listView": "Lista",
+      "newTab": "Abrir em nova aba",
+      "copyPath": "Copiar caminho",
+      "help": "Ajuda",
+      "shortcuts": "Atalhos de teclado",
+      "feedback": "Enviar feedback"
+    },
+    "upload": {
+      "button": "Enviar",
+      "cancelled": "Upload cancelado",
+      "cancelledDescription": "O upload do arquivo foi cancelado.",
+      "cancel": "Cancelar",
+      "complete": "Upload concluído",
+      "uploading": "Enviando...",
+      "success": "Arquivo enviado com sucesso"
+    },
+    "uploadInProgress": "Upload em andamento",
+    "uploadWait": "Aguarde o upload atual terminar antes de enviar novos arquivos.",
+    "uploadSuccess": "Arquivo enviado com sucesso",
+    "uploadError": "Erro ao enviar arquivo: {error}"
   },
-  "sidebar": {
-    "expandSidebar": "Expandir barra lateral",
-    "collapseSidebar": "Recolher barra lateral",
-    "mainItems": {
-      "allFiles": "Todos os Arquivos",
-      "recent": "Recentes",
-      "shared": "Compartilhados",
-      "favorites": "Favoritos"
-    },
-    "views": {
-      "title": "Visualizações",
-      "gridView": "Visualização em Grade",
-      "listView": "Visualização em Lista"
-    },
+  "fileExplorer": {
     "categories": {
-      "title": "Categorias",
+      "all": "Todos os arquivos",
+      "recent": "Recentes",
       "images": "Imagens",
       "documents": "Documentos",
       "videos": "Vídeos",
-      "audio": "Áudio"
-    },
-    "tools": {
-      "title": "Ferramentas",
-      "uploadFiles": "Fazer Upload",
-      "newFolder": "Nova Pasta",
-      "bulkActions": "Ações em Massa",
-      "downloadAll": "Baixar Tudo"
-    },
-    "system": {
-      "title": "Sistema",
-      "storage": "Armazenamento",
-      "used": "Usado"
-    }
-  },
-  "fileExplorer": {
-    "emptyState": {
-      "title": "Nenhum arquivo encontrado",
-      "description": "Comece fazendo upload de alguns arquivos"
-    },
-    "allFiles": "Todos os Arquivos",
-    "sortBy": {
-      "placeholder": "Ordenar por",
-      "nameAsc": "Nome (A-Z)",
-      "nameDesc": "Nome (Z-A)",
-      "dateAsc": "Data (Mais antiga)",
-      "dateDesc": "Data (Mais recente)",
-      "sizeAsc": "Tamanho (Menor)",
-      "sizeDesc": "Tamanho (Maior)"
-    },
-    "contextMenu": {
-      "open": "Abrir",
-      "download": "Baixar",
-      "share": "Compartilhar",
-      "delete": "Excluir",
-      "rename": "Renomear",
-      "properties": "Propriedades",
-      "favorite": "Adicionar aos favoritos",
-      "unfavorite": "Remover dos favoritos",
-      "renamePrompt": "Digite o novo nome do arquivo",
-      "editFolder": "Editar pasta"
-    },
-    "fileProperties": {
-      "name": "Nome",
-      "size": "Tamanho",
-      "type": "Tipo",
-      "modified": "Modificado",
-      "created": "Criado em",
-      "location": "Localização",
-      "added": "Adicionado em",
-      "details": {
-        "name": "Nome do Arquivo",
-        "title": "Detalhes do Arquivo",
-        "type": "Tipo: {{type}}",
-        "size": "Tamanho: {{size}}",
-        "created": "Criado em: {{date}}",
-        "modified": "Modificado em: {{date}}"
-      }
-    },
-    "preview": {
-      "noPreview": "Não é possível visualizar este arquivo",
-      "openFile": "Abrir arquivo",
-      "download": "Baixar",
-      "share": "Compartilhar",
-      "close": "Fechar"
-    },
-    "tabs": {
-      "emoji": "Emojis",
-      "color": "Cores"
-    },
-    "labels": {
-      "icon": "Ícone",
-      "color": "Cor"
-    },
-    "colors": {
-      "gray": "Cinza",
-      "blue": "Azul",
-      "green": "Verde",
-      "yellow": "Amarelo",
-      "red": "Vermelho",
-      "purple": "Roxo",
-      "pink": "Rosa",
-      "turquoise": "Turquesa",
-      "orange": "Laranja",
-      "lightGreen": "Verde Claro",
-      "indigo": "Índigo",
-      "magenta": "Magenta"
-    },
-    "selection": {
-      "selected": "{{count}} selecionado",
-      "selected_plural": "{{count}} selecionados"
-    },
-    "folderActions": {
-      "createFolderSuccess": "Pasta criada com sucesso",
-      "createFolderError": "Erro ao criar pasta",
-      "deleteSuccess": "Excluído com sucesso"
-    },
-    "createFolder": {
-      "title": "Nova Pasta",
-      "description": "Crie uma nova pasta para organizar seus arquivos",
-      "name": "Nome da pasta",
-      "namePlaceholder": "Digite o nome da pasta"
-    },
-    "editFolder": {
-      "title": "Editar Pasta",
-      "description": "Modificar propriedades da pasta",
-      "success": "Pasta atualizada com sucesso",
-      "error": "Erro ao atualizar pasta"
-    },
-    "actions": {
-      "downloadError": "Erro ao baixar arquivo",
-      "deleteFolderSuccess": "Pasta excluída com sucesso",
-      "deleteFolderError": "Erro ao excluir pasta",
-      "deleteError": "Erro ao excluir arquivo",
-      "deleteSuccess": "Arquivo excluído com sucesso",
-      "renameFolderError": "Erro ao renomear pasta",
-      "renameFolderSuccess": "Pasta renomeada com sucesso",
-      "renameFileError": "Erro ao renomear arquivo",
-      "renameFileSuccess": "Arquivo renomeado com sucesso"
-    },
-    "categories": {
-      "allFiles": "Todos os Arquivos"
-    },
-    "navigation": {
-      "back": "Voltar"
+      "audio": "Áudio",
+      "favorites": "Favoritos",
+      "trash": "Lixeira"
     },
     "dropzone": {
       "title": "Solte os arquivos aqui",
-      "subtitle": "Faça upload de arquivos para esta pasta"
+      "subtitle": "Os arquivos serão enviados automaticamente"
     },
-    "suggestions": {
-      "404": {
-        "first": "• Verifique se a URL está correta",
-        "third": "- Voltar para a página inicial",
-        "second": "Voltar para a página inicial"
-      }
+    "fileProperties": {
+      "size": "Tamanho",
+      "type": "Tipo",
+      "created": "Criado em"
     },
-    "error": {
-      "404": {
-        "title": "Página não encontrada",
-        "description": "A página que você está procurando não existe"
-      },
-      "suggestions": "Sugestões"
+    "sortBy": {
+      "nameAsc": "Nome (A-Z)",
+      "nameDesc": "Nome (Z-A)",
+      "dateDesc": "Mais recentes",
+      "dateAsc": "Mais antigos",
+      "sizeDesc": "Maior tamanho",
+      "sizeAsc": "Menor tamanho"
     }
   },
+  "fileUpload": {
+    "title": "Enviar arquivos",
+    "description": "Arraste e solte os arquivos ou clique para selecionar",
+    "dragAndDrop": "Arraste e solte arquivos aqui ou clique para selecionar",
+    "dropHere": "Solte os arquivos aqui",
+    "browse": "Procurar",
+    "upload": "Enviar",
+    "uploading": "Enviando...",
+    "success": "Arquivos enviados",
+    "successCount": "{count} de {total} arquivos enviados com sucesso",
+    "scanning": "Verificando...",
+    "scanError": "Erro na verificação",
+    "securityAlert": "Alerta de segurança",
+    "securityThreat": "Ameaça detectada",
+    "threatDetected": "Ameaça detectada em um ou mais arquivos. Os arquivos suspeitos foram marcados.",
+    "maliciousDetections": "detecções"
+  },
   "auth": {
-    "title": "Orbyx Drive",
-    "description": "Acesse sua conta para gerenciar seus arquivos com segurança",
-    "signIn": {
-      "title": "Entrar",
-      "email": "Email",
-      "password": "Senha",
-      "forgotPassword": "Esqueceu sua senha?",
-      "button": "Entrar",
-      "buttonLoading": "Entrando...",
-      "emailPlaceholder": "Digite seu email",
-      "passwordPlaceholder": "Digite sua senha"
-    },
-    "signUp": {
-      "title": "Cadastrar",
-      "email": "Email",
-      "password": "Senha",
-      "confirmPassword": "Confirmar Senha",
-      "button": "Criar conta",
-      "buttonLoading": "Cadastrando...",
-      "emailPlaceholder": "Digite seu email",
-      "passwordPlaceholder": "Crie sua senha",
-      "confirmPasswordPlaceholder": "Confirme sua senha"
-    },
-    "resetPassword": {
-      "title": "Recuperar senha",
-      "description": "Enviaremos um email com instruções para recuperar sua senha",
-      "email": "Email",
-      "emailPlaceholder": "Digite seu email",
-      "button": "Enviar email de recuperação",
-      "buttonLoading": "Enviando..."
-    },
-    "newPassword": {
-      "title": "Redefinir Senha",
-      "description": "Digite sua nova senha para recuperar o acesso à sua conta",
-      "password": "Nova Senha",
-      "passwordPlaceholder": "Digite sua nova senha",
-      "button": "Atualizar Senha",
-      "buttonLoading": "Atualizando..."
-    },
-    "twoFactor": {
-      "title": "Verificação em duas etapas",
-      "description": "Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador",
-      "button": "Verificar",
-      "buttonLoading": "Verificando...",
-      "support": "Não consegue acessar seu autenticador?",
-      "contactSupport": "Entre em contato com o suporte",
-      "rememberDevice": "Lembrar este dispositivo",
-      "deviceRemembered": "Dispositivo lembrado",
-      "deviceRememberedDesc": "Este dispositivo será lembrado para futuras autenticações"
-    },
-    "passwordStrength": {
-      "minLength": "Mín. 8 caracteres",
-      "uppercase": "Letra maiúscula",
-      "number": "Número",
-      "special": "Caractere especial"
-    },
-    "errors": {
-      "invalidEmail": "Email inválido",
-      "invalidCredentials": "Email ou senha incorretos",
-      "passwordsDontMatch": "As senhas não coincidem",
-      "invalidCode": "Código inválido",
-      "generic": "Ocorreu um erro. Tente novamente."
-    },
-    "success": {
-      "signUp": "Verifique seu email para confirmar sua conta",
-      "resetPassword": "Verifique seu email para redefinir sua senha",
-      "passwordUpdated": "Sua senha foi atualizada com sucesso"
-    },
-    "trustedDevice": {
-      "recognized": "Dispositivo reconhecido",
-      "description": "Autenticação em dois fatores pulada para este dispositivo"
-    }
+    "welcome": "Bem-vindo ao Lovable Drive",
+    "welcomeBack": "Bem-vindo de volta",
+    "getStarted": "Comece com sua conta",
+    "createAccount": "Criar conta",
+    "forgotPassword": "Esqueceu sua senha?",
+    "login": "Entrar",
+    "loginWithGoogle": "Entrar com Google",
+    "loginWithGithub": "Entrar com GitHub",
+    "noAccount": "Não tem uma conta?",
+    "orContinueWith": "ou continue com",
+    "register": "Registrar",
+    "signUp": "Cadastrar",
+    "switchToLogin": "Já tem uma conta? Entre",
+    "switchToRegister": "Não tem uma conta? Cadastre-se",
+    "email": "Email",
+    "password": "Senha",
+    "emailRequired": "Email é obrigatório",
+    "passwordRequired": "Senha é obrigatória",
+    "emailInvalid": "Email inválido",
+    "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
+    "confirmPassword": "Confirmar senha",
+    "username": "Nome de usuário",
+    "usernameRequired": "Nome de usuário é obrigatório",
+    "privacyPolicy": "Política de Privacidade",
+    "termsOfService": "Termos de Serviço",
+    "byRegistering": "Ao se registrar, você concorda com nossos",
+    "twoFactor": "Autenticação de dois fatores",
+    "twoFactorEnterCode": "Digite o código enviado para seu dispositivo",
+    "twoFactorInvalidCode": "Código inválido ou expirado",
+    "resetPassword": "Redefinir senha",
+    "resetPasswordSuccess": "Se o email existir em nosso sistema, enviaremos instruções para redefinir sua senha",
+    "back": "Voltar"
+  },
+  "sidebar": {
+    "home": "Início",
+    "favorites": "Favoritos",
+    "recent": "Recentes",
+    "trash": "Lixeira",
+    "categories": "Categorias",
+    "drive": "Drive",
+    "account": "Conta",
+    "settings": "Configurações",
+    "security": "Segurança",
+    "storage": "Armazenamento"
   },
   "settings": {
     "title": "Configurações",
-    "profileUpdated": "Perfil atualizado com sucesso",
-    "sections": {
-      "profile": {
-        "title": "Perfil",
-        "description": "Gerencie suas informações pessoais",
-        "name": "Nome completo",
-        "namePlaceholder": "Digite seu nome completo",
-        "email": "E-mail",
-        "avatar": "Foto de perfil",
-        "changeAvatar": "Alterar Foto",
-        "avatarRequirements": "JPG, PNG ou GIF. Máx 5MB.",
-        "avatarUpdated": "Foto de perfil atualizada com sucesso",
-        "avatarUpdateError": "Erro ao atualizar foto de perfil",
-        "invalidImageType": "Tipo de arquivo inválido. Por favor, envie uma imagem.",
-        "imageTooLarge": "Imagem muito grande. Tamanho máximo é 5MB."
-      },
-      "appearance": {
-        "title": "Aparência",
-        "description": "Personalize a aparência do aplicativo",
-        "theme": "Tema"
-      },
-      "storage": {
-        "title": "Armazenamento",
-        "usage": "Uso do Armazenamento",
-        "quota": "Cota"
-      },
-      "security": {
-        "title": "Segurança",
-        "description": "Gerencie suas configurações de segurança",
-        "password": "Senha",
-        "changePassword": "Alterar senha",
-        "twoFactor": "Autenticação de dois fatores",
-        "enable2FA": "Ativar autenticação de dois fatores",
-        "trustedDevices": "Dispositivos confiáveis",
-        "manageTrustedDevices": "Gerenciar dispositivos confiáveis",
-        "removeTrustedDevice": "Remover dispositivo confiável"
-      }
-    }
+    "account": "Conta",
+    "appearance": "Aparência",
+    "language": "Idioma",
+    "security": "Segurança",
+    "advanced": "Avançado",
+    "theme": {
+      "title": "Tema",
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
+    "username": "Nome de usuário",
+    "email": "Email",
+    "avatar": "Avatar",
+    "uploadAvatar": "Enviar avatar",
+    "removeAvatar": "Remover avatar",
+    "deleteAccount": "Excluir conta",
+    "deleteAccountWarning": "Esta ação é irreversível. Todos os seus dados serão excluídos permanentemente.",
+    "saved": "Configurações salvas",
+    "error": "Erro ao salvar configurações"
   },
-  "mediaPreview": {
-    "loading": "Carregando...",
-    "error": "Erro ao carregar arquivo",
-    "controls": {
-      "play": "Reproduzir",
-      "pause": "Pausar",
-      "mute": "Mutar",
-      "unmute": "Desmutar",
-      "fullscreen": "Tela cheia",
-      "exitFullscreen": "Sair da tela cheia",
-      "download": "Baixar",
-      "share": "Compartilhar",
-      "close": "Fechar"
-    }
+  "share": {
+    "title": "Compartilhar arquivo",
+    "linkCreated": "Link de compartilhamento criado",
+    "copyLink": "Copiar link",
+    "linkCopied": "Link copiado para a área de transferência",
+    "createLink": "Criar link",
+    "password": "Senha (opcional)",
+    "expiration": "Expiração",
+    "never": "Nunca",
+    "1day": "1 dia",
+    "7days": "7 dias",
+    "30days": "30 dias",
+    "custom": "Personalizado",
+    "passwordProtect": "Proteger com senha",
+    "allowDownload": "Permitir download",
+    "allowPreview": "Permitir visualização",
+    "generatePassword": "Gerar senha",
+    "generatedPassword": "Senha gerada: {password}",
+    "success": "Arquivo compartilhado com sucesso",
+    "copySuccess": "Copiado para a área de transferência",
+    "error": "Erro ao compartilhar arquivo",
+    "enterPassword": "Digite a senha para acessar o arquivo",
+    "incorrectPassword": "Senha incorreta",
+    "passwordRequired": "Senha obrigatória",
+    "fileExpired": "Este link expirou",
+    "fileNotFound": "Arquivo não encontrado"
   },
-  "pdfViewer": {
-    "loading": "Carregando PDF...",
-    "error": "Erro ao carregar PDF",
-    "downloadError": "Falha ao baixar o PDF",
-    "browserNotSupported": "Seu navegador não suporta a visualização de PDF.",
-    "tryAgain": "Tentar novamente",
-    "downloadPdf": "Baixar PDF",
-    "previewNotAvailable": "Visualização não disponível"
-  },
-  "admin": {
-    "title": "Painel de Administração",
-    "description": "Gerencie as configurações e ajustes do aplicativo",
-    "unauthorized": {
-      "title": "Acesso Não Autorizado",
-      "description": "Você não tem permissão para acessar esta página"
-    },
-    "tabs": {
-      "storage": "Armazenamento",
-      "database": "Banco de Dados",
-      "settings": "Configurações"
-    },
-    "storage": {
-      "title": "Provedores de Armazenamento",
-      "description": "Gerencie seus provedores de armazenamento e configurações",
-      "addProvider": "Adicionar Provedor",
-      "addProviderDescription": "Configure um novo provedor de armazenamento para seu aplicativo",
-      "provider": "Provedor",
-      "accessKeyId": "ID da Chave de Acesso",
-      "secretAccessKey": "Chave de Acesso Secreta",
-      "region": "Região",
-      "bucket": "Bucket",
-      "accountId": "ID da Conta",
-      "projectId": "ID do Projeto",
-      "isActive": "Ativo",
-      "addSuccess": "Provedor Adicionado",
-      "providerAdded": "Provedor de armazenamento foi adicionado com sucesso",
-      "updateSuccess": "Provedor Atualizado",
-      "providerUpdated": "Provedor de armazenamento foi atualizado com sucesso",
-      "deleteSuccess": "Provedor Excluído",
-      "providerDeleted": "Provedor de armazenamento foi excluído com sucesso",
-      "providers": {
-        "aws": "Amazon S3",
-        "google": "Google Cloud Storage",
-        "backblaze": "Backblaze B2",
-        "wasabi": "Wasabi",
-        "cloudflare": "Cloudflare R2"
-      }
-    },
-    "database": {
-      "title": "Gerenciamento do Banco de Dados",
-      "comingSoon": "Recursos de gerenciamento do banco de dados em breve"
-    },
-    "settings": {
-      "title": "Configurações do Sistema",
-      "comingSoon": "Configurações adicionais do sistema em breve"
-    }
-  },
-  "landing": {
-    "hero": {
-      "title": "Armazenamento e compartilhamento de arquivos seguro e intuitivo",
-      "description": "Proteja, organize e compartilhe seus documentos importantes com segurança de nível empresarial e uma interface amigável que facilita sua vida digital.",
-      "startNow": "Começar Agora",
-      "seeFeatures": "Conhecer Recursos"
-    },
-    "features": {
-      "title": "Recursos que transformam sua experiência digital",
-      "description": "Descubra as ferramentas poderosas que fazem do Orbyx Drive a escolha ideal para gerenciamento de arquivos no dia a dia.",
-      "security": {
-        "title": "Segurança Avançada",
-        "description": "Criptografia de ponta a ponta para seus arquivos mais valiosos, com autenticação de dois fatores para proteção extra"
-      },
-      "organization": {
-        "title": "Organização Intuitiva",
-        "description": "Organize seus arquivos em pastas com cores personalizadas e etiquetas visuais para encontrar tudo rapidamente"
-      },
-      "sharing": {
-        "title": "Compartilhamento Inteligente",
-        "description": "Compartilhe arquivos com segurança usando links protegidos por senha e data de expiração automática"
-      },
-      "anywhere": {
-        "title": "Acesso em Qualquer Lugar",
-        "description": "Tenha seus arquivos sempre à mão em qualquer dispositivo com nossa interface responsiva e sincronização automática"
-      },
-      "badge": "Funcionalidades"
-    },
-    "interface": {
-      "title": "Interface moderna e funcional",
-      "description": "Uma experiência de usuário cuidadosamente projetada que combina estética, funcionalidade e segurança em cada detalhe.",
-      "customizable": {
-        "title": "Visualização personalizada",
-        "description": "Alterne entre visualizações em lista e grade para adaptar a interface ao seu jeito de trabalhar"
-      },
-      "previews": {
-        "title": "Visualização integrada",
-        "description": "Veja documentos, imagens e vídeos diretamente no navegador sem necessidade de downloads"
-      },
-      "oneClick": {
-        "title": "Compartilhamento simplificado",
-        "description": "Crie links seguros com um clique e defina permissões de acesso personalizadas"
-      }
-    },
-    "security": {
-      "title": "Segurança que não complica sua vida",
-      "description": "Protegemos seus dados com tecnologia de ponta, mantendo uma experiência simples e agradável no dia a dia.",
-      "twoFactor": {
-        "title": "Autenticação de dois fatores",
-        "description": "Proteção extra com opção de reconhecer dispositivos confiáveis para maior praticidade"
-      },
-      "encryption": {
-        "title": "Criptografia avançada",
-        "description": "Seus arquivos são protegidos com criptografia durante todo o processo, do upload ao armazenamento"
-      },
-      "links": {
-        "title": "Links com controle total",
-        "description": "Defina por quanto tempo seus links compartilhados ficam ativos e quem pode acessá-los"
-      }
-    },
-    "testimonials": {
-      "title": "A opinião de quem já usa",
-      "description": "Veja o que nossos usuários dizem sobre sua experiência com o Orbyx Drive"
-    },
-    "cta": {
-      "title": "Pronto para proteger o que importa?",
-      "description": "Crie sua conta gratuita hoje e desfrute de um armazenamento seguro, organizado e acessível.",
-      "createAccount": "Criar Conta Gratuita",
-      "login": "Acessar Minha Conta"
-    },
-    "footer": {
-      "product": "Produto",
-      "features": "Recursos",
-      "pricing": "Planos e Preços",
-      "security": "Segurança",
-      "company": "Empresa",
-      "about": "Sobre Nós",
-      "blog": "Blog",
-      "contact": "Fale Conosco",
-      "legal": "Informações Legais",
-      "privacy": "Política de Privacidade",
-      "terms": "Termos de Uso",
-      "copyright": "Todos os direitos reservados",
-      "tagline": "A solução definitiva para armazenar e compartilhar seus arquivos com segurança, simplicidade e eficiência."
-    },
-    "nav": {
-      "features": "Recursos",
-      "solutions": "Soluções",
-      "pricing": "Planos",
-      "login": "Entrar",
-      "register": "Criar Conta",
-      "personal": "Uso Pessoal",
-      "teams": "Equipes",
-      "enterprise": "Empresarial"
-    },
-    "version": {
-      "new": "Novidade",
-      "released": "Beta lançada"
-    }
-  },
-  "googleDrive": {
-    "importButton": "Importar do Google Drive",
-    "importTitle": "Importar do Google Drive",
-    "importDescription": "Selecione arquivos do seu Google Drive para importar para seu armazenamento.",
-    "notConnected": "Não conectado ao Google Drive",
-    "connectDescription": "Conecte sua conta do Google Drive para importar arquivos.",
-    "connectButton": "Conectar Google Drive",
-    "connectionSuccess": "Google Drive Conectado",
-    "connectionSuccessDescription": "Sua conta do Google Drive foi conectada com sucesso.",
-    "connectionError": "Falha ao conectar ao Google Drive",
-    "apiConfigError": "Erro de configuração da API. Entre em contato com o suporte.",
-    "callbackError": "Falha ao completar a autenticação do Google Drive",
-    "searchPlaceholder": "Pesquisar arquivos...",
-    "noFiles": "Nenhum arquivo encontrado no seu Google Drive",
-    "noSearchResults": "Nenhum arquivo correspondente à sua pesquisa",
-    "noFilesSelected": "Nenhum arquivo selecionado",
-    "selectedFilesCount": "{{count}} arquivos selecionados",
-    "importSuccess": "Arquivos Importados",
-    "importSuccessDescription": "{{count}} arquivos importados com sucesso do Google Drive",
-    "importPartialFailure": "Alguns Arquivos Falharam ao Importar",
-    "importFailureDescription": "Falha ao importar: {{files}}"
-  },
-  "fileUpload": {
-    "title": "Enviar Arquivos",
-    "description": "Arraste e solte arquivos para enviar ou clique para navegar",
-    "dragAndDrop": "Arraste e solte arquivos aqui ou clique para navegar",
-    "dropHere": "Solte os arquivos aqui...",
-    "browse": "Procurar Arquivos",
-    "upload": "Enviar Arquivos",
-    "uploading": "Enviando...",
-    "success": "Arquivos enviados com sucesso",
-    "successCount": "{{count}} de {{total}} arquivos enviados com sucesso"
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Buscar arquivos...",
+    "noResults": "Nenhum resultado encontrado",
+    "searching": "Buscando...",
+    "filter": "Filtrar por tipo",
+    "all": "Todos",
+    "images": "Imagens",
+    "documents": "Documentos",
+    "videos": "Vídeos",
+    "audio": "Áudio"
   }
 }

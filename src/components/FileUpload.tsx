@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
-import { Upload, X, FileUp, Check, Loader2 } from "lucide-react";
+import { Upload, X, FileUp, Check, Loader2, AlertTriangle, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/App";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +31,8 @@ interface UploadFile {
   id: string;
   progress: number;
   error: string | null;
-  status: "idle" | "uploading" | "success" | "error";
+  status: "idle" | "uploading" | "scanning" | "success" | "error" | "threat";
+  scanResult?: any;
 }
 
 const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
@@ -61,6 +62,66 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
     setFiles((prev) => prev.filter((file) => file.id !== id));
   };
 
+  const scanFile = async (fileUrl: string, fileId: string, dbFileId: string) => {
+    try {
+      // Atualizar status para scanning
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId ? { ...f, status: "scanning" } : f
+        )
+      );
+
+      // Chamar função edge para escanear o arquivo
+      const { data, error } = await supabase.functions.invoke('virus-scan', {
+        body: { fileUrl, fileId: dbFileId }
+      });
+
+      if (error) throw new Error(error.message);
+
+      if (data.isThreat) {
+        // Atualizar status para ameaça
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileId
+              ? { 
+                  ...f, 
+                  status: "threat", 
+                  scanResult: data.result,
+                  error: `${t("fileUpload.securityThreat")}: ${data.stats.malicious} ${t("fileUpload.maliciousDetections")}`
+                }
+              : f
+          )
+        );
+
+        toast({
+          variant: "destructive",
+          title: t("fileUpload.securityAlert"),
+          description: t("fileUpload.threatDetected"),
+        });
+      } else {
+        // Se não for ameaça, não mudar o status (manter como success)
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileId
+              ? { ...f, scanResult: data.result }
+              : f
+          )
+        );
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Erro ao verificar segurança do arquivo:", error);
+      // Não altera o status de success em caso de erro na verificação
+      toast({
+        variant: "destructive",
+        title: t("fileUpload.scanError"),
+        description: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
+  };
+
   const uploadFiles = async () => {
     if (!session?.user.id || files.length === 0) return;
 
@@ -68,7 +129,7 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
     let successCount = 0;
 
     for (const fileObj of files) {
-      if (fileObj.status === "success") {
+      if (fileObj.status === "success" || fileObj.status === "threat") {
         successCount++;
         continue;
       }
@@ -98,13 +159,13 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
         );
 
         // Insert file record in database - using the correct field names
-        const { error: dbError } = await supabase.from("files").insert({
+        const { data: fileData, error: dbError } = await supabase.from("files").insert({
           filename: fileObj.file.name,
           size: fileObj.file.size,
           content_type: fileObj.file.type,
           file_path: filePath,
           user_id: session.user.id,
-        });
+        }).select().single();
 
         if (dbError) throw dbError;
 
@@ -117,6 +178,14 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
           )
         );
         successCount++;
+        
+        // Gerar URL pública para o arquivo
+        const { data: urlData } = await supabase.storage.from('files').getPublicUrl(filePath);
+        
+        if (urlData) {
+          // Iniciar verificação de segurança
+          await scanFile(urlData.publicUrl, fileObj.id, fileData.id);
+        }
       } catch (error) {
         console.error("Upload error:", error);
         setFiles((prev) =>
@@ -225,8 +294,22 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
                       <Progress value={fileObj.progress} className="h-1.5" />
                     </div>
                   )}
+                  {fileObj.status === "scanning" && (
+                    <div className="flex items-center">
+                      <Shield className="h-4 w-4 text-amber-500 animate-pulse mr-1" />
+                      <span className="text-xs text-amber-500">{t("fileUpload.scanning")}</span>
+                    </div>
+                  )}
                   {fileObj.status === "success" && (
                     <Check className="h-4 w-4 text-green-500" />
+                  )}
+                  {fileObj.status === "threat" && (
+                    <div className="flex items-center gap-1">
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <span className="text-xs text-red-500 truncate max-w-[120px]">
+                        {fileObj.error}
+                      </span>
+                    </div>
                   )}
                   {fileObj.status === "error" && (
                     <div className="flex items-center gap-1">
