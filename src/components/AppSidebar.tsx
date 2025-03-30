@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -70,7 +71,8 @@ const LANGUAGES = [
     code: "pt-BR",
     name: "Português",
     flag: "🇧🇷",
-  } as const;
+  },
+] as const;
 
 export function AppSidebar({ onSearch }: AppSidebarProps) {
   const navigate = useNavigate();
