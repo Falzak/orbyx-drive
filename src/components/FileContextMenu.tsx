@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { RenameFileDialog } from "@/components/RenameFileDialog";
 
 interface FileContextMenuProps {
   file: FileData;
@@ -54,6 +55,7 @@ export const FileContextMenu = React.forwardRef<
     ref
   ) => {
     const { t } = useTranslation();
+    const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
 
     const isMediaFile = (contentType: string) => {
       return (
@@ -197,15 +199,7 @@ export const FileContextMenu = React.forwardRef<
             </ContextMenuItem>
             {!file.is_folder && (
               <ContextMenuItem
-                onClick={() => {
-                  const newName = prompt(
-                    t("fileExplorer.contextMenu.renamePrompt"),
-                    file.filename
-                  );
-                  if (newName && newName !== file.filename) {
-                    onRename(file, newName);
-                  }
-                }}
+                onClick={() => setIsRenameDialogOpen(true)}
                 className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
               >
                 <Edit className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
@@ -239,6 +233,12 @@ export const FileContextMenu = React.forwardRef<
             </ContextMenuItem>
           </div>
         </ContextMenuContent>
+        <RenameFileDialog
+          file={file}
+          open={isRenameDialogOpen}
+          onOpenChange={setIsRenameDialogOpen}
+          onRename={onRename}
+        />
       </ContextMenu>
     );
   }

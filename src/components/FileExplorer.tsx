@@ -557,47 +557,62 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     };
 
     const handleRename = async (file: FileData, newName: string) => {
-      if (file.is_folder) {
-        const { error } = await supabase
-          .from("folders")
-          .update({ name: newName })
-          .eq("id", file.id);
+      return new Promise<void>(async (resolve, reject) => {
+        try {
+          if (file.is_folder) {
+            const { error } = await supabase
+              .from("folders")
+              .update({ name: newName })
+              .eq("id", file.id);
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: t("common.error"),
-            description: t("fileExplorer.actions.renameFolderError"),
-          });
-          return;
-        }
+            if (error) {
+              toast({
+                variant: "destructive",
+                title: t("common.error"),
+                description: t("fileExplorer.actions.renameFolderError"),
+              });
+              reject(error);
+              return;
+            }
 
-        queryClient.invalidateQueries({ queryKey: ["folders"] });
-        toast({
-          title: t("common.success"),
-          description: t("fileExplorer.actions.renameFolderSuccess"),
-        });
-      } else {
-        const { error } = await supabase
-          .from("files")
-          .update({ filename: newName })
-          .eq("id", file.id);
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
+            toast({
+              title: t("common.success"),
+              description: t("fileExplorer.actions.renameFolderSuccess"),
+            });
+          } else {
+            const { error } = await supabase
+              .from("files")
+              .update({ filename: newName })
+              .eq("id", file.id);
 
-        if (error) {
+            if (error) {
+              toast({
+                variant: "destructive",
+                title: t("common.error"),
+                description: t("fileExplorer.actions.renameFileError"),
+              });
+              reject(error);
+              return;
+            }
+
+            queryClient.invalidateQueries({ queryKey: ["files"] });
+            toast({
+              title: t("common.success"),
+              description: t("fileExplorer.actions.renameFileSuccess"),
+            });
+          }
+          resolve();
+        } catch (error) {
+          console.error("Error renaming file:", error);
           toast({
             variant: "destructive",
             title: t("common.error"),
             description: t("fileExplorer.actions.renameFileError"),
           });
-          return;
+          reject(error);
         }
-
-        queryClient.invalidateQueries({ queryKey: ["files"] });
-        toast({
-          title: t("common.success"),
-          description: t("fileExplorer.actions.renameFileSuccess"),
-        });
-      }
+      });
     };
 
     const handleShare = (file: FileData) => {

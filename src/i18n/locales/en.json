@@ -150,6 +150,7 @@
       "location": "Location",
       "added": "Added on",
       "details": {
+        "name": "File Name",
         "title": "File Details",
         "type": "Type: {{type}}",
         "size": "Size: {{size}}",
@@ -206,6 +207,17 @@
       "description": "Modify folder properties",
       "success": "Folder updated successfully",
       "error": "Error updating folder"
+    },
+    "actions": {
+      "downloadError": "Error downloading file",
+      "deleteFolderSuccess": "Folder deleted successfully",
+      "deleteFolderError": "Error deleting folder",
+      "deleteError": "Error deleting file",
+      "deleteSuccess": "File deleted successfully",
+      "renameFolderError": "Error renaming folder",
+      "renameFolderSuccess": "Folder renamed successfully",
+      "renameFileError": "Error renaming file",
+      "renameFileSuccess": "File renamed successfully"
     },
     "categories": {
       "allFiles": "All Files"

@@ -150,6 +150,7 @@
       "location": "Localização",
       "added": "Adicionado em",
       "details": {
+        "name": "Nome do Arquivo",
         "title": "Detalhes do Arquivo",
         "type": "Tipo: {{type}}",
         "size": "Tamanho: {{size}}",
@@ -206,6 +207,17 @@
       "description": "Modificar propriedades da pasta",
       "success": "Pasta atualizada com sucesso",
       "error": "Erro ao atualizar pasta"
+    },
+    "actions": {
+      "downloadError": "Erro ao baixar arquivo",
+      "deleteFolderSuccess": "Pasta excluída com sucesso",
+      "deleteFolderError": "Erro ao excluir pasta",
+      "deleteError": "Erro ao excluir arquivo",
+      "deleteSuccess": "Arquivo excluído com sucesso",
+      "renameFolderError": "Erro ao renomear pasta",
+      "renameFolderSuccess": "Pasta renomeada com sucesso",
+      "renameFileError": "Erro ao renomear arquivo",
+      "renameFileSuccess": "Arquivo renomeado com sucesso"
     },
     "categories": {
       "allFiles": "Todos os Arquivos"
