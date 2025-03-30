@@ -14,7 +14,13 @@
     "save": "Salvar",
     "search": "Buscar",
     "settings": "Configurações",
-    "success": "Sucesso"
+    "success": "Sucesso",
+    "languageSelector": "Selecionar idioma",
+    "theme": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    }
   },
   "dashboard": {
     "noFiles": "Nenhum arquivo encontrado",
@@ -210,5 +216,17 @@
     "documents": "Documentos",
     "videos": "Vídeos",
     "audio": "Áudio"
+  },
+  "landing": {
+    "nav": {
+      "features": "Recursos",
+      "solutions": "Soluções",
+      "pricing": "Preços",
+      "login": "Entrar",
+      "register": "Cadastrar",
+      "personal": "Pessoal",
+      "teams": "Equipes",
+      "enterprise": "Empresas"
+    }
   }
 }

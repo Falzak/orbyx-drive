@@ -14,7 +14,13 @@
     "save": "Save",
     "search": "Search",
     "settings": "Settings",
-    "success": "Success"
+    "success": "Success",
+    "languageSelector": "Select language",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
   },
   "dashboard": {
     "noFiles": "No files found",
@@ -210,5 +216,17 @@
     "documents": "Documents",
     "videos": "Videos",
     "audio": "Audio"
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "solutions": "Solutions",
+      "pricing": "Pricing",
+      "login": "Log in",
+      "register": "Sign up",
+      "personal": "Personal",
+      "teams": "Teams",
+      "enterprise": "Enterprise"
+    }
   }
 }
