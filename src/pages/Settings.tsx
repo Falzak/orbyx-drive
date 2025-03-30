@@ -416,15 +416,6 @@ export default function Settings() {
                                   Your account email cannot be changed
                                 </p>
                               </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled
-                                className="text-xs"
-                              >
-                                {t("common.upload")}
-                              </Button>
                             </div>
                           </div>
                         </div>

@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmit": true,
+    "incremental": true,
+    "noErrorTruncation": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false
+  },
+  "exclude": ["node_modules", "dist"]
+}
