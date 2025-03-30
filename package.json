@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --project tsconfig.build.json && vite build --no-check",
-    "build:dev": "tsc --project tsconfig.build.json && vite build --mode development --no-check",
-    "build:force": "CI=false tsc --project tsconfig.build.json --noEmit false && vite build --no-check",
+    "build": "tsc --project tsconfig.build.json && vite build",
+    "build:dev": "tsc --project tsconfig.build.json && vite build --mode development",
+    "build:force": "CI=false tsc --project tsconfig.build.json --noEmit false && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
