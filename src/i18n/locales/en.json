@@ -16,6 +16,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving...",
+    "uploading": "Uploading...",
     "delete": "Delete",
     "edit": "Edit",
     "upload": "Upload",
@@ -316,7 +317,13 @@
         "name": "Full name",
         "namePlaceholder": "Enter your full name",
         "email": "Email",
-        "avatar": "Profile picture"
+        "avatar": "Profile picture",
+        "changeAvatar": "Change Avatar",
+        "avatarRequirements": "JPG, PNG or GIF. Max 5MB.",
+        "avatarUpdated": "Profile picture updated successfully",
+        "avatarUpdateError": "Error updating profile picture",
+        "invalidImageType": "Invalid file type. Please upload an image.",
+        "imageTooLarge": "Image is too large. Maximum size is 5MB."
       },
       "appearance": {
         "title": "Appearance",

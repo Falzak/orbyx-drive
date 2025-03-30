@@ -16,6 +16,7 @@
     "cancel": "Cancelar",
     "save": "Salvar",
     "saving": "Salvando...",
+    "uploading": "Enviando...",
     "delete": "Excluir",
     "edit": "Editar",
     "upload": "Upload",
@@ -191,7 +192,7 @@
       "selected": "{{count}} selecionado",
       "selected_plural": "{{count}} selecionados"
     },
-    "actions": {
+    "folderActions": {
       "createFolderSuccess": "Pasta criada com sucesso",
       "createFolderError": "Erro ao criar pasta",
       "deleteSuccess": "Excluído com sucesso"
@@ -328,7 +329,13 @@
         "name": "Nome completo",
         "namePlaceholder": "Digite seu nome completo",
         "email": "E-mail",
-        "avatar": "Foto do perfil"
+        "avatar": "Foto de perfil",
+        "changeAvatar": "Alterar Foto",
+        "avatarRequirements": "JPG, PNG ou GIF. Máx 5MB.",
+        "avatarUpdated": "Foto de perfil atualizada com sucesso",
+        "avatarUpdateError": "Erro ao atualizar foto de perfil",
+        "invalidImageType": "Tipo de arquivo inválido. Por favor, envie uma imagem.",
+        "imageTooLarge": "Imagem muito grande. Tamanho máximo é 5MB."
       },
       "appearance": {
         "title": "Aparência",

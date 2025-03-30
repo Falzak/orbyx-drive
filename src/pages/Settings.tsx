@@ -42,6 +42,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { AvatarUpload } from "@/components/AvatarUpload";
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -93,7 +94,24 @@ export default function Settings() {
     const formData = new FormData(e.currentTarget);
     const full_name = formData.get("full_name") as string;
 
-    updateProfileMutation.mutate({ full_name });
+    // Get the avatar URL from the hidden input if it exists
+    const avatar_url = (formData.get("avatar_url") as string) || undefined;
+
+    updateProfileMutation.mutate({ full_name, avatar_url });
+  };
+
+  const handleAvatarChange = (url: string) => {
+    // Update the hidden input for form submission
+    const avatarInput = document.getElementById(
+      "avatar_url"
+    ) as HTMLInputElement;
+    if (avatarInput) {
+      avatarInput.value = url;
+    }
+
+    // Save the avatar URL immediately
+    const full_name = session?.user?.user_metadata?.full_name || "";
+    updateProfileMutation.mutate({ full_name, avatar_url: url });
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -373,25 +391,22 @@ export default function Settings() {
                           >
                             {t("settings.sections.profile.avatar")}
                           </Label>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                            <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-background shadow-md">
-                              {session?.user?.user_metadata?.avatar_url ? (
-                                <img
-                                  src={session.user.user_metadata.avatar_url}
-                                  alt={session.user.email || ""}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <span className="text-3xl font-medium text-primary">
-                                  {session?.user?.email?.[0].toUpperCase()}
-                                </span>
-                              )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
-                                <span className="text-xs text-white font-medium">
-                                  Change
-                                </span>
-                              </div>
-                            </div>
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-6">
+                            <AvatarUpload
+                              currentAvatarUrl={
+                                session?.user?.user_metadata?.avatar_url
+                              }
+                              userEmail={session?.user?.email}
+                              onAvatarChange={handleAvatarChange}
+                            />
+                            <input
+                              type="hidden"
+                              id="avatar_url"
+                              name="avatar_url"
+                              defaultValue={
+                                session?.user?.user_metadata?.avatar_url || ""
+                              }
+                            />
                             <div className="space-y-3">
                               <div className="bg-muted/50 rounded-lg px-4 py-2 text-sm">
                                 <p className="font-medium text-foreground">
