@@ -191,11 +191,6 @@
       "selected": "{{count}} selected",
       "selected_plural": "{{count}} selected"
     },
-    "actions": {
-      "createFolderSuccess": "Folder created successfully",
-      "createFolderError": "Error creating folder",
-      "deleteSuccess": "Successfully deleted"
-    },
     "createFolder": {
       "title": "New Folder",
       "description": "Create a new folder to organize your files",
