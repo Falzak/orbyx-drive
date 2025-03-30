@@ -40,7 +40,9 @@ export type Database = {
           folder_id: string | null
           id: string
           is_favorite: boolean | null
+          is_malware: boolean | null
           original_id: string | null
+          security_scan_result: Json | null
           size: number | null
           source: string | null
           updated_at: string
@@ -55,7 +57,9 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_favorite?: boolean | null
+          is_malware?: boolean | null
           original_id?: string | null
+          security_scan_result?: Json | null
           size?: number | null
           source?: string | null
           updated_at?: string
@@ -70,7 +74,9 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_favorite?: boolean | null
+          is_malware?: boolean | null
           original_id?: string | null
+          security_scan_result?: Json | null
           size?: number | null
           source?: string | null
           updated_at?: string
