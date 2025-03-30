@@ -42,6 +42,9 @@ interface FileUploadProps {
   allowedFileTypes?: string[];
   maxSize?: number; // em bytes
   folderId?: string | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export const FileUpload = ({
@@ -50,6 +53,9 @@ export const FileUpload = ({
   allowedFileTypes,
   maxSize = 50 * 1024 * 1024, // 50MB padrão
   folderId,
+  open,
+  onOpenChange,
+  onSuccess,
 }: FileUploadProps) => {
   const { t } = useTranslation();
   const { session } = useAuth();
@@ -159,6 +165,7 @@ export const FileUpload = ({
       }
 
       queryClient.invalidateQueries({ queryKey: ["files"] });
+      if (onSuccess) onSuccess();
     },
     onError: (error, variables) => {
       setUploadedFiles((prev) => [
@@ -274,6 +281,124 @@ export const FileUpload = ({
     );
   };
 
+  // Handle Dialog rendering if the component is used as a dialog
+  if (open !== undefined) {
+    return (
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialogContent className="max-w-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("fileUpload.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("fileUpload.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="my-4">
+            <Card
+              className={cn(
+                "p-6 border-dashed",
+                isDragActive && "border-primary",
+                hasError && "border-destructive",
+                hasThreatDetected && "border-orange-500"
+              )}
+            >
+              <div
+                {...getRootProps()}
+                className={cn(
+                  "flex flex-col items-center justify-center space-y-4 p-4 text-center cursor-pointer",
+                  isDragActive && "bg-primary/10 rounded-lg"
+                )}
+              >
+                <input {...getInputProps()} />
+
+                <div
+                  className={cn(
+                    "p-3 rounded-full bg-primary/10",
+                    isDragActive && "bg-primary/20"
+                  )}
+                >
+                  {hasThreatDetected ? (
+                    <Shield className="h-8 w-8 text-orange-500" />
+                  ) : (
+                    <Upload className="h-8 w-8 text-primary" />
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium">
+                    {t("fileUpload.title")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {isDragActive
+                      ? t("fileUpload.dropHere")
+                      : t("fileUpload.dragAndDrop")}
+                  </p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const fileInput = document.querySelector('input[type="file"]');
+                    if (fileInput instanceof HTMLInputElement) {
+                      fileInput.click();
+                    }
+                  }}
+                >
+                  {t("fileUpload.browse")}
+                </Button>
+              </div>
+
+              {uploadedFiles.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-2">
+                    {t("fileUpload.successCount", {
+                      count: uploadedFiles.filter((f) => f.success).length,
+                      total: uploadedFiles.length,
+                    })}
+                  </p>
+                  {/* Lista de arquivos */}
+                  <div className="space-y-1">
+                    {uploadedFiles.map(renderFileItem)}
+                  </div>
+
+                  {/* Alertas */}
+                  {hasThreatDetected && (
+                    <Alert variant="destructive" className="mt-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>{t("fileUpload.securityAlert")}</AlertTitle>
+                      <AlertDescription>
+                        {t("fileUpload.threatDetected")}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Botão para concluir */}
+                  {isAllComplete && onComplete && (
+                    <div className="mt-4 flex justify-end">
+                      <Button onClick={onComplete}>
+                        {t("common.continue")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            {uploadedFiles.some(f => f.success) && (
+              <AlertDialogAction onClick={onSuccess}>
+                {t("common.continue")}
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
   return (
     <>
       <Card
@@ -321,7 +446,10 @@ export const FileUpload = ({
             variant="outline"
             onClick={(e) => {
               e.stopPropagation();
-              document.querySelector('input[type="file"]')?.click();
+              const fileInput = document.querySelector('input[type="file"]');
+              if (fileInput instanceof HTMLInputElement) {
+                fileInput.click();
+              }
             }}
           >
             {t("fileUpload.browse")}

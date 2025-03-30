@@ -20,7 +20,7 @@ import {
   Import,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import FileUpload from "@/components/FileUpload";
+import { FileUpload } from "@/components/FileUpload";
 import {
   Sidebar,
   SidebarContent,
@@ -70,8 +70,7 @@ const LANGUAGES = [
     code: "pt-BR",
     name: "Português",
     flag: "🇧🇷",
-  },
-] as const;
+  } as const;
 
 export function AppSidebar({ onSearch }: AppSidebarProps) {
   const navigate = useNavigate();
