@@ -10,12 +10,16 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
+import useEmblaCarousel, {
+  type UseEmblaCarouselType,
+} from "embla-carousel-react";
 import { cn } from "@/lib/utils";
 
 // Importando imagens
 import placeholderImage from "/placeholder.svg";
+
+// Tipo do API de Carrossel
+type CarouselApi = UseEmblaCarouselType[1];
 
 // Array de depoimentos expandido
 const testimonials = [
@@ -172,20 +176,69 @@ const TestimonialCard = ({
 
 export const TestimonialsSection = () => {
   const { t } = useTranslation();
-  const [api, setApi] = React.useState<any>(null);
+  const [api, setApi] = React.useState<CarouselApi | null>(null);
   const [current, setCurrent] = React.useState(0);
   const [showDots, setShowDots] = React.useState(true);
 
-  // Plugin de autoplay com pausa ao passar o mouse
-  const autoplayPlugin = React.useMemo(
-    () =>
-      Autoplay({
-        delay: 5000,
-        stopOnInteraction: true,
-        rootNode: (emblaRoot) => emblaRoot.parentElement,
-      }),
-    []
-  );
+  // Substituir o plugin de autoplay por um temporizador React simples
+  const [autoplayInterval, setAutoplayInterval] =
+    React.useState<NodeJS.Timeout | null>(null);
+
+  // Função para avançar para o próximo slide
+  const nextSlide = React.useCallback(() => {
+    if (!api) return;
+    api.scrollNext();
+  }, [api]);
+
+  // Configurar o autoplay com useEffect
+  React.useEffect(() => {
+    if (!api) return;
+
+    // Iniciar o autoplay
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+
+    setAutoplayInterval(interval);
+
+    // Tentar obter o elemento pai para eventos de mouse
+    try {
+      const emblaRoot = api.rootNode();
+      const parentElement = emblaRoot.parentElement;
+
+      if (parentElement) {
+        const handleMouseEnter = () => {
+          if (autoplayInterval) {
+            clearInterval(autoplayInterval);
+            setAutoplayInterval(null);
+          }
+        };
+
+        const handleMouseLeave = () => {
+          if (!autoplayInterval) {
+            const newInterval = setInterval(nextSlide, 5000);
+            setAutoplayInterval(newInterval);
+          }
+        };
+
+        parentElement.addEventListener("mouseenter", handleMouseEnter);
+        parentElement.addEventListener("mouseleave", handleMouseLeave);
+
+        return () => {
+          if (autoplayInterval) clearInterval(autoplayInterval);
+          parentElement.removeEventListener("mouseenter", handleMouseEnter);
+          parentElement.removeEventListener("mouseleave", handleMouseLeave);
+        };
+      }
+    } catch (error) {
+      console.error("Erro ao configurar pausa no hover:", error);
+    }
+
+    // Limpar intervalo ao desmontar
+    return () => {
+      if (autoplayInterval) clearInterval(autoplayInterval);
+    };
+  }, [api, nextSlide, autoplayInterval]);
 
   // Atualiza o slide atual quando o carrossel muda
   const onSelect = React.useCallback(() => {
@@ -324,7 +377,6 @@ export const TestimonialsSection = () => {
         >
           <Carousel
             setApi={setApi}
-            plugins={[autoplayPlugin]}
             className="mx-auto w-full max-w-5xl"
             opts={{
               align: "start",
