@@ -1,200 +1,95 @@
 
 {
   "common": {
-    "cancel": "Cancel",
-    "continue": "Continue",
-    "create": "Create",
-    "delete": "Delete",
-    "edit": "Edit",
     "error": "Error",
-    "loading": "Loading...",
-    "logout": "Log out",
-    "logoutError": "Error logging out",
-    "retry": "Retry",
-    "save": "Save",
-    "search": "Search",
-    "settings": "Settings",
     "success": "Success",
-    "languageSelector": "Select language",
-    "language": "Language",
-    "logoutDescription": "Sign out of your account",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "save": "Save",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "logout": "Logout",
+    "logoutError": "Error logging out",
     "theme": {
       "light": "Light",
       "dark": "Dark",
       "system": "System"
-    },
-    "back": "Back"
-  },
-  "dashboard": {
-    "noFiles": "No files found",
-    "refresh": {
-      "description": "Files have been refreshed successfully.",
-      "success": "Files refreshed"
-    },
-    "selection": {
-      "allSelected": "All files have been selected"
-    },
-    "clipboard": {
-      "pathCopied": "Path copied to clipboard"
-    },
-    "contextMenu": {
-      "refresh": "Refresh",
-      "createFolder": "Create folder",
-      "uploadFile": "Upload file",
-      "selectAll": "Select all",
-      "sortBy": "Sort by",
-      "view": "View",
-      "gridView": "Grid",
-      "listView": "List",
-      "newTab": "Open in new tab",
-      "copyPath": "Copy path",
-      "help": "Help",
-      "shortcuts": "Keyboard shortcuts",
-      "feedback": "Send feedback"
-    },
-    "upload": {
-      "button": "Upload",
-      "cancelled": "Upload cancelled",
-      "cancelledDescription": "The file upload was cancelled.",
-      "cancel": "Cancel",
-      "complete": "Upload complete",
-      "uploading": "Uploading...",
-      "success": "File uploaded successfully"
-    },
-    "uploadInProgress": "Upload in progress",
-    "uploadWait": "Please wait for the current upload to finish before uploading new files.",
-    "uploadSuccess": "File uploaded successfully",
-    "uploadError": "Error uploading file: {error}"
-  },
-  "fileExplorer": {
-    "categories": {
-      "all": "All files",
-      "recent": "Recent",
-      "images": "Images",
-      "documents": "Documents",
-      "videos": "Videos",
-      "audio": "Audio",
-      "favorites": "Favorites",
-      "trash": "Trash"
-    },
-    "dropzone": {
-      "title": "Drop files here",
-      "subtitle": "Files will be uploaded automatically"
-    },
-    "fileProperties": {
-      "size": "Size",
-      "type": "Type",
-      "created": "Created"
-    },
-    "sortBy": {
-      "nameAsc": "Name (A-Z)",
-      "nameDesc": "Name (Z-A)",
-      "dateDesc": "Newest",
-      "dateAsc": "Oldest",
-      "sizeDesc": "Largest",
-      "sizeAsc": "Smallest"
-    },
-    "createFolder": {
-      "success": "Folder created successfully",
-      "error": "Error creating folder"
     }
   },
-  "fileUpload": {
-    "title": "Upload files",
-    "description": "Drag and drop files or click to browse",
-    "dragAndDrop": "Drag and drop files here or click to browse",
-    "dropHere": "Drop files here",
-    "browse": "Browse",
-    "upload": "Upload",
-    "uploading": "Uploading...",
-    "success": "Files uploaded",
-    "successCount": "{count} of {total} files uploaded successfully",
-    "scanning": "Scanning...",
-    "scanError": "Scan error",
-    "securityAlert": "Security alert",
-    "securityThreat": "Threat detected",
-    "threatDetected": "Threat detected in one or more files. Suspicious files have been marked.",
-    "maliciousDetections": "detections"
-  },
   "auth": {
-    "welcome": "Welcome to Lovable Drive",
-    "welcomeBack": "Welcome back",
-    "getStarted": "Get started with your account",
-    "createAccount": "Create account",
-    "forgotPassword": "Forgot your password?",
-    "login": "Log in",
-    "loginWithGoogle": "Log in with Google",
-    "loginWithGithub": "Log in with GitHub",
-    "noAccount": "Don't have an account?",
-    "orContinueWith": "or continue with",
-    "register": "Register",
-    "signUp": "Sign up",
-    "switchToLogin": "Already have an account? Log in",
-    "switchToRegister": "Don't have an account? Sign up",
-    "email": "Email",
-    "password": "Password",
-    "emailRequired": "Email is required",
-    "passwordRequired": "Password is required",
-    "emailInvalid": "Invalid email",
-    "passwordTooShort": "Password must be at least 6 characters",
-    "confirmPassword": "Confirm password",
-    "username": "Username",
-    "usernameRequired": "Username is required",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "byRegistering": "By registering, you agree to our",
-    "twoFactor": "Two-factor authentication",
-    "twoFactorEnterCode": "Enter the code sent to your device",
-    "twoFactorInvalidCode": "Invalid or expired code",
-    "resetPassword": "Reset password",
-    "resetPasswordSuccess": "If the email exists in our system, we'll send instructions to reset your password",
-    "back": "Back",
-    "errors": {
-      "generic": "An error occurred during authentication",
-      "passwordsDontMatch": "Passwords don't match",
-      "invalidCode": "Invalid or expired code"
-    },
-    "success": {
-      "signUp": "Registration successful! Please check your email to verify your account",
-      "resetPassword": "If the email exists in our system, we'll send instructions to reset your password"
-    },
-    "signIn": {
-      "title": "Sign in",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "password": "Password",
-      "passwordPlaceholder": "Enter your password",
-      "forgotPassword": "Forgot password?",
+    "title": "FileVault",
+    "subtitle": "Secure file storage and sharing",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account to continue",
+      "form": {
+        "email": "Email",
+        "password": "Password",
+        "emailPlaceholder": "Enter your email",
+        "passwordPlaceholder": "Enter your password"
+      },
       "button": "Sign in",
-      "buttonLoading": "Signing in..."
+      "buttonLoading": "Signing in...",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
     },
-    "signUp": {
+    "register": {
       "title": "Create account",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "password": "Password",
-      "passwordPlaceholder": "Create a password",
-      "confirmPassword": "Confirm password",
-      "confirmPasswordPlaceholder": "Confirm your password",
-      "button": "Create account",
-      "buttonLoading": "Creating account..."
+      "subtitle": "Sign up for a new account",
+      "form": {
+        "fullName": "Full name",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "fullNamePlaceholder": "Your full name",
+        "emailPlaceholder": "Your email",
+        "passwordPlaceholder": "Choose a password",
+        "confirmPasswordPlaceholder": "Confirm your password"
+      },
+      "button": "Sign up",
+      "buttonLoading": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
     },
-    "passwordStrength": {
-      "minLength": "8+ characters",
-      "uppercase": "Upper case",
-      "number": "Number",
-      "special": "Special char"
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "passwordMismatch": "Passwords do not match",
+      "weakPassword": "Password is too weak",
+      "userExists": "User already exists",
+      "invalidEmail": "Invalid email address",
+      "requiredField": "This field is required",
+      "generic": "An error occurred",
+      "invalidCode": "Invalid verification code"
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "We'll send a password reset link to your email",
+      "form": {
+        "email": "Email",
+        "emailPlaceholder": "Enter your email"
+      },
+      "button": "Send reset link",
+      "buttonLoading": "Sending...",
+      "backToLogin": "Back to login",
+      "success": "Check your email for a reset link"
     },
     "resetPassword": {
-      "title": "Reset password",
-      "description": "Enter your email and we'll send you a link to reset your password",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "button": "Send reset link",
-      "buttonLoading": "Sending..."
+      "title": "Create new password",
+      "subtitle": "Enter a new password for your account",
+      "form": {
+        "password": "New password",
+        "confirmPassword": "Confirm new password",
+        "passwordPlaceholder": "Enter new password",
+        "confirmPasswordPlaceholder": "Confirm new password"
+      },
+      "button": "Reset password",
+      "buttonLoading": "Resetting...",
+      "success": "Password reset successfully",
+      "backToLogin": "Back to login"
     },
     "twoFactor": {
-      "title": "Two-factor authentication",
+      "title": "Two-Factor Authentication",
       "description": "Enter the verification code from your authenticator app",
       "button": "Verify",
       "buttonLoading": "Verifying...",
@@ -203,203 +98,349 @@
       "contactSupport": "Contact support"
     }
   },
-  "sidebar": {
-    "home": "Home",
-    "favorites": "Favorites",
-    "recent": "Recent",
-    "trash": "Trash",
-    "categories": "Categories",
-    "drive": "Drive",
-    "account": "Account",
-    "settings": "Settings",
-    "security": "Security",
-    "storage": "Storage",
-    "mainItems": {
-      "allFiles": "All Files", 
-      "favorites": "Favorites"
+  "device": {
+    "recognized": "Trusted device recognized",
+    "twoFactorSkipped": "Two-factor authentication skipped",
+    "trusted": "Device saved as trusted"
+  },
+  "dashboard": {
+    "welcome": "Welcome, {{name}}",
+    "storage": {
+      "used": "Storage used",
+      "free": "Storage free",
+      "total": "Total storage",
+      "quota": "Storage quota",
+      "upgradeStorage": "Upgrade storage"
     },
-    "tools": {
-      "uploadFiles": "Upload Files",
-      "newFolder": "New Folder"
+    "files": {
+      "recent": "Recent files",
+      "favorites": "Favorites",
+      "all": "All files",
+      "noFiles": "No files found",
+      "uploadFirst": "Upload your first file",
+      "createFolder": "Create a folder"
+    },
+    "uploadSuccess": "File uploaded successfully",
+    "uploadError": "Error uploading file: {{error}}",
+    "uploadInProgress": "Upload in progress",
+    "uploadWait": "Please wait for the current upload to finish",
+    "refresh": {
+      "success": "Files refreshed",
+      "description": "Your files have been refreshed"
+    },
+    "selection": {
+      "allSelected": "All files selected"
+    },
+    "clipboard": {
+      "pathCopied": "Path copied to clipboard"
+    },
+    "upload": {
+      "uploading": "Uploading file...",
+      "button": "Upload",
+      "complete": "Upload complete",
+      "cancelled": "Upload cancelled",
+      "cancelledDescription": "The file upload was cancelled",
+      "cancel": "Cancel"
+    },
+    "contextMenu": {
+      "refresh": "Refresh",
+      "createFolder": "Create folder",
+      "uploadFile": "Upload file",
+      "selectAll": "Select all",
+      "sortBy": "Sort by",
+      "view": "View",
+      "gridView": "Grid view",
+      "listView": "List view",
+      "newTab": "Open in new tab",
+      "copyPath": "Copy path",
+      "help": "Help",
+      "shortcuts": "Keyboard shortcuts",
+      "feedback": "Send feedback"
+    },
+    "shortcuts": {
+      "comingSoon": "Keyboard shortcuts coming soon"
+    }
+  },
+  "fileExplorer": {
+    "toolbar": {
+      "searchPlaceholder": "Search files...",
+      "uploadButton": "Upload",
+      "newFolderButton": "New folder",
+      "viewAs": "View as",
+      "sortBy": "Sort by",
+      "selectAll": "Select all"
+    },
+    "emptyState": {
+      "title": "No files found",
+      "subtitle": "Upload files or create a folder to get started",
+      "uploadButton": "Upload files",
+      "newFolderButton": "Create folder"
+    },
+    "dropzone": {
+      "title": "Drop files here",
+      "subtitle": "Your files will be uploaded securely"
+    },
+    "fileMenu": {
+      "download": "Download",
+      "rename": "Rename",
+      "move": "Move",
+      "share": "Share",
+      "delete": "Delete",
+      "properties": "Properties"
+    },
+    "fileProperties": {
+      "size": "Size",
+      "type": "Type",
+      "created": "Created",
+      "modified": "Modified",
+      "owner": "Owner",
+      "path": "Path"
+    },
+    "sortBy": {
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "dateAsc": "Date (oldest first)",
+      "dateDesc": "Date (newest first)",
+      "sizeAsc": "Size (smallest first)",
+      "sizeDesc": "Size (largest first)"
+    },
+    "fileTypes": {
+      "image": "Image",
+      "document": "Document",
+      "video": "Video",
+      "audio": "Audio",
+      "pdf": "PDF",
+      "folder": "Folder",
+      "other": "Other"
+    },
+    "fileActions": {
+      "deleteConfirm": "Are you sure you want to delete this file?",
+      "deleteMultipleConfirm": "Are you sure you want to delete {{count}} files?",
+      "permanentAction": "This action cannot be undone",
+      "moveSuccess": "File moved successfully",
+      "deleteSuccess": "File deleted successfully",
+      "renameSuccess": "File renamed successfully"
+    },
+    "sharing": {
+      "title": "Share file",
+      "generateLink": "Generate link",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied to clipboard",
+      "expiresAt": "Link expires",
+      "never": "Never",
+      "password": {
+        "enable": "Password protect",
+        "placeholder": "Enter password",
+        "copied": "Password copied"
+      },
+      "expiration": {
+        "1day": "1 day",
+        "7days": "7 days",
+        "30days": "30 days",
+        "custom": "Custom date"
+      }
+    }
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "files": "Files",
+    "shared": "Shared",
+    "favorites": "Favorites",
+    "trash": "Trash",
+    "settings": "Settings",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "quota": {
+      "used": "{{used}} of {{total}} used",
+      "upgrade": "Upgrade plan"
+    },
+    "categories": {
+      "title": "Categories",
+      "all": "All files",
+      "images": "Images",
+      "documents": "Documents",
+      "videos": "Videos",
+      "audio": "Audio",
+      "pdfs": "PDFs"
+    },
+    "profile": {
+      "welcomeBack": "Welcome back"
+    },
+    "language": {
+      "title": "Language",
+      "en": "English",
+      "pt-BR": "Portuguese (Brazil)"
     }
   },
   "settings": {
     "title": "Settings",
-    "account": "Account",
-    "appearance": "Appearance",
-    "language": "Language",
-    "security": "Security",
-    "advanced": "Advanced",
-    "theme": {
-      "title": "Theme",
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System"
+    "subtitle": "Manage your account and preferences",
+    "profileUpdated": "Profile updated successfully",
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "description": "Manage your personal information",
+        "name": "Name",
+        "namePlaceholder": "Your full name",
+        "email": "Email address",
+        "avatar": "Profile picture"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Customize the look and feel",
+        "theme": "Theme"
+      },
+      "security": {
+        "title": "Security",
+        "description": "Manage your account security",
+        "password": "Password",
+        "changePassword": "Change password",
+        "twoFactor": "Two-factor authentication",
+        "enable2FA": "Enable",
+        "disable2FA": "Disable",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "confirmPassword": "Confirm password",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confimNewPassword": "Confirm new password",
+        "passwordHint": "Password must be at least 8 characters and include numbers and letters"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Manage how you receive notifications",
+        "emailNotifications": "Email notifications",
+        "fileUpdates": "File updates",
+        "securityAlerts": "Security alerts",
+        "newsletter": "Newsletter"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Advanced settings and options",
+        "encryption": "File encryption",
+        "autoEncrypt": "Auto-encrypt uploaded files",
+        "deleteAccount": "Delete account",
+        "deleteWarning": "This action cannot be undone"
+      }
+    }
+  },
+  "passwordPrompt": {
+    "title": "Password protected",
+    "description": "This file is password protected",
+    "placeholder": "Enter password",
+    "submit": "Unlock",
+    "incorrect": "Incorrect password"
+  },
+  "errorPage": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved",
+    "button": "Go back home"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "users": {
+      "title": "Users",
+      "totalUsers": "Total users",
+      "activeUsers": "Active users",
+      "newUsers": "New users"
     },
-    "username": "Username",
-    "email": "Email",
-    "avatar": "Avatar",
-    "uploadAvatar": "Upload avatar",
-    "removeAvatar": "Remove avatar",
-    "deleteAccount": "Delete account",
-    "deleteAccountWarning": "This action is irreversible. All your data will be permanently deleted.",
-    "saved": "Settings saved",
-    "error": "Error saving settings"
-  },
-  "share": {
-    "title": "Share file",
-    "linkCreated": "Share link created",
-    "copyLink": "Copy link",
-    "linkCopied": "Link copied to clipboard",
-    "createLink": "Create link",
-    "password": "Password (optional)",
-    "expiration": "Expiration",
-    "never": "Never",
-    "1day": "1 day",
-    "7days": "7 days",
-    "30days": "30 days",
-    "custom": "Custom",
-    "passwordProtect": "Password protect",
-    "allowDownload": "Allow download",
-    "allowPreview": "Allow preview",
-    "generatePassword": "Generate password",
-    "generatedPassword": "Generated password: {password}",
-    "success": "File shared successfully",
-    "copySuccess": "Copied to clipboard",
-    "error": "Error sharing file",
-    "enterPassword": "Enter password to access file",
-    "incorrectPassword": "Incorrect password",
-    "passwordRequired": "Password required",
-    "fileExpired": "This link has expired",
-    "fileNotFound": "File not found"
-  },
-  "search": {
-    "title": "Search",
-    "placeholder": "Search files...",
-    "noResults": "No results found",
-    "searching": "Searching...",
-    "filter": "Filter by type",
-    "all": "All",
-    "images": "Images",
-    "documents": "Documents",
-    "videos": "Videos",
-    "audio": "Audio"
+    "storage": {
+      "title": "Storage",
+      "totalStorage": "Total storage",
+      "usedStorage": "Used storage",
+      "freeStorage": "Free storage"
+    },
+    "storageProviders": {
+      "title": "Storage Providers",
+      "description": "Configure and manage storage providers",
+      "addProvider": "Add provider",
+      "editProvider": "Edit provider",
+      "deleteProvider": "Delete provider",
+      "settingsSaved": "Provider settings saved successfully",
+      "providerTypes": {
+        "s3": "Amazon S3",
+        "gcp": "Google Cloud Storage",
+        "azure": "Azure Blob Storage",
+        "supabase": "Supabase Storage",
+        "local": "Local Storage"
+      },
+      "form": {
+        "name": "Provider name",
+        "type": "Provider type",
+        "status": "Status",
+        "region": "Region",
+        "endpoint": "Endpoint",
+        "bucket": "Bucket name",
+        "accessKey": "Access key",
+        "secretKey": "Secret key",
+        "isDefault": "Set as default provider"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    }
   },
   "landing": {
-    "nav": {
-      "features": "Features",
-      "solutions": "Solutions",
-      "pricing": "Pricing",
-      "login": "Log in",
-      "register": "Sign up",
-      "personal": "Personal",
-      "teams": "Teams",
-      "enterprise": "Enterprise"
-    },
     "hero": {
       "title": "Secure file storage for everyone",
-      "subtitle": "Store, share, and collaborate on files and folders from your mobile device, tablet, or computer",
-      "cta": "Get started for free",
-      "secondaryCta": "Learn more"
+      "subtitle": "Store, share, and manage your files securely from anywhere",
+      "getStarted": "Get started",
+      "learnMore": "Learn more"
     },
     "features": {
-      "title": "Everything you need to manage your files",
-      "subtitle": "Powerful features to help you manage your personal and work files",
-      "security": {
-        "title": "Advanced security",
-        "description": "Your files are protected with end-to-end encryption"
-      },
-      "sharing": {
-        "title": "Easy sharing",
-        "description": "Share files and folders with anyone, with custom permissions"
-      },
-      "access": {
-        "title": "Access anywhere",
-        "description": "Access your files from any device, anytime, anywhere"
-      },
-      "collaboration": {
-        "title": "Real-time collaboration",
-        "description": "Work together with your team on documents and projects"
-      }
-    },
-    "preview": {
-      "title": "Seamless experience across all devices",
-      "subtitle": "Whether you're at your desk or on the go, Lovable Drive makes it easy to manage your files",
-      "cta": "Try it now"
-    },
-    "security": {
-      "title": "Your security is our priority",
-      "subtitle": "We use advanced encryption to keep your files safe",
+      "title": "Why choose FileVault",
+      "subtitle": "Best-in-class features designed for security and ease of use",
       "encryption": {
         "title": "End-to-end encryption",
         "description": "Your files are encrypted before they leave your device"
       },
-      "control": {
-        "title": "Complete control",
-        "description": "Decide who can access your files and for how long"
+      "sharing": {
+        "title": "Secure sharing",
+        "description": "Share files with password protection and expiry dates"
       },
-      "compliance": {
-        "title": "Compliance ready",
-        "description": "We follow industry standards to ensure your data is protected"
+      "storage": {
+        "title": "Ample storage",
+        "description": "Get plenty of space for all your important files"
+      },
+      "everywhere": {
+        "title": "Access everywhere",
+        "description": "Access your files from any device, anywhere"
       }
     },
+    "security": {
+      "title": "Security you can trust",
+      "subtitle": "Your data security is our top priority",
+      "encryption": "End-to-end encryption",
+      "compliance": "GDPR compliant",
+      "twoFactor": "Two-factor authentication",
+      "audits": "Regular security audits"
+    },
     "testimonials": {
-      "title": "Trusted by thousands",
-      "subtitle": "See what our users are saying about us"
+      "title": "What our users say",
+      "subtitle": "Join thousands of satisfied users worldwide"
     },
     "cta": {
-      "title": "Ready to get started?",
-      "subtitle": "Sign up now and get 10GB of free storage",
+      "title": "Get started today",
+      "subtitle": "Sign up now and get 5GB free storage",
       "button": "Create free account"
+    },
+    "nav": {
+      "features": "Features",
+      "security": "Security",
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "login": "Log in",
+      "signUp": "Sign up"
+    },
+    "footer": {
+      "product": "Product",
+      "company": "Company",
+      "resources": "Resources",
+      "legal": "Legal",
+      "rights": "© 2024 FileVault. All rights reserved.",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
     }
-  },
-  "error": {
-    "404": {
-      "title": "Page not found",
-      "description": "Sorry, we couldn't find the page you're looking for."
-    },
-    "suggestions": "You might want to check:"
-  },
-  "suggestions": {
-    "404": {
-      "first": "The URL was typed correctly",
-      "second": "Go to Home",
-      "third": "Contact support if you believe this is an error"
-    }
-  },
-  "admin": {
-    "title": "Admin Dashboard",
-    "description": "Manage your drive's system settings",
-    "unauthorized": {
-      "title": "Unauthorized Access",
-      "description": "You don't have permission to access this page."
-    },
-    "tabs": {
-      "storage": "Storage",
-      "database": "Database",
-      "settings": "System Settings"
-    },
-    "database": {
-      "title": "Database Management",
-      "comingSoon": "Database management tools coming soon."
-    },
-    "settings": {
-      "title": "System Settings",
-      "comingSoon": "System configuration options coming soon."
-    }
-  },
-  "password": {
-    "title": "Password Protected",
-    "description": "This file is protected with an additional layer of encryption. Please enter the password to unlock.",
-    "placeholder": "Enter file password",
-    "required": "Please enter a password",
-    "submit": "Unlock",
-    "incorrect": "Incorrect password",
-    "securityNote": "This password is needed to decrypt the additional security layer applied to this file."
-  },
-  "device": {
-    "trusted": "Trusted device",
-    "recognized": "Device recognized",
-    "twoFactorSkipped": "Two-factor authentication skipped for this device"
   }
 }
