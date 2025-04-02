@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -17,7 +18,7 @@ import { Loader2, Copy, Link, Trash, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { encryptData, decryptData } from "@/utils/encryption";
-import { t } from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 interface ShareDialogProps {
   file: FileData;
@@ -27,6 +28,7 @@ interface ShareDialogProps {
 
 export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isPublic, setIsPublic] = useState(false);
   const [isEncrypted, setIsEncrypted] = useState(true);
@@ -108,14 +110,14 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
       toast({
         title: t("share.dialog.linkCreated"),
-        description: t("share.dialog.linkCreatedDescription"),
+        description: t("share.dialog.encryptedLinkGenerated"),
       });
     } catch (error) {
       console.error("Share error:", error);
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: t("share.dialog.shareError"),
+        description: t("share.dialog.clipboardError"),
       });
     } finally {
       setIsLoading(false);
@@ -138,7 +140,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
       toast({
         title: t("share.dialog.stopSharing"),
-        description: t("share.dialog.stopSharingDescription"),
+        description: t("share.dialog.stopSharingError"),
       });
 
       onOpenChange(false);
@@ -175,20 +177,20 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {existingShare ? "Gerenciar compartilhamento" : "Compartilhar arquivo"}
+            {existingShare ? t("share.dialog.manageSharing") : t("share.dialog.shareFile")}
             <ShieldCheck className="h-4 w-4 text-primary" />
           </DialogTitle>
           <DialogDescription>
             {existingShare 
-              ? "Gerencie as configurações de compartilhamento do seu arquivo criptografado."
-              : "Configure as opções de compartilhamento seguro do seu arquivo."}
+              ? t("share.dialog.secureSharing")
+              : t("share.dialog.secureOptions")}
           </DialogDescription>
         </DialogHeader>
         
         {existingShare ? (
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Link de compartilhamento:</p>
+              <p className="text-sm text-muted-foreground mb-2">{t("share.dialog.sharingLink")}</p>
               <div className="flex items-center gap-2">
                 <Input
                   value={shareUrl}
@@ -207,14 +209,14 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Configurações atuais:</p>
+              <p className="text-sm text-muted-foreground">{t("share.dialog.sharingSettings")}</p>
               <div className="space-y-1">
-                <p className="text-sm">• Acesso: {isPublic ? "Público" : "Protegido"}</p>
-                {existingShare.encrypted_password && <p className="text-sm">• Protegido por senha criptografada</p>}
+                <p className="text-sm">{isPublic ? t("share.dialog.accessPublic") : t("share.dialog.accessProtected")}</p>
+                {existingShare.encrypted_password && <p className="text-sm">{t("share.dialog.passwordProtected")}</p>}
                 <p className="text-sm flex items-center gap-1">
-                  • Criptografia: 
+                  {t("share.dialog.encryptionEnabled")}
                   <span className="text-primary flex items-center">
-                    Ativada <ShieldCheck className="h-3 w-3 inline ml-1" />
+                    <ShieldCheck className="h-3 w-3 inline ml-1" />
                   </span>
                 </p>
               </div>
@@ -231,7 +233,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
               ) : (
                 <>
                   <Trash className="h-4 w-4 mr-2" />
-                  Parar de compartilhar
+                  {t("share.dialog.stopSharing")}
                 </>
               )}
             </Button>
@@ -239,7 +241,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
         ) : (
           <div className="grid gap-4 py-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="public">Link público</Label>
+              <Label htmlFor="public">{t("share.dialog.publicLink")}</Label>
               <Switch
                 id="public"
                 checked={isPublic}
@@ -249,8 +251,8 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="encrypted" className="flex items-center gap-1">
-                Criptografia AES 
-                <span className="text-xs text-muted-foreground">(recomendado)</span>
+                {t("share.dialog.aesEncryption")}
+                <span className="text-xs text-muted-foreground">{t("share.dialog.recommended")}</span>
               </Label>
               <Switch
                 id="encrypted"
@@ -262,16 +264,16 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
             {!isPublic && (
               <div className="grid gap-2">
-                <Label htmlFor="password">Senha de proteção</Label>
+                <Label htmlFor="password">{t("share.dialog.protectionPassword")}</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Digite uma senha (opcional)"
+                  placeholder={t("share.dialog.passwordOptional")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  A senha será criptografada antes de ser armazenada.
+                  {t("share.dialog.passwordEncrypted")}
                 </p>
               </div>
             )}
@@ -286,7 +288,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
               ) : (
                 <>
                   <Link className="h-4 w-4 mr-2" />
-                  Gerar link seguro
+                  {t("share.dialog.generateSecureLink")}
                 </>
               )}
             </Button>
