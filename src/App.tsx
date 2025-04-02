@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,7 @@ import Landing from "@/pages/Landing";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import ResetPassword from "./pages/ResetPassword";
 import TrustedDeviceToast from "./components/TrustedDeviceToast";
+import { useTranslation } from "react-i18next";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +75,7 @@ const TwoFactorProtectedRoute = ({
     "trusted_devices_v2",
     []
   );
+  const { t } = useTranslation();
 
   // Também verificar o formato antigo, como fallback
   const [trustedDevicesLegacy] = useLocalStorage<string[]>(
@@ -143,9 +146,8 @@ const TwoFactorProtectedRoute = ({
               setTimeout(() => {
                 const toastEvent = new CustomEvent("toast", {
                   detail: {
-                    title: "Dispositivo reconhecido",
-                    description:
-                      "Autenticação em dois fatores pulada para este dispositivo",
+                    title: t("device.recognized"),
+                    description: t("device.twoFactorSkipped"),
                   },
                 });
                 window.dispatchEvent(toastEvent);
@@ -176,12 +178,13 @@ const TwoFactorProtectedRoute = ({
     trustedDevicesV2,
     trustedDevicesLegacy,
     location.pathname,
+    t
   ]);
 
   if (isChecking) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading...
+        {t("common.loading")}
       </div>
     );
   }
@@ -207,6 +210,7 @@ const TwoFactorRedirector = () => {
   );
   const [isChecking, setIsChecking] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Evitar verificações múltiplas se já estiver redirecionando
@@ -255,9 +259,8 @@ const TwoFactorRedirector = () => {
             setTimeout(() => {
               const toastEvent = new CustomEvent("toast", {
                 detail: {
-                  title: "Dispositivo reconhecido",
-                  description:
-                    "Autenticação em dois fatores pulada para este dispositivo",
+                  title: t("device.recognized"),
+                  description: t("device.twoFactorSkipped"),
                 },
               });
               window.dispatchEvent(toastEvent);
@@ -272,13 +275,13 @@ const TwoFactorRedirector = () => {
     };
 
     checkTrustedDevice();
-  }, [session, trustedDevicesV2, trustedDevicesLegacy, navigate, isRedirecting]);
+  }, [session, trustedDevicesV2, trustedDevicesLegacy, navigate, isRedirecting, t]);
 
   // Mostrar loading apenas enquanto verifica
   if (isChecking) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading...
+        {t("common.loading")}
       </div>
     );
   }
@@ -290,6 +293,7 @@ const TwoFactorRedirector = () => {
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Configure session persistence
@@ -313,7 +317,7 @@ const App = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading...
+        {t("common.loading")}
       </div>
     );
   }

@@ -22,7 +22,8 @@
       "light": "Claro",
       "dark": "Escuro",
       "system": "Sistema"
-    }
+    },
+    "back": "Voltar"
   },
   "dashboard": {
     "noFiles": "Nenhum arquivo encontrado",
@@ -42,7 +43,7 @@
       "uploadFile": "Enviar arquivo",
       "selectAll": "Selecionar tudo",
       "sortBy": "Ordenar por",
-      "view": "Visualização",
+      "view": "Visualizar",
       "gridView": "Grade",
       "listView": "Lista",
       "newTab": "Abrir em nova aba",
@@ -54,14 +55,14 @@
     "upload": {
       "button": "Enviar",
       "cancelled": "Upload cancelado",
-      "cancelledDescription": "O upload do arquivo foi cancelado.",
+      "cancelledDescription": "O envio do arquivo foi cancelado.",
       "cancel": "Cancelar",
-      "complete": "Upload concluído",
+      "complete": "Envio completo",
       "uploading": "Enviando...",
       "success": "Arquivo enviado com sucesso"
     },
-    "uploadInProgress": "Upload em andamento",
-    "uploadWait": "Aguarde o upload atual terminar antes de enviar novos arquivos.",
+    "uploadInProgress": "Envio em andamento",
+    "uploadWait": "Aguarde o término do envio atual antes de enviar novos arquivos.",
     "uploadSuccess": "Arquivo enviado com sucesso",
     "uploadError": "Erro ao enviar arquivo: {error}"
   },
@@ -83,15 +84,15 @@
     "fileProperties": {
       "size": "Tamanho",
       "type": "Tipo",
-      "created": "Criado em"
+      "created": "Criado"
     },
     "sortBy": {
       "nameAsc": "Nome (A-Z)",
       "nameDesc": "Nome (Z-A)",
       "dateDesc": "Mais recentes",
       "dateAsc": "Mais antigos",
-      "sizeDesc": "Maior tamanho",
-      "sizeAsc": "Menor tamanho"
+      "sizeDesc": "Maiores",
+      "sizeAsc": "Menores"
     },
     "createFolder": {
       "success": "Pasta criada com sucesso",
@@ -100,19 +101,19 @@
   },
   "fileUpload": {
     "title": "Enviar arquivos",
-    "description": "Arraste e solte os arquivos ou clique para selecionar",
-    "dragAndDrop": "Arraste e solte arquivos aqui ou clique para selecionar",
+    "description": "Arraste e solte arquivos ou clique para navegar",
+    "dragAndDrop": "Arraste e solte arquivos aqui ou clique para navegar",
     "dropHere": "Solte os arquivos aqui",
-    "browse": "Procurar",
+    "browse": "Navegar",
     "upload": "Enviar",
     "uploading": "Enviando...",
     "success": "Arquivos enviados",
     "successCount": "{count} de {total} arquivos enviados com sucesso",
-    "scanning": "Verificando...",
-    "scanError": "Erro na verificação",
+    "scanning": "Escaneando...",
+    "scanError": "Erro de escaneamento",
     "securityAlert": "Alerta de segurança",
     "securityThreat": "Ameaça detectada",
-    "threatDetected": "Ameaça detectada em um ou mais arquivos. Os arquivos suspeitos foram marcados.",
+    "threatDetected": "Ameaça detectada em um ou mais arquivos. Arquivos suspeitos foram marcados.",
     "maliciousDetections": "detecções"
   },
   "auth": {
@@ -127,14 +128,14 @@
     "noAccount": "Não tem uma conta?",
     "orContinueWith": "ou continue com",
     "register": "Registrar",
-    "signUp": "Cadastrar",
+    "signUp": "Cadastrar-se",
     "switchToLogin": "Já tem uma conta? Entre",
     "switchToRegister": "Não tem uma conta? Cadastre-se",
-    "email": "Email",
+    "email": "E-mail",
     "password": "Senha",
-    "emailRequired": "Email é obrigatório",
+    "emailRequired": "E-mail é obrigatório",
     "passwordRequired": "Senha é obrigatória",
-    "emailInvalid": "Email inválido",
+    "emailInvalid": "E-mail inválido",
     "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
     "confirmPassword": "Confirmar senha",
     "username": "Nome de usuário",
@@ -146,8 +147,61 @@
     "twoFactorEnterCode": "Digite o código enviado para seu dispositivo",
     "twoFactorInvalidCode": "Código inválido ou expirado",
     "resetPassword": "Redefinir senha",
-    "resetPasswordSuccess": "Se o email existir em nosso sistema, enviaremos instruções para redefinir sua senha",
-    "back": "Voltar"
+    "resetPasswordSuccess": "Se o e-mail existir em nosso sistema, enviaremos instruções para redefinir sua senha",
+    "back": "Voltar",
+    "errors": {
+      "generic": "Ocorreu um erro durante a autenticação",
+      "passwordsDontMatch": "As senhas não coincidem",
+      "invalidCode": "Código inválido ou expirado"
+    },
+    "success": {
+      "signUp": "Registro bem-sucedido! Verifique seu e-mail para confirmar sua conta",
+      "resetPassword": "Se o e-mail existir em nosso sistema, enviaremos instruções para redefinir sua senha"
+    },
+    "signIn": {
+      "title": "Entrar",
+      "email": "E-mail",
+      "emailPlaceholder": "Digite seu e-mail",
+      "password": "Senha",
+      "passwordPlaceholder": "Digite sua senha",
+      "forgotPassword": "Esqueceu a senha?",
+      "button": "Entrar",
+      "buttonLoading": "Entrando..."
+    },
+    "signUp": {
+      "title": "Criar conta",
+      "email": "E-mail",
+      "emailPlaceholder": "Digite seu e-mail",
+      "password": "Senha",
+      "passwordPlaceholder": "Crie uma senha",
+      "confirmPassword": "Confirmar senha",
+      "confirmPasswordPlaceholder": "Confirme sua senha",
+      "button": "Criar conta",
+      "buttonLoading": "Criando conta..."
+    },
+    "passwordStrength": {
+      "minLength": "8+ caracteres",
+      "uppercase": "Maiúscula",
+      "number": "Número",
+      "special": "Caractere especial"
+    },
+    "resetPassword": {
+      "title": "Redefinir senha",
+      "description": "Digite seu e-mail e enviaremos um link para redefinir sua senha",
+      "email": "E-mail",
+      "emailPlaceholder": "Digite seu e-mail",
+      "button": "Enviar link de redefinição",
+      "buttonLoading": "Enviando..."
+    },
+    "twoFactor": {
+      "title": "Autenticação de dois fatores",
+      "description": "Digite o código de verificação do seu aplicativo autenticador",
+      "button": "Verificar",
+      "buttonLoading": "Verificando...",
+      "rememberDevice": "Lembrar este dispositivo",
+      "support": "Está com problemas?",
+      "contactSupport": "Contate o suporte"
+    }
   },
   "sidebar": {
     "home": "Início",
@@ -183,7 +237,7 @@
       "system": "Sistema"
     },
     "username": "Nome de usuário",
-    "email": "Email",
+    "email": "E-mail",
     "avatar": "Avatar",
     "uploadAvatar": "Enviar avatar",
     "removeAvatar": "Remover avatar",
@@ -207,7 +261,7 @@
     "custom": "Personalizado",
     "passwordProtect": "Proteger com senha",
     "allowDownload": "Permitir download",
-    "allowPreview": "Permitir visualização",
+    "allowPreview": "Permitir pré-visualização",
     "generatePassword": "Gerar senha",
     "generatedPassword": "Senha gerada: {password}",
     "success": "Arquivo compartilhado com sucesso",
@@ -220,7 +274,7 @@
     "fileNotFound": "Arquivo não encontrado"
   },
   "search": {
-    "title": "Buscar",
+    "title": "Busca",
     "placeholder": "Buscar arquivos...",
     "noResults": "Nenhum resultado encontrado",
     "searching": "Buscando...",
@@ -241,20 +295,76 @@
       "personal": "Pessoal",
       "teams": "Equipes",
       "enterprise": "Empresas"
+    },
+    "hero": {
+      "title": "Armazenamento seguro de arquivos para todos",
+      "subtitle": "Armazene, compartilhe e colabore em arquivos e pastas pelo seu celular, tablet ou computador",
+      "cta": "Comece gratuitamente",
+      "secondaryCta": "Saiba mais"
+    },
+    "features": {
+      "title": "Tudo o que você precisa para gerenciar seus arquivos",
+      "subtitle": "Recursos poderosos para ajudá-lo a gerenciar seus arquivos pessoais e de trabalho",
+      "security": {
+        "title": "Segurança avançada",
+        "description": "Seus arquivos são protegidos com criptografia de ponta a ponta"
+      },
+      "sharing": {
+        "title": "Compartilhamento fácil",
+        "description": "Compartilhe arquivos e pastas com qualquer pessoa, com permissões personalizadas"
+      },
+      "access": {
+        "title": "Acesse de qualquer lugar",
+        "description": "Acesse seus arquivos de qualquer dispositivo, a qualquer hora, em qualquer lugar"
+      },
+      "collaboration": {
+        "title": "Colaboração em tempo real",
+        "description": "Trabalhe junto com sua equipe em documentos e projetos"
+      }
+    },
+    "preview": {
+      "title": "Experiência perfeita em todos os dispositivos",
+      "subtitle": "Seja na sua mesa ou em movimento, o Lovable Drive facilita o gerenciamento de seus arquivos",
+      "cta": "Experimente agora"
+    },
+    "security": {
+      "title": "Sua segurança é nossa prioridade",
+      "subtitle": "Usamos criptografia avançada para manter seus arquivos seguros",
+      "encryption": {
+        "title": "Criptografia de ponta a ponta",
+        "description": "Seus arquivos são criptografados antes de saírem do seu dispositivo"
+      },
+      "control": {
+        "title": "Controle completo",
+        "description": "Decida quem pode acessar seus arquivos e por quanto tempo"
+      },
+      "compliance": {
+        "title": "Pronto para conformidade",
+        "description": "Seguimos os padrões da indústria para garantir que seus dados sejam protegidos"
+      }
+    },
+    "testimonials": {
+      "title": "Confiado por milhares",
+      "subtitle": "Veja o que nossos usuários estão dizendo sobre nós"
+    },
+    "cta": {
+      "title": "Pronto para começar?",
+      "subtitle": "Cadastre-se agora e ganhe 10GB de armazenamento gratuito",
+      "button": "Criar conta gratuita"
     }
   },
   "error": {
     "404": {
       "title": "Página não encontrada",
-      "description": "Desculpe, não conseguimos encontrar a página que você está procurando."
+      "description": "Desculpe, não encontramos a página que você está procurando."
     },
     "suggestions": "Você pode verificar:"
   },
   "suggestions": {
     "404": {
-      "first": "Se o URL foi digitado corretamente",
-      "second": "Ir para a Página Inicial",
-      "third": "Contate o suporte se você acredita que isso é um erro"
+      "first": "Se a URL foi digitada corretamente",
+      "second": "Ir para Início",
+      "third": "Contatar o suporte se você acredita que isso é um erro"
     }
   },
   "admin": {
@@ -285,6 +395,11 @@
     "required": "Por favor, digite uma senha",
     "submit": "Desbloquear",
     "incorrect": "Senha incorreta",
-    "securityNote": "Esta senha é necessária para descriptografar a camada adicional de segurança aplicada a este arquivo."
+    "securityNote": "Esta senha é necessária para descriptografar a camada de segurança adicional aplicada a este arquivo."
+  },
+  "device": {
+    "trusted": "Dispositivo confiável",
+    "recognized": "Dispositivo reconhecido",
+    "twoFactorSkipped": "Autenticação de dois fatores ignorada para este dispositivo"
   }
 }

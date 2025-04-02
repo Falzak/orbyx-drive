@@ -22,7 +22,8 @@
       "light": "Light",
       "dark": "Dark",
       "system": "System"
-    }
+    },
+    "back": "Back"
   },
   "dashboard": {
     "noFiles": "No files found",
@@ -147,7 +148,60 @@
     "twoFactorInvalidCode": "Invalid or expired code",
     "resetPassword": "Reset password",
     "resetPasswordSuccess": "If the email exists in our system, we'll send instructions to reset your password",
-    "back": "Back"
+    "back": "Back",
+    "errors": {
+      "generic": "An error occurred during authentication",
+      "passwordsDontMatch": "Passwords don't match",
+      "invalidCode": "Invalid or expired code"
+    },
+    "success": {
+      "signUp": "Registration successful! Please check your email to verify your account",
+      "resetPassword": "If the email exists in our system, we'll send instructions to reset your password"
+    },
+    "signIn": {
+      "title": "Sign in",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "button": "Sign in",
+      "buttonLoading": "Signing in..."
+    },
+    "signUp": {
+      "title": "Create account",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "button": "Create account",
+      "buttonLoading": "Creating account..."
+    },
+    "passwordStrength": {
+      "minLength": "8+ characters",
+      "uppercase": "Upper case",
+      "number": "Number",
+      "special": "Special char"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "description": "Enter your email and we'll send you a link to reset your password",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "button": "Send reset link",
+      "buttonLoading": "Sending..."
+    },
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "description": "Enter the verification code from your authenticator app",
+      "button": "Verify",
+      "buttonLoading": "Verifying...",
+      "rememberDevice": "Remember this device",
+      "support": "Having trouble?",
+      "contactSupport": "Contact support"
+    }
   },
   "sidebar": {
     "home": "Home",
@@ -241,6 +295,62 @@
       "personal": "Personal",
       "teams": "Teams",
       "enterprise": "Enterprise"
+    },
+    "hero": {
+      "title": "Secure file storage for everyone",
+      "subtitle": "Store, share, and collaborate on files and folders from your mobile device, tablet, or computer",
+      "cta": "Get started for free",
+      "secondaryCta": "Learn more"
+    },
+    "features": {
+      "title": "Everything you need to manage your files",
+      "subtitle": "Powerful features to help you manage your personal and work files",
+      "security": {
+        "title": "Advanced security",
+        "description": "Your files are protected with end-to-end encryption"
+      },
+      "sharing": {
+        "title": "Easy sharing",
+        "description": "Share files and folders with anyone, with custom permissions"
+      },
+      "access": {
+        "title": "Access anywhere",
+        "description": "Access your files from any device, anytime, anywhere"
+      },
+      "collaboration": {
+        "title": "Real-time collaboration",
+        "description": "Work together with your team on documents and projects"
+      }
+    },
+    "preview": {
+      "title": "Seamless experience across all devices",
+      "subtitle": "Whether you're at your desk or on the go, Lovable Drive makes it easy to manage your files",
+      "cta": "Try it now"
+    },
+    "security": {
+      "title": "Your security is our priority",
+      "subtitle": "We use advanced encryption to keep your files safe",
+      "encryption": {
+        "title": "End-to-end encryption",
+        "description": "Your files are encrypted before they leave your device"
+      },
+      "control": {
+        "title": "Complete control",
+        "description": "Decide who can access your files and for how long"
+      },
+      "compliance": {
+        "title": "Compliance ready",
+        "description": "We follow industry standards to ensure your data is protected"
+      }
+    },
+    "testimonials": {
+      "title": "Trusted by thousands",
+      "subtitle": "See what our users are saying about us"
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Sign up now and get 10GB of free storage",
+      "button": "Create free account"
     }
   },
   "error": {
@@ -286,5 +396,10 @@
     "submit": "Unlock",
     "incorrect": "Incorrect password",
     "securityNote": "This password is needed to decrypt the additional security layer applied to this file."
+  },
+  "device": {
+    "trusted": "Trusted device",
+    "recognized": "Device recognized",
+    "twoFactorSkipped": "Two-factor authentication skipped for this device"
   }
 }
