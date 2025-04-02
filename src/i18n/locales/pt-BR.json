@@ -16,6 +16,8 @@
     "settings": "Configurações",
     "success": "Sucesso",
     "languageSelector": "Selecionar idioma",
+    "language": "Idioma",
+    "logoutDescription": "Sair da sua conta",
     "theme": {
       "light": "Claro",
       "dark": "Escuro",
@@ -90,6 +92,10 @@
       "dateAsc": "Mais antigos",
       "sizeDesc": "Maior tamanho",
       "sizeAsc": "Menor tamanho"
+    },
+    "createFolder": {
+      "success": "Pasta criada com sucesso",
+      "error": "Erro ao criar pasta"
     }
   },
   "fileUpload": {
@@ -153,7 +159,15 @@
     "account": "Conta",
     "settings": "Configurações",
     "security": "Segurança",
-    "storage": "Armazenamento"
+    "storage": "Armazenamento",
+    "mainItems": {
+      "allFiles": "Todos os Arquivos", 
+      "favorites": "Favoritos"
+    },
+    "tools": {
+      "uploadFiles": "Enviar Arquivos",
+      "newFolder": "Nova Pasta"
+    }
   },
   "settings": {
     "title": "Configurações",
@@ -228,5 +242,49 @@
       "teams": "Equipes",
       "enterprise": "Empresas"
     }
+  },
+  "error": {
+    "404": {
+      "title": "Página não encontrada",
+      "description": "Desculpe, não conseguimos encontrar a página que você está procurando."
+    },
+    "suggestions": "Você pode verificar:"
+  },
+  "suggestions": {
+    "404": {
+      "first": "Se o URL foi digitado corretamente",
+      "second": "Ir para a Página Inicial",
+      "third": "Contate o suporte se você acredita que isso é um erro"
+    }
+  },
+  "admin": {
+    "title": "Painel de Administração",
+    "description": "Gerencie as configurações do sistema do seu drive",
+    "unauthorized": {
+      "title": "Acesso Não Autorizado",
+      "description": "Você não tem permissão para acessar esta página."
+    },
+    "tabs": {
+      "storage": "Armazenamento",
+      "database": "Banco de Dados",
+      "settings": "Configurações do Sistema"
+    },
+    "database": {
+      "title": "Gerenciamento de Banco de Dados",
+      "comingSoon": "Ferramentas de gerenciamento de banco de dados em breve."
+    },
+    "settings": {
+      "title": "Configurações do Sistema",
+      "comingSoon": "Opções de configuração do sistema em breve."
+    }
+  },
+  "password": {
+    "title": "Protegido por Senha",
+    "description": "Este arquivo está protegido com uma camada adicional de criptografia. Por favor, digite a senha para desbloquear.",
+    "placeholder": "Digite a senha do arquivo",
+    "required": "Por favor, digite uma senha",
+    "submit": "Desbloquear",
+    "incorrect": "Senha incorreta",
+    "securityNote": "Esta senha é necessária para descriptografar a camada adicional de segurança aplicada a este arquivo."
   }
 }

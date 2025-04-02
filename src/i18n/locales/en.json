@@ -16,6 +16,8 @@
     "settings": "Settings",
     "success": "Success",
     "languageSelector": "Select language",
+    "language": "Language",
+    "logoutDescription": "Sign out of your account",
     "theme": {
       "light": "Light",
       "dark": "Dark",
@@ -90,6 +92,10 @@
       "dateAsc": "Oldest",
       "sizeDesc": "Largest",
       "sizeAsc": "Smallest"
+    },
+    "createFolder": {
+      "success": "Folder created successfully",
+      "error": "Error creating folder"
     }
   },
   "fileUpload": {
@@ -153,7 +159,15 @@
     "account": "Account",
     "settings": "Settings",
     "security": "Security",
-    "storage": "Storage"
+    "storage": "Storage",
+    "mainItems": {
+      "allFiles": "All Files", 
+      "favorites": "Favorites"
+    },
+    "tools": {
+      "uploadFiles": "Upload Files",
+      "newFolder": "New Folder"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -228,5 +242,49 @@
       "teams": "Teams",
       "enterprise": "Enterprise"
     }
+  },
+  "error": {
+    "404": {
+      "title": "Page not found",
+      "description": "Sorry, we couldn't find the page you're looking for."
+    },
+    "suggestions": "You might want to check:"
+  },
+  "suggestions": {
+    "404": {
+      "first": "The URL was typed correctly",
+      "second": "Go to Home",
+      "third": "Contact support if you believe this is an error"
+    }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "description": "Manage your drive's system settings",
+    "unauthorized": {
+      "title": "Unauthorized Access",
+      "description": "You don't have permission to access this page."
+    },
+    "tabs": {
+      "storage": "Storage",
+      "database": "Database",
+      "settings": "System Settings"
+    },
+    "database": {
+      "title": "Database Management",
+      "comingSoon": "Database management tools coming soon."
+    },
+    "settings": {
+      "title": "System Settings",
+      "comingSoon": "System configuration options coming soon."
+    }
+  },
+  "password": {
+    "title": "Password Protected",
+    "description": "This file is protected with an additional layer of encryption. Please enter the password to unlock.",
+    "placeholder": "Enter file password",
+    "required": "Please enter a password",
+    "submit": "Unlock",
+    "incorrect": "Incorrect password",
+    "securityNote": "This password is needed to decrypt the additional security layer applied to this file."
   }
 }
