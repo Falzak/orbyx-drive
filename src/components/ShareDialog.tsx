@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -18,6 +17,7 @@ import { Loader2, Copy, Link, Trash, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { encryptData, decryptData } from "@/utils/encryption";
+import { t } from "@/i18n";
 
 interface ShareDialogProps {
   file: FileData;
@@ -29,14 +29,13 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isPublic, setIsPublic] = useState(false);
-  const [isEncrypted, setIsEncrypted] = useState(true); // Default to encrypted
+  const [isEncrypted, setIsEncrypted] = useState(true);
   const [password, setPassword] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [customUrl, setCustomUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
 
-  // Buscar informações de compartilhamento existente
   const { data: existingShare, isLoading: isLoadingShare } = useQuery({
     queryKey: ['shared-file', file.file_path],
     queryFn: async () => {
@@ -53,7 +52,6 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
       if (data && data.encrypted_password) {
         try {
-          // Decrypt password for UI display
           data.password = decryptData(data.encrypted_password);
         } catch (decryptError) {
           console.error("Error decrypting password:", decryptError);
@@ -64,13 +62,12 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
     },
   });
 
-  // Atualizar estados quando existir compartilhamento
   useEffect(() => {
     if (existingShare) {
       setIsPublic(existingShare.is_public);
       setPassword(existingShare.password || "");
       setExpiresAt(existingShare.expires_at || "");
-      setIsEncrypted(true); // We assume all existing shares use encryption
+      setIsEncrypted(true);
       setShareUrl(`${window.location.origin}/share/${existingShare.id}`);
     }
   }, [existingShare]);
@@ -82,18 +79,16 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Encrypt the password if provided
       const shareData: any = {
         file_path: file.file_path,
         shared_by: user.id,
         is_public: isPublic,
         is_encrypted: isEncrypted,
       };
-      
-      // Only store encrypted password in the database
+
       if (password) {
         shareData.encrypted_password = encryptData(password);
-        shareData.password = null; // Don't store plaintext password
+        shareData.password = null;
       } else {
         shareData.encrypted_password = null;
         shareData.password = null;
@@ -112,15 +107,15 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       queryClient.invalidateQueries({ queryKey: ['shared-file', file.file_path] });
 
       toast({
-        title: "Link criado com sucesso",
-        description: "O link de compartilhamento criptografado foi gerado.",
+        title: t("share.dialog.linkCreated"),
+        description: t("share.dialog.linkCreatedDescription"),
       });
     } catch (error) {
       console.error("Share error:", error);
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Não foi possível criar o link de compartilhamento.",
+        title: t("common.error"),
+        description: t("share.dialog.shareError"),
       });
     } finally {
       setIsLoading(false);
@@ -142,8 +137,8 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       queryClient.invalidateQueries({ queryKey: ['shared-file', file.file_path] });
 
       toast({
-        title: "Compartilhamento removido",
-        description: "O arquivo não está mais compartilhado.",
+        title: t("share.dialog.stopSharing"),
+        description: t("share.dialog.stopSharingDescription"),
       });
 
       onOpenChange(false);
@@ -151,8 +146,8 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       console.error("Stop sharing error:", error);
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Não foi possível remover o compartilhamento.",
+        title: t("common.error"),
+        description: t("share.dialog.stopSharingError"),
       });
     } finally {
       setIsLoading(false);
@@ -163,14 +158,14 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast({
-        title: "Link copiado",
-        description: "O link foi copiado para a área de transferência.",
+        title: t("share.dialog.linkCopied"),
+        description: t("share.dialog.clipboardSuccess"),
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Não foi possível copiar o link.",
+        title: t("common.error"),
+        description: t("share.dialog.clipboardError"),
       });
     }
   };
@@ -261,7 +256,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
                 id="encrypted"
                 checked={isEncrypted}
                 onCheckedChange={setIsEncrypted}
-                disabled={true} // Force encryption to be always on
+                disabled={true}
               />
             </div>
 

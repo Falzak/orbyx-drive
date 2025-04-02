@@ -94,8 +94,8 @@ const Share = () => {
     } else {
       toast({
         variant: "destructive",
-        title: "Senha inválida",
-        description: "Tente novamente"
+        title: t("share.invalidPassword"),
+        description: t("share.tryAgain")
       });
     }
   };
@@ -106,7 +106,8 @@ const Share = () => {
     setIsDownloading(true);
     
     try {
-      // Download and automatically decrypt the file
+      // Download and automatically decrypt the file using the storage utility
+      // which properly handles different storage providers
       const blob = await downloadFile(shareData.file_path);
       
       // Create a download link
@@ -124,15 +125,15 @@ const Share = () => {
         share_id: id,
         activity_type: 'download',
         user_ip: 'encrypted', // For privacy, we don't store actual IPs
-        user_agent: decryptData(navigator.userAgent) // Fix: Using decryptData instead of encryptData
+        user_agent: navigator.userAgent // Fixed: no need to use encryption here
       });
       
     } catch (error) {
       console.error('Download error:', error);
       toast({
         variant: "destructive",
-        title: "Erro no download",
-        description: "Tente novamente mais tarde"
+        title: t("share.downloadError"),
+        description: t("share.tryAgainLater")
       });
     } finally {
       setIsDownloading(false);
@@ -150,8 +151,8 @@ const Share = () => {
   if (!shareData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Arquivo não encontrado</h1>
-        <Button onClick={() => navigate('/')}>Voltar</Button>
+        <h1 className="text-2xl font-bold">{t("share.fileNotFound")}</h1>
+        <Button onClick={() => navigate('/')}>{t("common.back")}</Button>
       </div>
     );
   }
@@ -160,16 +161,16 @@ const Share = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <Lock className="h-12 w-12 text-primary mb-4" />
-        <h1 className="text-2xl font-bold mb-4">Arquivo protegido</h1>
+        <h1 className="text-2xl font-bold mb-4">{t("share.protectedFile")}</h1>
         <form onSubmit={handlePasswordSubmit} className="w-full max-w-sm space-y-4">
           <Input
             type="password"
-            placeholder="Digite a senha"
+            placeholder={t("share.enterPassword")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Button type="submit" className="w-full">
-            Continuar
+            {t("common.continue")}
           </Button>
         </form>
       </div>
@@ -180,17 +181,17 @@ const Share = () => {
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
       <div className="max-w-lg w-full bg-card rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Arquivo compartilhado</h1>
+          <h1 className="text-2xl font-bold">{t("share.sharedFile")}</h1>
           <div className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-1 rounded-full">
             <ShieldCheck className="h-4 w-4" />
-            <span className="text-xs font-medium">Criptografado</span>
+            <span className="text-xs font-medium">{t("share.encrypted")}</span>
           </div>
         </div>
         <div className="space-y-4">
           <div className="p-4 bg-muted rounded-md">
             <p className="font-medium">{shareData.filename}</p>
             <p className="text-sm text-muted-foreground">
-              Tamanho: {(shareData.size / 1024 / 1024).toFixed(2)} MB
+              {t("share.size")}: {(shareData.size / 1024 / 1024).toFixed(2)} MB
             </p>
           </div>
           <Button 
@@ -203,10 +204,10 @@ const Share = () => {
             ) : (
               <Download className="h-4 w-4" />
             )}
-            {isDownloading ? 'Descriptografando...' : 'Baixar arquivo'}
+            {isDownloading ? t("share.decrypting") : t("share.downloadFile")}
           </Button>
           <p className="text-xs text-center text-muted-foreground">
-            Este arquivo é criptografado usando AES e só pode ser descriptografado no seu dispositivo.
+            {t("share.encryptionNotice")}
           </p>
         </div>
       </div>

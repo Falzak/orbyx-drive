@@ -1,405 +1,155 @@
 
 {
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "emailPlaceholder": "Email address",
+    "passwordPlaceholder": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "resetPassword": "Reset Password",
+    "resetInstructions": "Enter your email address and we'll send you a link to reset your password.",
+    "backToSignIn": "Back to sign in",
+    "resetSent": "Password reset link sent",
+    "resetError": "Error sending reset link",
+    "signInError": "Error signing in",
+    "signUpError": "Error signing up",
+    "createAccount": "Create account",
+    "verifyOTP": "Verify OTP",
+    "otpSent": "OTP sent to your email",
+    "otpError": "Error sending OTP",
+    "otpInvalid": "Invalid OTP",
+    "otpExpired": "OTP expired",
+    "otpSuccess": "OTP verified successfully",
+    "otpPlaceholder": "Enter OTP",
+    "verifyEmail": "Verify Email",
+    "verifyEmailInstructions": "Check your email for a verification link.",
+    "verifyEmailError": "Error verifying email",
+    "verifyEmailSuccess": "Email verified successfully"
+  },
   "common": {
-    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
     "continue": "Continue",
-    "create": "Create",
+    "cancel": "Cancel",
+    "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "error": "Error",
-    "loading": "Loading...",
-    "logout": "Log out",
-    "logoutError": "Error logging out",
-    "retry": "Retry",
-    "save": "Save",
-    "search": "Search",
+    "create": "Create",
+    "add": "Add",
+    "remove": "Remove",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
     "settings": "Settings",
-    "success": "Success",
-    "languageSelector": "Select language",
-    "language": "Language",
-    "logoutDescription": "Sign out of your account",
-    "theme": {
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System"
-    },
-    "back": "Back"
-  },
-  "dashboard": {
-    "noFiles": "No files found",
-    "refresh": {
-      "description": "Files have been refreshed successfully.",
-      "success": "Files refreshed"
-    },
-    "selection": {
-      "allSelected": "All files have been selected"
-    },
-    "clipboard": {
-      "pathCopied": "Path copied to clipboard"
-    },
-    "contextMenu": {
-      "refresh": "Refresh",
-      "createFolder": "Create folder",
-      "uploadFile": "Upload file",
-      "selectAll": "Select all",
-      "sortBy": "Sort by",
-      "view": "View",
-      "gridView": "Grid",
-      "listView": "List",
-      "newTab": "Open in new tab",
-      "copyPath": "Copy path",
-      "help": "Help",
-      "shortcuts": "Keyboard shortcuts",
-      "feedback": "Send feedback"
-    },
-    "upload": {
-      "button": "Upload",
-      "cancelled": "Upload cancelled",
-      "cancelledDescription": "The file upload was cancelled.",
-      "cancel": "Cancel",
-      "complete": "Upload complete",
-      "uploading": "Uploading...",
-      "success": "File uploaded successfully"
-    },
-    "uploadInProgress": "Upload in progress",
-    "uploadWait": "Please wait for the current upload to finish before uploading new files.",
-    "uploadSuccess": "File uploaded successfully",
-    "uploadError": "Error uploading file: {error}"
-  },
-  "fileExplorer": {
-    "categories": {
-      "all": "All files",
-      "recent": "Recent",
-      "images": "Images",
-      "documents": "Documents",
-      "videos": "Videos",
-      "audio": "Audio",
-      "favorites": "Favorites",
-      "trash": "Trash"
-    },
-    "dropzone": {
-      "title": "Drop files here",
-      "subtitle": "Files will be uploaded automatically"
-    },
-    "fileProperties": {
-      "size": "Size",
-      "type": "Type",
-      "created": "Created"
-    },
-    "sortBy": {
-      "nameAsc": "Name (A-Z)",
-      "nameDesc": "Name (Z-A)",
-      "dateDesc": "Newest",
-      "dateAsc": "Oldest",
-      "sizeDesc": "Largest",
-      "sizeAsc": "Smallest"
-    },
-    "createFolder": {
-      "success": "Folder created successfully",
-      "error": "Error creating folder"
-    }
-  },
-  "fileUpload": {
-    "title": "Upload files",
-    "description": "Drag and drop files or click to browse",
-    "dragAndDrop": "Drag and drop files here or click to browse",
-    "dropHere": "Drop files here",
-    "browse": "Browse",
-    "upload": "Upload",
-    "uploading": "Uploading...",
-    "success": "Files uploaded",
-    "successCount": "{count} of {total} files uploaded successfully",
-    "scanning": "Scanning...",
-    "scanError": "Scan error",
-    "securityAlert": "Security alert",
-    "securityThreat": "Threat detected",
-    "threatDetected": "Threat detected in one or more files. Suspicious files have been marked.",
-    "maliciousDetections": "detections"
-  },
-  "auth": {
-    "welcome": "Welcome to Lovable Drive",
-    "welcomeBack": "Welcome back",
-    "getStarted": "Get started with your account",
-    "createAccount": "Create account",
-    "forgotPassword": "Forgot your password?",
-    "login": "Log in",
-    "loginWithGoogle": "Log in with Google",
-    "loginWithGithub": "Log in with GitHub",
-    "noAccount": "Don't have an account?",
-    "orContinueWith": "or continue with",
-    "register": "Register",
-    "signUp": "Sign up",
-    "switchToLogin": "Already have an account? Log in",
-    "switchToRegister": "Don't have an account? Sign up",
+    "logout": "Logout",
+    "name": "Name",
     "email": "Email",
     "password": "Password",
-    "emailRequired": "Email is required",
-    "passwordRequired": "Password is required",
-    "emailInvalid": "Invalid email",
-    "passwordTooShort": "Password must be at least 6 characters",
-    "confirmPassword": "Confirm password",
-    "username": "Username",
-    "usernameRequired": "Username is required",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "byRegistering": "By registering, you agree to our",
-    "twoFactor": "Two-factor authentication",
-    "twoFactorEnterCode": "Enter the code sent to your device",
-    "twoFactorInvalidCode": "Invalid or expired code",
-    "resetPassword": "Reset password",
-    "resetPasswordSuccess": "If the email exists in our system, we'll send instructions to reset your password",
-    "back": "Back",
-    "errors": {
-      "generic": "An error occurred during authentication",
-      "passwordsDontMatch": "Passwords don't match",
-      "invalidCode": "Invalid or expired code"
-    },
-    "success": {
-      "signUp": "Registration successful! Please check your email to verify your account",
-      "resetPassword": "If the email exists in our system, we'll send instructions to reset your password"
-    },
-    "signIn": {
-      "title": "Sign in",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "password": "Password",
-      "passwordPlaceholder": "Enter your password",
-      "forgotPassword": "Forgot password?",
-      "button": "Sign in",
-      "buttonLoading": "Signing in..."
-    },
-    "signUp": {
-      "title": "Create account",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "password": "Password",
-      "passwordPlaceholder": "Create a password",
-      "confirmPassword": "Confirm password",
-      "confirmPasswordPlaceholder": "Confirm your password",
-      "button": "Create account",
-      "buttonLoading": "Creating account..."
-    },
-    "passwordStrength": {
-      "minLength": "8+ characters",
-      "uppercase": "Upper case",
-      "number": "Number",
-      "special": "Special char"
-    },
-    "resetPassword": {
-      "title": "Reset password",
-      "description": "Enter your email and we'll send you a link to reset your password",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "button": "Send reset link",
-      "buttonLoading": "Sending..."
-    },
-    "twoFactor": {
-      "title": "Two-factor authentication",
-      "description": "Enter the verification code from your authenticator app",
-      "button": "Verify",
-      "buttonLoading": "Verifying...",
-      "rememberDevice": "Remember this device",
-      "support": "Having trouble?",
-      "contactSupport": "Contact support"
-    }
+    "confirmPassword": "Confirm Password",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "country": "Country",
+    "zipCode": "Zip Code",
+    "search": "Search",
+    "reset": "Reset",
+    "apply": "Apply",
+    "submit": "Submit",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "help": "Help",
+    "about": "About",
+    "contact": "Contact"
   },
-  "sidebar": {
-    "home": "Home",
-    "favorites": "Favorites",
-    "recent": "Recent",
-    "trash": "Trash",
-    "categories": "Categories",
-    "drive": "Drive",
-    "account": "Account",
-    "settings": "Settings",
-    "security": "Security",
-    "storage": "Storage",
-    "mainItems": {
-      "allFiles": "All Files", 
-      "favorites": "Favorites"
+  "fileExplorer": {
+    "allFiles": "All Files",
+    "contextMenu": {
+      "open": "Open",
+      "download": "Download",
+      "share": "Share",
+      "favorite": "Add to Favorites",
+      "unfavorite": "Remove from Favorites",
+      "rename": "Rename",
+      "renamePrompt": "Enter new name",
+      "delete": "Delete"
     },
-    "tools": {
-      "uploadFiles": "Upload Files",
-      "newFolder": "New Folder"
-    }
-  },
-  "settings": {
-    "title": "Settings",
-    "account": "Account",
-    "appearance": "Appearance",
-    "language": "Language",
-    "security": "Security",
-    "advanced": "Advanced",
-    "theme": {
-      "title": "Theme",
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System"
-    },
-    "username": "Username",
-    "email": "Email",
-    "avatar": "Avatar",
-    "uploadAvatar": "Upload avatar",
-    "removeAvatar": "Remove avatar",
-    "deleteAccount": "Delete account",
-    "deleteAccountWarning": "This action is irreversible. All your data will be permanently deleted.",
-    "saved": "Settings saved",
-    "error": "Error saving settings"
-  },
-  "share": {
-    "title": "Share file",
-    "linkCreated": "Share link created",
-    "copyLink": "Copy link",
-    "linkCopied": "Link copied to clipboard",
-    "createLink": "Create link",
-    "password": "Password (optional)",
-    "expiration": "Expiration",
-    "never": "Never",
-    "1day": "1 day",
-    "7days": "7 days",
-    "30days": "30 days",
-    "custom": "Custom",
-    "passwordProtect": "Password protect",
-    "allowDownload": "Allow download",
-    "allowPreview": "Allow preview",
-    "generatePassword": "Generate password",
-    "generatedPassword": "Generated password: {password}",
-    "success": "File shared successfully",
-    "copySuccess": "Copied to clipboard",
-    "error": "Error sharing file",
-    "enterPassword": "Enter password to access file",
-    "incorrectPassword": "Incorrect password",
-    "passwordRequired": "Password required",
-    "fileExpired": "This link has expired",
-    "fileNotFound": "File not found"
-  },
-  "search": {
-    "title": "Search",
-    "placeholder": "Search files...",
-    "noResults": "No results found",
-    "searching": "Searching...",
-    "filter": "Filter by type",
-    "all": "All",
-    "images": "Images",
-    "documents": "Documents",
-    "videos": "Videos",
-    "audio": "Audio"
-  },
-  "landing": {
-    "nav": {
-      "features": "Features",
-      "solutions": "Solutions",
-      "pricing": "Pricing",
-      "login": "Log in",
-      "register": "Sign up",
-      "personal": "Personal",
-      "teams": "Teams",
-      "enterprise": "Enterprise"
-    },
-    "hero": {
-      "title": "Secure file storage for everyone",
-      "subtitle": "Store, share, and collaborate on files and folders from your mobile device, tablet, or computer",
-      "cta": "Get started for free",
-      "secondaryCta": "Learn more"
-    },
-    "features": {
-      "title": "Everything you need to manage your files",
-      "subtitle": "Powerful features to help you manage your personal and work files",
-      "security": {
-        "title": "Advanced security",
-        "description": "Your files are protected with end-to-end encryption"
-      },
-      "sharing": {
-        "title": "Easy sharing",
-        "description": "Share files and folders with anyone, with custom permissions"
-      },
-      "access": {
-        "title": "Access anywhere",
-        "description": "Access your files from any device, anytime, anywhere"
-      },
-      "collaboration": {
-        "title": "Real-time collaboration",
-        "description": "Work together with your team on documents and projects"
+    "fileProperties": {
+      "name": "Name",
+      "modified": "Modified",
+      "details": {
+        "created": "Created",
+        "type": "Type",
+        "size": "Size"
       }
     },
-    "preview": {
-      "title": "Seamless experience across all devices",
-      "subtitle": "Whether you're at your desk or on the go, Lovable Drive makes it easy to manage your files",
-      "cta": "Try it now"
+    "actions": {
+      "deleteSuccess": "File deleted successfully",
+      "deleteError": "Error deleting file",
+      "deleteFolderSuccess": "Folder deleted successfully",
+      "deleteFolderError": "Error deleting folder",
+      "downloadError": "Error downloading file",
+      "renameFileSuccess": "File renamed successfully",
+      "renameFileError": "Error renaming file",
+      "renameFolderSuccess": "Folder renamed successfully",
+      "renameFolderError": "Error renaming folder"
     },
-    "security": {
-      "title": "Your security is our priority",
-      "subtitle": "We use advanced encryption to keep your files safe",
-      "encryption": {
-        "title": "End-to-end encryption",
-        "description": "Your files are encrypted before they leave your device"
-      },
-      "control": {
-        "title": "Complete control",
-        "description": "Decide who can access your files and for how long"
-      },
-      "compliance": {
-        "title": "Compliance ready",
-        "description": "We follow industry standards to ensure your data is protected"
-      }
+    "editFolder": {
+      "success": "Folder updated successfully",
+      "error": "Error updating folder"
     },
-    "testimonials": {
-      "title": "Trusted by thousands",
-      "subtitle": "See what our users are saying about us"
-    },
-    "cta": {
-      "title": "Ready to get started?",
-      "subtitle": "Sign up now and get 10GB of free storage",
-      "button": "Create free account"
+    "sortBy": {
+      "placeholder": "Sort by"
     }
-  },
-  "error": {
-    "404": {
-      "title": "Page not found",
-      "description": "Sorry, we couldn't find the page you're looking for."
-    },
-    "suggestions": "You might want to check:"
-  },
-  "suggestions": {
-    "404": {
-      "first": "The URL was typed correctly",
-      "second": "Go to Home",
-      "third": "Contact support if you believe this is an error"
-    }
-  },
-  "admin": {
-    "title": "Admin Dashboard",
-    "description": "Manage your drive's system settings",
-    "unauthorized": {
-      "title": "Unauthorized Access",
-      "description": "You don't have permission to access this page."
-    },
-    "tabs": {
-      "storage": "Storage",
-      "database": "Database",
-      "settings": "System Settings"
-    },
-    "database": {
-      "title": "Database Management",
-      "comingSoon": "Database management tools coming soon."
-    },
-    "settings": {
-      "title": "System Settings",
-      "comingSoon": "System configuration options coming soon."
-    }
-  },
-  "password": {
-    "title": "Password Protected",
-    "description": "This file is protected with an additional layer of encryption. Please enter the password to unlock.",
-    "placeholder": "Enter file password",
-    "required": "Please enter a password",
-    "submit": "Unlock",
-    "incorrect": "Incorrect password",
-    "securityNote": "This password is needed to decrypt the additional security layer applied to this file."
   },
   "device": {
-    "trusted": "Trusted device",
-    "recognized": "Device recognized",
-    "twoFactorSkipped": "Two-factor authentication skipped for this device"
+    "recognized": "Recognized Device",
+    "twoFactorSkipped": "Two-factor authentication skipped."
+  },
+  "share": {
+    "fileNotFound": "File not found",
+    "protectedFile": "Protected File",
+    "enterPassword": "Enter password",
+    "invalidPassword": "Invalid password",
+    "tryAgain": "Please try again",
+    "sharedFile": "Shared File",
+    "encrypted": "Encrypted",
+    "size": "Size",
+    "downloadFile": "Download file",
+    "decrypting": "Decrypting...",
+    "downloadError": "Download error",
+    "tryAgainLater": "Please try again later",
+    "encryptionNotice": "This file is encrypted using AES and can only be decrypted on your device.",
+    "dialog": {
+      "manageSharing": "Manage sharing",
+      "shareFile": "Share file",
+      "secureSharing": "Manage the secure sharing settings for your encrypted file.",
+      "secureOptions": "Configure secure sharing options for your file.",
+      "linkCopied": "Link copied",
+      "clipboardSuccess": "The link has been copied to the clipboard.",
+      "clipboardError": "Could not copy the link.",
+      "sharingSettings": "Current settings:",
+      "accessPublic": "• Access: Public",
+      "accessProtected": "• Access: Protected",
+      "passwordProtected": "• Protected by encrypted password",
+      "encryptionEnabled": "• Encryption: Enabled",
+      "stopSharing": "Stop sharing",
+      "publicLink": "Public link",
+      "aesEncryption": "AES Encryption",
+      "recommended": "(recommended)",
+      "protectionPassword": "Protection password",
+      "passwordOptional": "Enter a password (optional)",
+      "passwordEncrypted": "The password will be encrypted before being stored.",
+      "generateSecureLink": "Generate secure link",
+      "sharingLink": "Sharing link:",
+      "linkCreated": "Link created successfully",
+      "encryptedLinkGenerated": "The encrypted sharing link has been generated."
+    }
   }
 }

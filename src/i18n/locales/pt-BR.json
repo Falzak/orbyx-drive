@@ -1,405 +1,155 @@
 
 {
+  "auth": {
+    "signIn": "Entrar",
+    "signUp": "Cadastrar",
+    "signOut": "Sair",
+    "emailPlaceholder": "Endereço de email",
+    "passwordPlaceholder": "Senha",
+    "rememberMe": "Lembrar-me",
+    "forgotPassword": "Esqueceu a senha?",
+    "noAccount": "Não tem uma conta?",
+    "hasAccount": "Já tem uma conta?",
+    "resetPassword": "Redefinir Senha",
+    "resetInstructions": "Digite seu endereço de email e enviaremos um link para redefinir sua senha.",
+    "backToSignIn": "Voltar para login",
+    "resetSent": "Link de redefinição de senha enviado",
+    "resetError": "Erro ao enviar link de redefinição",
+    "signInError": "Erro ao fazer login",
+    "signUpError": "Erro ao criar conta",
+    "createAccount": "Criar conta",
+    "verifyOTP": "Verificar OTP",
+    "otpSent": "OTP enviado para seu email",
+    "otpError": "Erro ao enviar OTP",
+    "otpInvalid": "OTP inválido",
+    "otpExpired": "OTP expirado",
+    "otpSuccess": "OTP verificado com sucesso",
+    "otpPlaceholder": "Digite o OTP",
+    "verifyEmail": "Verificar Email",
+    "verifyEmailInstructions": "Verifique seu email para um link de verificação.",
+    "verifyEmailError": "Erro ao verificar email",
+    "verifyEmailSuccess": "Email verificado com sucesso"
+  },
   "common": {
-    "cancel": "Cancelar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
     "continue": "Continuar",
-    "create": "Criar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
     "delete": "Excluir",
     "edit": "Editar",
-    "error": "Erro",
-    "loading": "Carregando...",
-    "logout": "Sair",
-    "logoutError": "Erro ao sair",
-    "retry": "Tentar novamente",
-    "save": "Salvar",
-    "search": "Buscar",
+    "create": "Criar",
+    "add": "Adicionar",
+    "remove": "Remover",
+    "back": "Voltar",
+    "next": "Próximo",
+    "confirm": "Confirmar",
     "settings": "Configurações",
-    "success": "Sucesso",
-    "languageSelector": "Selecionar idioma",
-    "language": "Idioma",
-    "logoutDescription": "Sair da sua conta",
-    "theme": {
-      "light": "Claro",
-      "dark": "Escuro",
-      "system": "Sistema"
-    },
-    "back": "Voltar"
-  },
-  "dashboard": {
-    "noFiles": "Nenhum arquivo encontrado",
-    "refresh": {
-      "description": "Os arquivos foram atualizados com sucesso.",
-      "success": "Arquivos atualizados"
-    },
-    "selection": {
-      "allSelected": "Todos os arquivos foram selecionados"
-    },
-    "clipboard": {
-      "pathCopied": "Caminho copiado para a área de transferência"
-    },
-    "contextMenu": {
-      "refresh": "Atualizar",
-      "createFolder": "Criar pasta",
-      "uploadFile": "Enviar arquivo",
-      "selectAll": "Selecionar tudo",
-      "sortBy": "Ordenar por",
-      "view": "Visualizar",
-      "gridView": "Grade",
-      "listView": "Lista",
-      "newTab": "Abrir em nova aba",
-      "copyPath": "Copiar caminho",
-      "help": "Ajuda",
-      "shortcuts": "Atalhos de teclado",
-      "feedback": "Enviar feedback"
-    },
-    "upload": {
-      "button": "Enviar",
-      "cancelled": "Upload cancelado",
-      "cancelledDescription": "O envio do arquivo foi cancelado.",
-      "cancel": "Cancelar",
-      "complete": "Envio completo",
-      "uploading": "Enviando...",
-      "success": "Arquivo enviado com sucesso"
-    },
-    "uploadInProgress": "Envio em andamento",
-    "uploadWait": "Aguarde o término do envio atual antes de enviar novos arquivos.",
-    "uploadSuccess": "Arquivo enviado com sucesso",
-    "uploadError": "Erro ao enviar arquivo: {error}"
+    "logout": "Sair",
+    "name": "Nome",
+    "email": "Email",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "city": "Cidade",
+    "state": "Estado",
+    "country": "País",
+    "zipCode": "CEP",
+    "search": "Pesquisar",
+    "reset": "Redefinir",
+    "apply": "Aplicar",
+    "submit": "Enviar",
+    "dashboard": "Painel",
+    "profile": "Perfil",
+    "notifications": "Notificações",
+    "help": "Ajuda",
+    "about": "Sobre",
+    "contact": "Contato"
   },
   "fileExplorer": {
-    "categories": {
-      "all": "Todos os arquivos",
-      "recent": "Recentes",
-      "images": "Imagens",
-      "documents": "Documentos",
-      "videos": "Vídeos",
-      "audio": "Áudio",
-      "favorites": "Favoritos",
-      "trash": "Lixeira"
-    },
-    "dropzone": {
-      "title": "Solte os arquivos aqui",
-      "subtitle": "Os arquivos serão enviados automaticamente"
+    "allFiles": "Todos os Arquivos",
+    "contextMenu": {
+      "open": "Abrir",
+      "download": "Baixar",
+      "share": "Compartilhar",
+      "favorite": "Adicionar aos Favoritos",
+      "unfavorite": "Remover dos Favoritos",
+      "rename": "Renomear",
+      "renamePrompt": "Digite o novo nome",
+      "delete": "Excluir"
     },
     "fileProperties": {
-      "size": "Tamanho",
-      "type": "Tipo",
-      "created": "Criado"
+      "name": "Nome",
+      "modified": "Modificado",
+      "details": {
+        "created": "Criado",
+        "type": "Tipo",
+        "size": "Tamanho"
+      }
+    },
+    "actions": {
+      "deleteSuccess": "Arquivo excluído com sucesso",
+      "deleteError": "Erro ao excluir arquivo",
+      "deleteFolderSuccess": "Pasta excluída com sucesso",
+      "deleteFolderError": "Erro ao excluir pasta",
+      "downloadError": "Erro ao baixar arquivo",
+      "renameFileSuccess": "Arquivo renomeado com sucesso",
+      "renameFileError": "Erro ao renomear arquivo",
+      "renameFolderSuccess": "Pasta renomeada com sucesso",
+      "renameFolderError": "Erro ao renomear pasta"
+    },
+    "editFolder": {
+      "success": "Pasta atualizada com sucesso",
+      "error": "Erro ao atualizar pasta"
     },
     "sortBy": {
-      "nameAsc": "Nome (A-Z)",
-      "nameDesc": "Nome (Z-A)",
-      "dateDesc": "Mais recentes",
-      "dateAsc": "Mais antigos",
-      "sizeDesc": "Maiores",
-      "sizeAsc": "Menores"
-    },
-    "createFolder": {
-      "success": "Pasta criada com sucesso",
-      "error": "Erro ao criar pasta"
+      "placeholder": "Ordenar por"
     }
-  },
-  "fileUpload": {
-    "title": "Enviar arquivos",
-    "description": "Arraste e solte arquivos ou clique para navegar",
-    "dragAndDrop": "Arraste e solte arquivos aqui ou clique para navegar",
-    "dropHere": "Solte os arquivos aqui",
-    "browse": "Navegar",
-    "upload": "Enviar",
-    "uploading": "Enviando...",
-    "success": "Arquivos enviados",
-    "successCount": "{count} de {total} arquivos enviados com sucesso",
-    "scanning": "Escaneando...",
-    "scanError": "Erro de escaneamento",
-    "securityAlert": "Alerta de segurança",
-    "securityThreat": "Ameaça detectada",
-    "threatDetected": "Ameaça detectada em um ou mais arquivos. Arquivos suspeitos foram marcados.",
-    "maliciousDetections": "detecções"
-  },
-  "auth": {
-    "welcome": "Bem-vindo ao Lovable Drive",
-    "welcomeBack": "Bem-vindo de volta",
-    "getStarted": "Comece com sua conta",
-    "createAccount": "Criar conta",
-    "forgotPassword": "Esqueceu sua senha?",
-    "login": "Entrar",
-    "loginWithGoogle": "Entrar com Google",
-    "loginWithGithub": "Entrar com GitHub",
-    "noAccount": "Não tem uma conta?",
-    "orContinueWith": "ou continue com",
-    "register": "Registrar",
-    "signUp": "Cadastrar-se",
-    "switchToLogin": "Já tem uma conta? Entre",
-    "switchToRegister": "Não tem uma conta? Cadastre-se",
-    "email": "E-mail",
-    "password": "Senha",
-    "emailRequired": "E-mail é obrigatório",
-    "passwordRequired": "Senha é obrigatória",
-    "emailInvalid": "E-mail inválido",
-    "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
-    "confirmPassword": "Confirmar senha",
-    "username": "Nome de usuário",
-    "usernameRequired": "Nome de usuário é obrigatório",
-    "privacyPolicy": "Política de Privacidade",
-    "termsOfService": "Termos de Serviço",
-    "byRegistering": "Ao se registrar, você concorda com nossos",
-    "twoFactor": "Autenticação de dois fatores",
-    "twoFactorEnterCode": "Digite o código enviado para seu dispositivo",
-    "twoFactorInvalidCode": "Código inválido ou expirado",
-    "resetPassword": "Redefinir senha",
-    "resetPasswordSuccess": "Se o e-mail existir em nosso sistema, enviaremos instruções para redefinir sua senha",
-    "back": "Voltar",
-    "errors": {
-      "generic": "Ocorreu um erro durante a autenticação",
-      "passwordsDontMatch": "As senhas não coincidem",
-      "invalidCode": "Código inválido ou expirado"
-    },
-    "success": {
-      "signUp": "Registro bem-sucedido! Verifique seu e-mail para confirmar sua conta",
-      "resetPassword": "Se o e-mail existir em nosso sistema, enviaremos instruções para redefinir sua senha"
-    },
-    "signIn": {
-      "title": "Entrar",
-      "email": "E-mail",
-      "emailPlaceholder": "Digite seu e-mail",
-      "password": "Senha",
-      "passwordPlaceholder": "Digite sua senha",
-      "forgotPassword": "Esqueceu a senha?",
-      "button": "Entrar",
-      "buttonLoading": "Entrando..."
-    },
-    "signUp": {
-      "title": "Criar conta",
-      "email": "E-mail",
-      "emailPlaceholder": "Digite seu e-mail",
-      "password": "Senha",
-      "passwordPlaceholder": "Crie uma senha",
-      "confirmPassword": "Confirmar senha",
-      "confirmPasswordPlaceholder": "Confirme sua senha",
-      "button": "Criar conta",
-      "buttonLoading": "Criando conta..."
-    },
-    "passwordStrength": {
-      "minLength": "8+ caracteres",
-      "uppercase": "Maiúscula",
-      "number": "Número",
-      "special": "Caractere especial"
-    },
-    "resetPassword": {
-      "title": "Redefinir senha",
-      "description": "Digite seu e-mail e enviaremos um link para redefinir sua senha",
-      "email": "E-mail",
-      "emailPlaceholder": "Digite seu e-mail",
-      "button": "Enviar link de redefinição",
-      "buttonLoading": "Enviando..."
-    },
-    "twoFactor": {
-      "title": "Autenticação de dois fatores",
-      "description": "Digite o código de verificação do seu aplicativo autenticador",
-      "button": "Verificar",
-      "buttonLoading": "Verificando...",
-      "rememberDevice": "Lembrar este dispositivo",
-      "support": "Está com problemas?",
-      "contactSupport": "Contate o suporte"
-    }
-  },
-  "sidebar": {
-    "home": "Início",
-    "favorites": "Favoritos",
-    "recent": "Recentes",
-    "trash": "Lixeira",
-    "categories": "Categorias",
-    "drive": "Drive",
-    "account": "Conta",
-    "settings": "Configurações",
-    "security": "Segurança",
-    "storage": "Armazenamento",
-    "mainItems": {
-      "allFiles": "Todos os Arquivos", 
-      "favorites": "Favoritos"
-    },
-    "tools": {
-      "uploadFiles": "Enviar Arquivos",
-      "newFolder": "Nova Pasta"
-    }
-  },
-  "settings": {
-    "title": "Configurações",
-    "account": "Conta",
-    "appearance": "Aparência",
-    "language": "Idioma",
-    "security": "Segurança",
-    "advanced": "Avançado",
-    "theme": {
-      "title": "Tema",
-      "light": "Claro",
-      "dark": "Escuro",
-      "system": "Sistema"
-    },
-    "username": "Nome de usuário",
-    "email": "E-mail",
-    "avatar": "Avatar",
-    "uploadAvatar": "Enviar avatar",
-    "removeAvatar": "Remover avatar",
-    "deleteAccount": "Excluir conta",
-    "deleteAccountWarning": "Esta ação é irreversível. Todos os seus dados serão excluídos permanentemente.",
-    "saved": "Configurações salvas",
-    "error": "Erro ao salvar configurações"
-  },
-  "share": {
-    "title": "Compartilhar arquivo",
-    "linkCreated": "Link de compartilhamento criado",
-    "copyLink": "Copiar link",
-    "linkCopied": "Link copiado para a área de transferência",
-    "createLink": "Criar link",
-    "password": "Senha (opcional)",
-    "expiration": "Expiração",
-    "never": "Nunca",
-    "1day": "1 dia",
-    "7days": "7 dias",
-    "30days": "30 dias",
-    "custom": "Personalizado",
-    "passwordProtect": "Proteger com senha",
-    "allowDownload": "Permitir download",
-    "allowPreview": "Permitir pré-visualização",
-    "generatePassword": "Gerar senha",
-    "generatedPassword": "Senha gerada: {password}",
-    "success": "Arquivo compartilhado com sucesso",
-    "copySuccess": "Copiado para a área de transferência",
-    "error": "Erro ao compartilhar arquivo",
-    "enterPassword": "Digite a senha para acessar o arquivo",
-    "incorrectPassword": "Senha incorreta",
-    "passwordRequired": "Senha obrigatória",
-    "fileExpired": "Este link expirou",
-    "fileNotFound": "Arquivo não encontrado"
-  },
-  "search": {
-    "title": "Busca",
-    "placeholder": "Buscar arquivos...",
-    "noResults": "Nenhum resultado encontrado",
-    "searching": "Buscando...",
-    "filter": "Filtrar por tipo",
-    "all": "Todos",
-    "images": "Imagens",
-    "documents": "Documentos",
-    "videos": "Vídeos",
-    "audio": "Áudio"
-  },
-  "landing": {
-    "nav": {
-      "features": "Recursos",
-      "solutions": "Soluções",
-      "pricing": "Preços",
-      "login": "Entrar",
-      "register": "Cadastrar",
-      "personal": "Pessoal",
-      "teams": "Equipes",
-      "enterprise": "Empresas"
-    },
-    "hero": {
-      "title": "Armazenamento seguro de arquivos para todos",
-      "subtitle": "Armazene, compartilhe e colabore em arquivos e pastas pelo seu celular, tablet ou computador",
-      "cta": "Comece gratuitamente",
-      "secondaryCta": "Saiba mais"
-    },
-    "features": {
-      "title": "Tudo o que você precisa para gerenciar seus arquivos",
-      "subtitle": "Recursos poderosos para ajudá-lo a gerenciar seus arquivos pessoais e de trabalho",
-      "security": {
-        "title": "Segurança avançada",
-        "description": "Seus arquivos são protegidos com criptografia de ponta a ponta"
-      },
-      "sharing": {
-        "title": "Compartilhamento fácil",
-        "description": "Compartilhe arquivos e pastas com qualquer pessoa, com permissões personalizadas"
-      },
-      "access": {
-        "title": "Acesse de qualquer lugar",
-        "description": "Acesse seus arquivos de qualquer dispositivo, a qualquer hora, em qualquer lugar"
-      },
-      "collaboration": {
-        "title": "Colaboração em tempo real",
-        "description": "Trabalhe junto com sua equipe em documentos e projetos"
-      }
-    },
-    "preview": {
-      "title": "Experiência perfeita em todos os dispositivos",
-      "subtitle": "Seja na sua mesa ou em movimento, o Lovable Drive facilita o gerenciamento de seus arquivos",
-      "cta": "Experimente agora"
-    },
-    "security": {
-      "title": "Sua segurança é nossa prioridade",
-      "subtitle": "Usamos criptografia avançada para manter seus arquivos seguros",
-      "encryption": {
-        "title": "Criptografia de ponta a ponta",
-        "description": "Seus arquivos são criptografados antes de saírem do seu dispositivo"
-      },
-      "control": {
-        "title": "Controle completo",
-        "description": "Decida quem pode acessar seus arquivos e por quanto tempo"
-      },
-      "compliance": {
-        "title": "Pronto para conformidade",
-        "description": "Seguimos os padrões da indústria para garantir que seus dados sejam protegidos"
-      }
-    },
-    "testimonials": {
-      "title": "Confiado por milhares",
-      "subtitle": "Veja o que nossos usuários estão dizendo sobre nós"
-    },
-    "cta": {
-      "title": "Pronto para começar?",
-      "subtitle": "Cadastre-se agora e ganhe 10GB de armazenamento gratuito",
-      "button": "Criar conta gratuita"
-    }
-  },
-  "error": {
-    "404": {
-      "title": "Página não encontrada",
-      "description": "Desculpe, não encontramos a página que você está procurando."
-    },
-    "suggestions": "Você pode verificar:"
-  },
-  "suggestions": {
-    "404": {
-      "first": "Se a URL foi digitada corretamente",
-      "second": "Ir para Início",
-      "third": "Contatar o suporte se você acredita que isso é um erro"
-    }
-  },
-  "admin": {
-    "title": "Painel de Administração",
-    "description": "Gerencie as configurações do sistema do seu drive",
-    "unauthorized": {
-      "title": "Acesso Não Autorizado",
-      "description": "Você não tem permissão para acessar esta página."
-    },
-    "tabs": {
-      "storage": "Armazenamento",
-      "database": "Banco de Dados",
-      "settings": "Configurações do Sistema"
-    },
-    "database": {
-      "title": "Gerenciamento de Banco de Dados",
-      "comingSoon": "Ferramentas de gerenciamento de banco de dados em breve."
-    },
-    "settings": {
-      "title": "Configurações do Sistema",
-      "comingSoon": "Opções de configuração do sistema em breve."
-    }
-  },
-  "password": {
-    "title": "Protegido por Senha",
-    "description": "Este arquivo está protegido com uma camada adicional de criptografia. Por favor, digite a senha para desbloquear.",
-    "placeholder": "Digite a senha do arquivo",
-    "required": "Por favor, digite uma senha",
-    "submit": "Desbloquear",
-    "incorrect": "Senha incorreta",
-    "securityNote": "Esta senha é necessária para descriptografar a camada de segurança adicional aplicada a este arquivo."
   },
   "device": {
-    "trusted": "Dispositivo confiável",
-    "recognized": "Dispositivo reconhecido",
-    "twoFactorSkipped": "Autenticação de dois fatores ignorada para este dispositivo"
+    "recognized": "Dispositivo Reconhecido",
+    "twoFactorSkipped": "Autenticação de dois fatores ignorada."
+  },
+  "share": {
+    "fileNotFound": "Arquivo não encontrado",
+    "protectedFile": "Arquivo protegido",
+    "enterPassword": "Digite a senha",
+    "invalidPassword": "Senha inválida",
+    "tryAgain": "Tente novamente",
+    "sharedFile": "Arquivo compartilhado",
+    "encrypted": "Criptografado",
+    "size": "Tamanho",
+    "downloadFile": "Baixar arquivo",
+    "decrypting": "Descriptografando...",
+    "downloadError": "Erro no download",
+    "tryAgainLater": "Tente novamente mais tarde",
+    "encryptionNotice": "Este arquivo é criptografado usando AES e só pode ser descriptografado no seu dispositivo.",
+    "dialog": {
+      "manageSharing": "Gerenciar compartilhamento",
+      "shareFile": "Compartilhar arquivo",
+      "secureSharing": "Gerencie as configurações de compartilhamento seguro do seu arquivo criptografado.",
+      "secureOptions": "Configure as opções de compartilhamento seguro do seu arquivo.",
+      "linkCopied": "Link copiado",
+      "clipboardSuccess": "O link foi copiado para a área de transferência.",
+      "clipboardError": "Não foi possível copiar o link.",
+      "sharingSettings": "Configurações atuais:",
+      "accessPublic": "• Acesso: Público",
+      "accessProtected": "• Acesso: Protegido",
+      "passwordProtected": "• Protegido por senha criptografada",
+      "encryptionEnabled": "• Criptografia: Ativada",
+      "stopSharing": "Parar de compartilhar",
+      "publicLink": "Link público",
+      "aesEncryption": "Criptografia AES",
+      "recommended": "(recomendado)",
+      "protectionPassword": "Senha de proteção",
+      "passwordOptional": "Digite uma senha (opcional)",
+      "passwordEncrypted": "A senha será criptografada antes de ser armazenada.",
+      "generateSecureLink": "Gerar link seguro",
+      "sharingLink": "Link de compartilhamento:",
+      "linkCreated": "Link criado com sucesso",
+      "encryptedLinkGenerated": "O link de compartilhamento criptografado foi gerado."
+    }
   }
 }
