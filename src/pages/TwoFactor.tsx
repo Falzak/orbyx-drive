@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -130,8 +129,9 @@ export default function TwoFactor() {
           setTimeout(() => {
             const toastEvent = new CustomEvent("toast", {
               detail: {
-                title: t("device.recognized"),
-                description: t("device.twoFactorSkipped"),
+                title: "Dispositivo reconhecido",
+                description:
+                  "Autenticação em dois fatores pulada para este dispositivo",
               },
             });
             window.dispatchEvent(toastEvent);
@@ -196,8 +196,9 @@ export default function TwoFactor() {
           setTrustedDevices([...updatedTrustedDevices, newTrustedDevice]);
 
           toast({
-            title: t("device.trusted"),
-            description: t("device.twoFactorSkipped"),
+            title: "Dispositivo lembrado",
+            description:
+              "Este dispositivo será lembrado para futuras autenticações",
           });
         }
 

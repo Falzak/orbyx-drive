@@ -26,8 +26,8 @@ export function PasswordPrompt({
   isOpen,
   onClose,
   onPasswordSubmit,
-  title,
-  description
+  title = "Arquivo protegido por senha",
+  description = "Este arquivo está protegido por uma camada adicional de criptografia. Por favor, digite a senha para desbloquear."
 }: PasswordPromptProps) {
   const { t } = useTranslation();
   const [password, setPassword] = useState("");
@@ -37,7 +37,7 @@ export function PasswordPrompt({
     e.preventDefault();
     
     if (!password.trim()) {
-      setError(t("password.required"));
+      setError("Por favor, digite uma senha");
       return;
     }
     
@@ -55,20 +55,20 @@ export function PasswordPrompt({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="w-5 h-5 text-primary" />
-            {title || t("password.title")}
+            {title}
           </DialogTitle>
           <DialogDescription>
-            {description || t("password.description")}
+            {description}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="password">{t("auth.password")}</Label>
+            <Label htmlFor="password">Senha</Label>
             <Input
               id="password"
               type="password"
-              placeholder={t("password.placeholder")}
+              placeholder="Digite a senha do arquivo"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={error ? "border-destructive" : ""}
@@ -80,17 +80,17 @@ export function PasswordPrompt({
           
           <div className="bg-muted rounded-md p-3">
             <p className="text-sm text-muted-foreground">
-              {t("password.securityNote")}
+              Esta senha é necessária para descriptografar a camada adicional de segurança aplicada a este arquivo.
             </p>
           </div>
         </form>
         
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.cancel")}
+            Cancelar
           </Button>
           <Button type="submit" onClick={handleSubmit}>
-            {t("password.submit")}
+            Desbloquear
           </Button>
         </DialogFooter>
       </DialogContent>

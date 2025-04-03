@@ -40,9 +40,7 @@ export type Database = {
           folder_id: string | null
           id: string
           is_favorite: boolean | null
-          is_malware: boolean | null
           original_id: string | null
-          security_scan_result: Json | null
           size: number | null
           source: string | null
           updated_at: string
@@ -57,9 +55,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_favorite?: boolean | null
-          is_malware?: boolean | null
           original_id?: string | null
-          security_scan_result?: Json | null
           size?: number | null
           source?: string | null
           updated_at?: string
@@ -74,9 +70,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           is_favorite?: boolean | null
-          is_malware?: boolean | null
           original_id?: string | null
-          security_scan_result?: Json | null
           size?: number | null
           source?: string | null
           updated_at?: string
@@ -350,49 +344,12 @@ export type Database = {
         }
         Relationships: []
       }
-      user_sessions: {
-        Row: {
-          created_at: string
-          device_info: string | null
-          id: string
-          ip_address: string | null
-          last_active_at: string
-          location: string | null
-          user_agent: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          device_info?: string | null
-          id?: string
-          ip_address?: string | null
-          last_active_at?: string
-          location?: string | null
-          user_agent?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          device_info?: string | null
-          id?: string
-          ip_address?: string | null
-          last_active_at?: string
-          location?: string | null
-          user_agent?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       cleanup_expired_shares: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_inactive_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

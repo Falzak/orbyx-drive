@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,7 +20,7 @@ import {
   Import,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileUpload } from "@/components/FileUpload";
+import FileUpload from "@/components/FileUpload";
 import {
   Sidebar,
   SidebarContent,

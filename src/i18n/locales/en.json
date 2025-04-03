@@ -1,155 +1,553 @@
-
 {
-  "auth": {
-    "signIn": "Sign In",
-    "signUp": "Sign Up",
-    "signOut": "Sign Out",
-    "emailPlaceholder": "Email address",
-    "passwordPlaceholder": "Password",
-    "rememberMe": "Remember me",
-    "forgotPassword": "Forgot password?",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?",
-    "resetPassword": "Reset Password",
-    "resetInstructions": "Enter your email address and we'll send you a link to reset your password.",
-    "backToSignIn": "Back to sign in",
-    "resetSent": "Password reset link sent",
-    "resetError": "Error sending reset link",
-    "signInError": "Error signing in",
-    "signUpError": "Error signing up",
-    "createAccount": "Create account",
-    "verifyOTP": "Verify OTP",
-    "otpSent": "OTP sent to your email",
-    "otpError": "Error sending OTP",
-    "otpInvalid": "Invalid OTP",
-    "otpExpired": "OTP expired",
-    "otpSuccess": "OTP verified successfully",
-    "otpPlaceholder": "Enter OTP",
-    "verifyEmail": "Verify Email",
-    "verifyEmailInstructions": "Check your email for a verification link.",
-    "verifyEmailError": "Error verifying email",
-    "verifyEmailSuccess": "Email verified successfully"
-  },
   "common": {
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success",
-    "continue": "Continue",
-    "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "create": "Create",
-    "add": "Add",
-    "remove": "Remove",
-    "back": "Back",
-    "next": "Next",
-    "confirm": "Confirm",
+    "search": "Search files...",
     "settings": "Settings",
     "logout": "Logout",
-    "name": "Name",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "phone": "Phone",
-    "address": "Address",
-    "city": "City",
-    "state": "State",
-    "country": "Country",
-    "zipCode": "Zip Code",
-    "search": "Search",
-    "reset": "Reset",
-    "apply": "Apply",
-    "submit": "Submit",
-    "dashboard": "Dashboard",
-    "profile": "Profile",
-    "notifications": "Notifications",
-    "help": "Help",
-    "about": "About",
-    "contact": "Contact"
+    "logoutDescription": "Disconnect from your account",
+    "language": "Language",
+    "languageSelector": "Select language",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "error": "Error",
+    "success": "Success",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "uploading": "Uploading...",
+    "delete": "Delete",
+    "edit": "Edit",
+    "upload": "Upload",
+    "logoutError": "Failed to log out",
+    "create": "Create",
+    "creating": "Creating..."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}",
+    "uploadHint": "Drag files to the upload area or browse",
+    "uploadInProgress": "Upload in progress",
+    "uploadWait": "Please wait for the current upload to finish",
+    "uploadSuccess": "File uploaded successfully",
+    "uploadError": "Failed to upload file: {{error}}",
+    "upload": {
+      "button": "Upload",
+      "cancel": "Cancel Upload",
+      "complete": "Upload completed",
+      "uploading": "Uploading",
+      "cancelled": "Upload canceled",
+      "cancelledDescription": "Upload has been canceled"
+    },
+    "folder": {
+      "createSuccess": "Folder created",
+      "createDescription": "New folder has been created",
+      "created": "Folder created"
+    },
+    "dropzone": {
+      "title": "Drop files here or click to select",
+      "subtitle": "Supports images, videos, audio, and documents",
+      "dragActive": "Drop files here to upload"
+    },
+    "contextMenu": {
+      "refresh": "Refresh files",
+      "createFolder": "New folder",
+      "uploadFile": "Upload file",
+      "selectAll": "Select all",
+      "sortBy": "Sort by",
+      "view": "View",
+      "gridView": "Grid",
+      "listView": "List",
+      "settings": "Settings",
+      "newTab": "Open in new tab",
+      "copyPath": "Copy path",
+      "properties": "Properties",
+      "help": "Help",
+      "shortcuts": "Keyboard shortcuts",
+      "feedback": "Send feedback"
+    },
+    "refresh": {
+      "success": "Files refreshed",
+      "description": "File list updated successfully"
+    },
+    "selection": {
+      "allSelected": "All items selected"
+    },
+    "clipboard": {
+      "pathCopied": "Path copied to clipboard"
+    },
+    "shortcuts": {
+      "comingSoon": "Keyboard shortcuts coming soon"
+    }
+  },
+  "sidebar": {
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "mainItems": {
+      "allFiles": "All Files",
+      "recent": "Recent",
+      "shared": "Shared",
+      "favorites": "Favorites"
+    },
+    "views": {
+      "title": "Views",
+      "gridView": "Grid View",
+      "listView": "List View"
+    },
+    "categories": {
+      "title": "Categories",
+      "images": "Images",
+      "documents": "Documents",
+      "videos": "Videos",
+      "audio": "Audio"
+    },
+    "tools": {
+      "title": "Tools",
+      "uploadFiles": "Upload Files",
+      "newFolder": "New Folder",
+      "bulkActions": "Bulk Actions",
+      "downloadAll": "Download All"
+    },
+    "system": {
+      "title": "System",
+      "storage": "Storage",
+      "used": "Used"
+    }
   },
   "fileExplorer": {
+    "emptyState": {
+      "title": "No files found",
+      "description": "Start by uploading some files"
+    },
     "allFiles": "All Files",
+    "sortBy": {
+      "placeholder": "Sort by",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "dateAsc": "Date (Oldest)",
+      "dateDesc": "Date (Newest)",
+      "sizeAsc": "Size (Smallest)",
+      "sizeDesc": "Size (Largest)"
+    },
     "contextMenu": {
       "open": "Open",
       "download": "Download",
       "share": "Share",
-      "favorite": "Add to Favorites",
-      "unfavorite": "Remove from Favorites",
+      "delete": "Delete",
       "rename": "Rename",
-      "renamePrompt": "Enter new name",
-      "delete": "Delete"
+      "properties": "Properties",
+      "favorite": "Add to favorites",
+      "unfavorite": "Remove from favorites",
+      "renamePrompt": "Enter new file name",
+      "editFolder": "Edit folder"
     },
     "fileProperties": {
       "name": "Name",
+      "size": "Size",
+      "type": "Type",
       "modified": "Modified",
+      "created": "Created on",
+      "location": "Location",
+      "added": "Added on",
       "details": {
-        "created": "Created",
-        "type": "Type",
-        "size": "Size"
+        "name": "File Name",
+        "title": "File Details",
+        "type": "Type: {{type}}",
+        "size": "Size: {{size}}",
+        "created": "Created on: {{date}}",
+        "modified": "Modified on: {{date}}"
       }
     },
-    "actions": {
-      "deleteSuccess": "File deleted successfully",
-      "deleteError": "Error deleting file",
-      "deleteFolderSuccess": "Folder deleted successfully",
-      "deleteFolderError": "Error deleting folder",
-      "downloadError": "Error downloading file",
-      "renameFileSuccess": "File renamed successfully",
-      "renameFileError": "Error renaming file",
-      "renameFolderSuccess": "Folder renamed successfully",
-      "renameFolderError": "Error renaming folder"
+    "preview": {
+      "noPreview": "Cannot preview this file",
+      "openFile": "Open file",
+      "download": "Download",
+      "share": "Share",
+      "close": "Close"
+    },
+    "tabs": {
+      "emoji": "Emojis",
+      "color": "Colors"
+    },
+    "labels": {
+      "icon": "Icon",
+      "color": "Color"
+    },
+    "colors": {
+      "gray": "Gray",
+      "blue": "Blue",
+      "green": "Green",
+      "yellow": "Yellow",
+      "red": "Red",
+      "purple": "Purple",
+      "pink": "Pink",
+      "turquoise": "Turquoise",
+      "orange": "Orange",
+      "lightGreen": "Light Green",
+      "indigo": "Indigo",
+      "magenta": "Magenta"
+    },
+    "selection": {
+      "selected": "{{count}} selected",
+      "selected_plural": "{{count}} selected"
+    },
+    "createFolder": {
+      "title": "New Folder",
+      "description": "Create a new folder to organize your files",
+      "name": "Folder name",
+      "namePlaceholder": "Enter folder name"
     },
     "editFolder": {
+      "title": "Edit Folder",
+      "description": "Modify folder properties",
       "success": "Folder updated successfully",
       "error": "Error updating folder"
     },
-    "sortBy": {
-      "placeholder": "Sort by"
+    "actions": {
+      "downloadError": "Error downloading file",
+      "deleteFolderSuccess": "Folder deleted successfully",
+      "deleteFolderError": "Error deleting folder",
+      "deleteError": "Error deleting file",
+      "deleteSuccess": "File deleted successfully",
+      "renameFolderError": "Error renaming folder",
+      "renameFolderSuccess": "Folder renamed successfully",
+      "renameFileError": "Error renaming file",
+      "renameFileSuccess": "File renamed successfully"
+    },
+    "categories": {
+      "allFiles": "All Files"
+    },
+    "navigation": {
+      "back": "Back"
+    },
+    "dropzone": {
+      "title": "Drop files here",
+      "subtitle": "Upload files to this folder"
+    },
+    "suggestions": {
+      "404": {
+        "first": "• Check if the URL is correct",
+        "third": "- Back to home page",
+        "second": "Back to home page"
+      }
+    },
+    "error": {
+      "404": {
+        "title": "Page not found",
+        "description": "The page you're looking for doesn't exist"
+      },
+      "suggestions": "Suggestions"
     }
   },
-  "device": {
-    "recognized": "Recognized Device",
-    "twoFactorSkipped": "Two-factor authentication skipped."
+  "auth": {
+    "title": "Orbyx Drive",
+    "description": "Access your account to securely manage your files",
+    "signIn": {
+      "title": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot your password?",
+      "button": "Sign In",
+      "buttonLoading": "Signing in...",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Enter your password"
+    },
+    "signUp": {
+      "title": "Sign Up",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "button": "Create account",
+      "buttonLoading": "Signing up...",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Create your password",
+      "confirmPasswordPlaceholder": "Confirm your password"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "description": "We'll send an email with instructions to reset your password",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "button": "Send recovery email",
+      "buttonLoading": "Sending..."
+    },
+    "newPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password to recover access to your account",
+      "password": "New Password",
+      "passwordPlaceholder": "Enter your new password",
+      "button": "Update Password",
+      "buttonLoading": "Updating..."
+    },
+    "twoFactor": {
+      "title": "Two-factor verification",
+      "description": "Enter the 6-digit code generated by your authenticator app",
+      "button": "Verify",
+      "buttonLoading": "Verifying...",
+      "support": "Can't access your authenticator?",
+      "contactSupport": "Contact support"
+    },
+    "passwordStrength": {
+      "minLength": "Min. 8 characters",
+      "uppercase": "Uppercase letter",
+      "number": "Number",
+      "special": "Special character"
+    },
+    "errors": {
+      "invalidEmail": "Invalid email",
+      "invalidCredentials": "Incorrect email or password",
+      "passwordsDontMatch": "Passwords don't match",
+      "invalidCode": "Invalid code",
+      "generic": "An error occurred. Please try again."
+    },
+    "success": {
+      "signUp": "Check your email to confirm your account",
+      "resetPassword": "Check your email to reset your password",
+      "passwordUpdated": "Your password has been successfully updated"
+    }
   },
-  "share": {
-    "fileNotFound": "File not found",
-    "protectedFile": "Protected File",
-    "enterPassword": "Enter password",
-    "invalidPassword": "Invalid password",
-    "tryAgain": "Please try again",
-    "sharedFile": "Shared File",
-    "encrypted": "Encrypted",
-    "size": "Size",
-    "downloadFile": "Download file",
-    "decrypting": "Decrypting...",
-    "downloadError": "Download error",
-    "tryAgainLater": "Please try again later",
-    "encryptionNotice": "This file is encrypted using AES and can only be decrypted on your device.",
-    "dialog": {
-      "manageSharing": "Manage sharing",
-      "shareFile": "Share file",
-      "secureSharing": "Manage the secure sharing settings for your encrypted file.",
-      "secureOptions": "Configure secure sharing options for your file.",
-      "linkCopied": "Link copied",
-      "clipboardSuccess": "The link has been copied to the clipboard.",
-      "clipboardError": "Could not copy the link.",
-      "sharingSettings": "Current settings:",
-      "accessPublic": "• Access: Public",
-      "accessProtected": "• Access: Protected",
-      "passwordProtected": "• Protected by encrypted password",
-      "encryptionEnabled": "• Encryption: Enabled",
-      "stopSharing": "Stop sharing",
-      "publicLink": "Public link",
-      "aesEncryption": "AES Encryption",
-      "recommended": "(recommended)",
-      "protectionPassword": "Protection password",
-      "passwordOptional": "Enter a password (optional)",
-      "passwordEncrypted": "The password will be encrypted before being stored.",
-      "generateSecureLink": "Generate secure link",
-      "sharingLink": "Sharing link:",
-      "linkCreated": "Link created successfully",
-      "encryptedLinkGenerated": "The encrypted sharing link has been generated."
+  "settings": {
+    "title": "Settings",
+    "profileUpdated": "Profile updated successfully",
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "description": "Manage your personal information",
+        "name": "Full name",
+        "namePlaceholder": "Enter your full name",
+        "email": "Email",
+        "avatar": "Profile picture",
+        "changeAvatar": "Change Avatar",
+        "avatarRequirements": "JPG, PNG or GIF. Max 5MB.",
+        "avatarUpdated": "Profile picture updated successfully",
+        "avatarUpdateError": "Error updating profile picture",
+        "invalidImageType": "Invalid file type. Please upload an image.",
+        "imageTooLarge": "Image is too large. Maximum size is 5MB."
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Customize the application appearance",
+        "theme": "Theme"
+      },
+      "storage": {
+        "title": "Storage",
+        "usage": "Storage Usage",
+        "quota": "Quota"
+      },
+      "security": {
+        "title": "Security",
+        "description": "Manage your security settings",
+        "password": "Password",
+        "changePassword": "Change password",
+        "twoFactor": "Two-factor authentication",
+        "enable2FA": "Enable two-factor authentication"
+      }
+    }
+  },
+  "mediaPreview": {
+    "loading": "Loading...",
+    "error": "Error loading file",
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "download": "Download",
+      "share": "Share",
+      "close": "Close"
+    }
+  },
+  "pdfViewer": {
+    "loading": "Loading PDF...",
+    "error": "Error loading PDF",
+    "downloadError": "Failed to download PDF",
+    "browserNotSupported": "Your browser does not support PDF viewing.",
+    "tryAgain": "Try again",
+    "downloadPdf": "Download PDF",
+    "previewNotAvailable": "Preview not available"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "description": "Manage your application settings and configurations",
+    "unauthorized": {
+      "title": "Unauthorized Access",
+      "description": "You don't have permission to access this page"
+    },
+    "tabs": {
+      "storage": "Storage",
+      "database": "Database",
+      "settings": "Settings"
+    },
+    "storage": {
+      "title": "Storage Providers",
+      "description": "Manage your storage providers and configurations",
+      "addProvider": "Add Provider",
+      "addProviderDescription": "Configure a new storage provider for your application",
+      "provider": "Provider",
+      "accessKeyId": "Access Key ID",
+      "secretAccessKey": "Secret Access Key",
+      "region": "Region",
+      "bucket": "Bucket",
+      "accountId": "Account ID",
+      "projectId": "Project ID",
+      "isActive": "Active",
+      "addSuccess": "Provider Added",
+      "providerAdded": "Storage provider has been added successfully",
+      "updateSuccess": "Provider Updated",
+      "providerUpdated": "Storage provider has been updated successfully",
+      "deleteSuccess": "Provider Deleted",
+      "providerDeleted": "Storage provider has been deleted successfully",
+      "providers": {
+        "aws": "Amazon S3",
+        "google": "Google Cloud Storage",
+        "backblaze": "Backblaze B2",
+        "wasabi": "Wasabi",
+        "cloudflare": "Cloudflare R2"
+      }
+    },
+    "database": {
+      "title": "Database Management",
+      "comingSoon": "Database management features coming soon"
+    },
+    "settings": {
+      "title": "System Settings",
+      "comingSoon": "Additional system settings coming soon"
+    }
+  },
+  "googleDrive": {
+    "importButton": "Import from Google Drive",
+    "importTitle": "Import from Google Drive",
+    "importDescription": "Select files from your Google Drive to import into your storage.",
+    "notConnected": "Not connected to Google Drive",
+    "connectDescription": "Connect your Google Drive account to import files.",
+    "connectButton": "Connect Google Drive",
+    "connectionSuccess": "Google Drive Connected",
+    "connectionSuccessDescription": "Your Google Drive account has been successfully connected.",
+    "connectionError": "Failed to connect to Google Drive",
+    "apiConfigError": "API configuration error. Please contact support.",
+    "callbackError": "Failed to complete Google Drive authentication",
+    "searchPlaceholder": "Search files...",
+    "noFiles": "No files found in your Google Drive",
+    "noSearchResults": "No files matching your search",
+    "noFilesSelected": "No files selected",
+    "selectedFilesCount": "Selected {{count}} files",
+    "importSuccess": "Files Imported",
+    "importSuccessDescription": "Successfully imported {{count}} files from Google Drive",
+    "importPartialFailure": "Some Files Failed to Import",
+    "importFailureDescription": "Failed to import: {{files}}"
+  },
+  "fileUpload": {
+    "title": "Upload Files",
+    "description": "Drag and drop files to upload or click to browse",
+    "dragAndDrop": "Drag and drop files here or click to browse",
+    "dropHere": "Drop files here...",
+    "browse": "Browse Files",
+    "upload": "Upload Files",
+    "uploading": "Uploading...",
+    "success": "Files uploaded successfully",
+    "successCount": "{{count}} of {{total}} files uploaded successfully"
+  },
+  "landing": {
+    "hero": {
+      "title": "Secure and intuitive file storage and sharing",
+      "description": "Protect, organize, and share your important documents with enterprise-grade security and a user-friendly interface that simplifies your digital life.",
+      "startNow": "Start Now",
+      "seeFeatures": "See Features"
+    },
+    "features": {
+      "title": "Features that transform your digital experience",
+      "description": "Discover the powerful tools that make Orbyx Drive the ideal choice for everyday file management.",
+      "security": {
+        "title": "Advanced Security",
+        "description": "End-to-end encryption for your most valuable files, with two-factor authentication for extra protection"
+      },
+      "organization": {
+        "title": "Intuitive Organization",
+        "description": "Organize your files in folders with custom colors and visual tags to find everything quickly"
+      },
+      "sharing": {
+        "title": "Smart Sharing",
+        "description": "Share files securely using password-protected links and automatic expiration dates"
+      },
+      "anywhere": {
+        "title": "Access Anywhere",
+        "description": "Have your files always at hand on any device with our responsive interface and automatic synchronization"
+      },
+      "badge": "Functionality"
+    },
+    "interface": {
+      "title": "Modern and functional interface",
+      "description": "A carefully designed user experience that combines aesthetics, functionality, and security in every detail.",
+      "customizable": {
+        "title": "Customizable View",
+        "description": "Switch between list and grid views to adapt the interface to your way of working"
+      },
+      "previews": {
+        "title": "Integrated Previews",
+        "description": "View documents, images, and videos directly in the browser without the need for downloads"
+      },
+      "oneClick": {
+        "title": "Simplified Sharing",
+        "description": "Create secure links with one click and set custom access permissions"
+      }
+    },
+    "security": {
+      "title": "Security that doesn't complicate your life",
+      "description": "We protect your data with cutting-edge technology while maintaining a simple and pleasant everyday experience.",
+      "twoFactor": {
+        "title": "Two-Factor Authentication",
+        "description": "Extra protection with the option to remember trusted devices for greater convenience"
+      },
+      "encryption": {
+        "title": "Advanced Encryption",
+        "description": "Your files are protected with encryption throughout the entire process, from upload to storage"
+      },
+      "links": {
+        "title": "Links with Full Control",
+        "description": "Define how long your shared links stay active and who can access them"
+      }
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "description": "See what people are saying about their experience with Orbyx Drive"
+    },
+    "cta": {
+      "title": "Ready to protect what matters?",
+      "description": "Create your free account today and enjoy secure, organized, and accessible storage.",
+      "createAccount": "Create Free Account",
+      "login": "Access My Account"
+    },
+    "footer": {
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Plans & Pricing",
+      "security": "Security",
+      "company": "Company",
+      "about": "About Us",
+      "blog": "Blog",
+      "contact": "Contact Us",
+      "legal": "Legal Information",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "copyright": "All rights reserved",
+      "tagline": "The ultimate solution for storing and sharing your files with security, simplicity, and efficiency."
+    },
+    "nav": {
+      "features": "Features",
+      "solutions": "Solutions",
+      "pricing": "Plans",
+      "login": "Login",
+      "register": "Sign Up",
+      "personal": "Personal",
+      "teams": "Teams",
+      "enterprise": "Enterprise"
+    },
+    "version": {
+      "new": "New",
+      "released": "Beta released"
     }
   }
 }

@@ -1,4 +1,3 @@
-
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
@@ -35,6 +34,7 @@ const NotFound = () => {
           transition={{ duration: 0.5 }}
           className="text-center space-y-6"
         >
+          {/* Número 404 Animado */}
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
@@ -51,6 +51,7 @@ const NotFound = () => {
             </div>
           </motion.div>
 
+          {/* Mensagem de Erro */}
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-foreground">
               {t("error.404.title")}
@@ -60,10 +61,12 @@ const NotFound = () => {
             </p>
           </div>
 
+          {/* Caminho que causou o erro */}
           <div className="bg-muted/50 rounded-lg p-2 font-mono text-sm">
             <code className="text-muted-foreground">{location.pathname}</code>
           </div>
 
+          {/* Botões de Ação */}
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <Button
               variant="outline"
@@ -71,7 +74,7 @@ const NotFound = () => {
               onClick={handleGoBack}
             >
               <ArrowLeft className="h-4 w-4" />
-              {t("common.back")}
+              Voltar
             </Button>
             <Button
               variant="default"
@@ -83,17 +86,18 @@ const NotFound = () => {
             </Button>
           </div>
 
+          {/* Sugestões */}
           <div className="text-sm text-muted-foreground">
             {t("error.suggestions")}
             <ul className="mt-2 space-y-1">
               <li>{t("suggestions.404.first")}</li>
-              <li>{t("suggestions.404.third")}</li>
+              {t("suggestions.404.third")}
             </ul>
           </div>
         </motion.div>
       </div>
     </div>
   );
-}
+};
 
 export default NotFound;
