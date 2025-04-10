@@ -32,4 +32,4 @@ i18n
   });
 
 export default i18n;
-export const { t } = i18n;
+// Do not directly export t, use useTranslation hook instead

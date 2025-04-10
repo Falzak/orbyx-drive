@@ -51,7 +51,7 @@ const fetchProviders = async (): Promise<StorageProviderDatabase[]> => {
 };
 
 // Get the specific S3 client for a provider
-const getS3Client = async (providerName: string) => {
+export const getS3Client = async (providerName: string) => {
   const allProviders = await fetchProviders();
   const provider = allProviders.find(p => p.name === providerName);
 
@@ -90,7 +90,7 @@ const getS3Client = async (providerName: string) => {
 };
 
 // Get the appropriate storage provider based on file type and/or client ID
-const getStorageProvider = async (fileType?: string, clientId?: string) => {
+export const getStorageProvider = async (fileType?: string, clientId?: string) => {
   try {
     const allProviders = await fetchProviders();
     
@@ -134,7 +134,7 @@ const getStorageProvider = async (fileType?: string, clientId?: string) => {
 };
 
 // Get backup providers if configured
-const getBackupProviders = async () => {
+export const getBackupProviders = async () => {
   const allProviders = await fetchProviders();
   return allProviders.filter(p => p.is_active && p.is_backup);
 };

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Download, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { downloadFile, getStorageProvider } from '@/utils/storage';
+import { downloadFile, getStorageProvider, getS3Client } from '@/utils/storage';
 import { decryptData } from '@/utils/encryption';
 import { cn } from '@/lib/utils';
 import { GetObjectCommand } from "@aws-sdk/client-s3";
@@ -32,7 +32,6 @@ const Share = () => {
     queryFn: async () => {
       if (!id) return null;
 
-      // First, fetch share data
       const { data: shareData, error: shareError } = await supabase
         .from("shared_files")
         .select("*")
@@ -46,12 +45,10 @@ const Share = () => {
 
       if (!shareData) return null;
 
-      // Check expiration
       if (shareData.expires_at && new Date(shareData.expires_at) < new Date()) {
         return null;
       }
 
-      // Try to decrypt the encrypted password if it exists
       try {
         if (shareData.encrypted_password) {
           shareData.password = decryptData(shareData.encrypted_password);
@@ -61,7 +58,6 @@ const Share = () => {
         console.error('Failed to decrypt shared file data:', decryptError);
       }
 
-      // Fetch file data using the exact file_path
       const { data: fileData, error: fileError } = await supabase
         .from('files')
         .select('filename, size, content_type')
@@ -70,7 +66,6 @@ const Share = () => {
 
       if (fileError) {
         console.error('Error fetching file:', fileError);
-        // If the file is not found, return what we have with default values
         return {
           ...shareData,
           filename: shareData.file_path.split('/').pop() || 'arquivo',
@@ -89,7 +84,6 @@ const Share = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Debug logs
   console.log('ShareData:', shareData);
   console.log('Loading:', isLoading);
   console.log('Error:', error);
@@ -114,7 +108,6 @@ const Share = () => {
     setScanStatus({ status: 'scanning' });
     
     try {
-      // Generate file URL for virus scanning
       let fileUrl;
       
       const { provider, providerType, bucket } = await getStorageProvider(shareData.content_type);
@@ -141,7 +134,6 @@ const Share = () => {
           throw new Error(`Provider ${provider} not supported for virus scanning`);
       }
       
-      // Call our virus scan edge function
       const { data: scanResult, error: scanError } = await supabase.functions.invoke('virus-scan', {
         body: { 
           fileUrl,
@@ -193,7 +185,6 @@ const Share = () => {
   const handleDownload = async () => {
     if (!shareData?.file_path) return;
     
-    // Skip scanning if already scanned and safe
     if (scanStatus.status !== 'safe') {
       const isSafe = await scanFile();
       if (!isSafe) {
@@ -209,10 +200,8 @@ const Share = () => {
     setIsDownloading(true);
     
     try {
-      // Download the file
       const blob = await downloadFile(shareData.file_path);
       
-      // Create a download link
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -222,11 +211,10 @@ const Share = () => {
       URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      // Log download activity
       await supabase.from('share_activity_logs').insert({
         share_id: id,
         activity_type: 'download',
-        user_ip: 'encrypted', // For privacy, we don't store actual IPs
+        user_ip: 'encrypted',
         user_agent: navigator.userAgent
       });
       
@@ -297,7 +285,6 @@ const Share = () => {
             </p>
           </div>
           
-          {/* Security status indicator */}
           {scanStatus.status !== 'idle' && (
             <div className={cn(
               "p-3 rounded-md text-sm flex items-center gap-2",
