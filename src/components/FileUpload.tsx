@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
-import { Upload, X, FileUp, Check, Loader2 } from "lucide-react";
+import { Upload, X, FileUp, Check, Loader2, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/App";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +31,11 @@ interface UploadFile {
   id: string;
   progress: number;
   error: string | null;
-  status: "idle" | "uploading" | "success" | "error";
+  status: "idle" | "scanning" | "uploading" | "success" | "error";
+  scanResult?: {
+    safe: boolean | null;
+    message: string;
+  };
 }
 
 const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
@@ -61,6 +65,74 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
     setFiles((prev) => prev.filter((file) => file.id !== id));
   };
 
+  const scanFile = async (fileObj: UploadFile) => {
+    try {
+      // Create a temporary URL for scanning
+      const fileUrl = URL.createObjectURL(fileObj.file);
+      
+      // Update status to scanning
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileObj.id ? { ...f, status: "scanning" } : f
+        )
+      );
+      
+      // Get the session token for authorization
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      
+      // Call the virus scan edge function
+      const { data: scanResult, error: scanError } = await supabase.functions.invoke('virus-scan', {
+        body: { fileUrl },
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      
+      if (scanError) {
+        throw new Error(`Scanning error: ${scanError.message}`);
+      }
+      
+      if (!scanResult.safe && scanResult.status !== 'timeout') {
+        throw new Error("Security risk detected: This file may contain malware");
+      }
+      
+      // Update with scan results
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileObj.id ? { 
+            ...f, 
+            scanResult: {
+              safe: scanResult.safe,
+              message: scanResult.message
+            }
+          } : f
+        )
+      );
+      
+      // Clean up the temporary URL
+      URL.revokeObjectURL(fileUrl);
+      
+      return true;
+    } catch (error) {
+      console.error("File scanning error:", error);
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileObj.id
+            ? {
+                ...f,
+                status: "error",
+                error: error instanceof Error ? error.message : "Scan failed",
+                scanResult: {
+                  safe: false,
+                  message: "Security scan failed"
+                }
+              }
+            : f
+        )
+      );
+      return false;
+    }
+  };
+
   const uploadFiles = async () => {
     if (!session?.user.id || files.length === 0) return;
 
@@ -74,6 +146,13 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
       }
 
       try {
+        // First scan the file for viruses
+        const scanResult = await scanFile(fileObj);
+        
+        if (!scanResult) {
+          continue; // Skip upload if scan failed
+        }
+        
         // Update status to uploading
         setFiles((prev) =>
           prev.map((f) =>
@@ -206,6 +285,11 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
                     <p className="text-xs text-muted-foreground">
                       {formatFileSize(fileObj.file.size)}
                     </p>
+                    {fileObj.scanResult && fileObj.scanResult.safe && (
+                      <p className="text-xs text-green-500 flex items-center gap-1">
+                        <Shield className="h-3 w-3" /> {fileObj.scanResult.message || "Safe"}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -219,6 +303,12 @@ const FileUpload = ({ open, onOpenChange, onSuccess }: FileUploadProps) => {
                     >
                       <X className="h-4 w-4" />
                     </Button>
+                  )}
+                  {fileObj.status === "scanning" && (
+                    <div className="flex items-center gap-1">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="text-xs">Scanning...</span>
+                    </div>
                   )}
                   {fileObj.status === "uploading" && (
                     <div className="w-20">

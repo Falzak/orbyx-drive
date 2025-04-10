@@ -268,11 +268,15 @@ export async function downloadFile(filePath: string, clientId?: string): Promise
   
   // Get the file's content type from the database if possible
   let contentType: string | undefined;
-  const { data: fileData } = await supabase
+  const { data: fileData, error: fileError } = await supabase
     .from("files")
-    .select("content_type")
+    .select("content_type, id")
     .eq("file_path", filePath)
     .maybeSingle();
+  
+  if (fileError) {
+    console.error("Error fetching file data:", fileError);
+  }
   
   if (fileData?.content_type) {
     contentType = fileData.content_type;
@@ -280,6 +284,64 @@ export async function downloadFile(filePath: string, clientId?: string): Promise
   
   const { provider, providerType, bucket } = await getStorageProvider(contentType, clientId);
 
+  // Generate file URL for virus scanning
+  let fileUrl: string;
+  switch (providerType) {
+    case "supabase": {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      fileUrl = data.publicUrl;
+      break;
+    }
+    case "aws": 
+    case "backblaze":
+    case "wasabi":
+    case "cloudflare": {
+      const client = await getS3Client(provider);
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filePath,
+      });
+      fileUrl = await getSignedUrl(client, command, { expiresIn: 3600 });
+      break;
+    }
+    default:
+      throw new Error(`Provider ${provider} not supported for virus scanning`);
+  }
+
+  try {
+    // Get the session token for authorization
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    
+    // Call our virus scan edge function
+    const { data: scanResult, error: scanError } = await supabase.functions.invoke('virus-scan', {
+      body: { 
+        fileUrl, 
+        userId: sessionData?.session?.user?.id,
+        fileId: fileData?.id
+      },
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    if (scanError) {
+      console.error("Error during virus scan:", scanError);
+      throw new Error("File could not be scanned for viruses");
+    }
+
+    if (scanResult.status === 'timeout') {
+      // Handle timeout - could show a message to try again later
+      console.warn("Virus scan timeout:", scanResult.message);
+    } else if (!scanResult.safe) {
+      throw new Error("Security risk detected: This file may contain malware");
+    }
+
+    // If scan was successful and file is safe (or timeout), proceed with download
+  } catch (scanError) {
+    console.error("Virus scan failed:", scanError);
+    throw scanError;
+  }
+
+  // Continue with the existing download logic
   switch (providerType) {
     case "supabase": {
       const { data, error } = await supabase.storage
