@@ -70,28 +70,28 @@ export const FileContextMenu = React.forwardRef<
     return (
       <ContextMenu>
         <ContextMenuTrigger>{children}</ContextMenuTrigger>
-        <ContextMenuContent className="w-72 bg-background/80 dark:bg-black/80 backdrop-blur-xl border-border/50 shadow-xl divide-y divide-border/50">
-          <div className="px-2 py-3 space-y-3">
-            <div className="flex items-start gap-3 group">
-              <div className="relative shrink-0 transition-transform duration-200 group-hover:scale-[1.02]">
+        <ContextMenuContent className="w-80 divide-y divide-border/30">
+          <div className="px-3 py-4 space-y-4">
+            <div className="flex items-start gap-4 group">
+              <div className="relative shrink-0 transition-all duration-300 group-hover:scale-[1.03]">
                 {file.content_type.startsWith("image/") && file.url ? (
-                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-border/50 bg-background/80 dark:bg-black/80 backdrop-blur-xl shadow-sm">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden border border-border/30 bg-background/60 dark:bg-black/60 backdrop-blur-xl shadow-sm">
                     <img
                       src={file.url}
                       alt={file.filename}
-                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-all duration-300 group-hover:scale-110"
                     />
                   </div>
                 ) : (
                   <div
-                    className="w-12 h-12 rounded-lg bg-gradient-to-b from-muted/50 to-muted/60 flex items-center justify-center border border-border/50 backdrop-blur-xl shadow-sm transition-all duration-200 group-hover:from-muted/60 group-hover:to-muted/70"
+                    className="w-14 h-14 rounded-xl bg-gradient-to-b from-muted/40 to-muted/50 flex items-center justify-center border border-border/30 backdrop-blur-xl shadow-sm transition-all duration-300 group-hover:from-muted/50 group-hover:to-muted/60"
                     style={
                       file.is_folder
                         ? { backgroundColor: file.color || "#94a3b8" }
                         : {}
                     }
                   >
-                    <span className="text-3xl transition-transform duration-200 group-hover:scale-110">
+                    <span className="text-3xl transition-all duration-300 group-hover:scale-115">
                       {file.is_folder
                         ? file.icon || "📁"
                         : getFileIcon(file.content_type)}
@@ -99,47 +99,47 @@ export const FileContextMenu = React.forwardRef<
                   </div>
                 )}
                 {file.is_favorite && (
-                  <div className="absolute -top-1 -right-1 transition-transform duration-200 group-hover:scale-110">
-                    <Star className="w-4 h-4 fill-yellow-400 stroke-2 drop-shadow-sm" />
+                  <div className="absolute -top-1.5 -right-1.5 transition-all duration-300 group-hover:scale-110 animate-pulse">
+                    <Star className="w-5 h-5 fill-yellow-400 stroke-[1.5px] drop-shadow-md" />
                   </div>
                 )}
               </div>
-              <div className="space-y-1 flex-1 min-w-0">
-                <p className="font-medium text-sm text-foreground truncate group-hover:text-foreground transition-colors duration-200">
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <p className="font-medium text-base text-foreground/90 truncate group-hover:text-foreground transition-colors duration-200">
                   {file.filename}
                 </p>
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="secondary"
-                    className="h-5 px-1.5 text-[10px] font-medium bg-accent/50 hover:bg-accent/60 backdrop-blur-xl transition-colors duration-200"
+                    className="h-5 px-2 text-[10px] font-medium bg-accent/40 hover:bg-accent/50 backdrop-blur-xl transition-colors duration-200"
                   >
                     {file.content_type.split("/").pop()?.toUpperCase()}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground/80">
                     {formatFileSize(file.size)}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
+            <div className="space-y-2 bg-background/30 dark:bg-black/20 backdrop-blur-xl p-2.5 rounded-lg border border-border/20">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground/70" />
                 <span>
                   {t("fileExplorer.fileProperties.details.created", {
                     date: formatDate(file.created_at),
                   })}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <FileType className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                <FileType className="h-3.5 w-3.5 text-muted-foreground/70" />
                 <span>
                   {t("fileExplorer.fileProperties.details.type", {
                     type: file.content_type,
                   })}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <HardDrive className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                <HardDrive className="h-3.5 w-3.5 text-muted-foreground/70" />
                 <span>
                   {t("fileExplorer.fileProperties.details.size", {
                     size: formatFileSize(file.size),
@@ -149,47 +149,47 @@ export const FileContextMenu = React.forwardRef<
             </div>
           </div>
 
-          <div className="p-1">
+          <div className="p-1.5">
             {isPreviewableFile(file.content_type) && (
               <>
                 <ContextMenuItem
                   onClick={() => onPreview(file)}
-                  className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
+                  className="group rounded-md"
                 >
-                  <FileIcon className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
+                  <FileIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                     {t("fileExplorer.contextMenu.open")}
                   </span>
                 </ContextMenuItem>
-                <ContextMenuSeparator className="bg-border/50" />
+                <ContextMenuSeparator />
               </>
             )}
             <ContextMenuItem
               onClick={() => onDownload(file)}
-              className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
+              className="group rounded-md"
             >
-              <Download className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
+              <Download className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
               <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                 {t("fileExplorer.contextMenu.download")}
               </span>
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() => onShare(file)}
-              className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
+              className="group rounded-md"
             >
-              <Share2 className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
+              <Share2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
               <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                 {t("fileExplorer.contextMenu.share")}
               </span>
             </ContextMenuItem>
-            <ContextMenuSeparator className="bg-border/50" />
+            <ContextMenuSeparator />
             <ContextMenuItem
               onClick={() => onToggleFavorite(file)}
-              className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
+              className="group rounded-md"
             >
               <Star
                 className={cn(
-                  "h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200",
+                  "h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200",
                   file.is_favorite && "fill-yellow-400"
                 )}
               />
@@ -202,9 +202,9 @@ export const FileContextMenu = React.forwardRef<
             {!file.is_folder && (
               <ContextMenuItem
                 onClick={() => setIsRenameDialogOpen(true)}
-                className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
+                className="group rounded-md"
               >
-                <Edit className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
+                <Edit className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                 <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                   {t("fileExplorer.contextMenu.rename")}
                 </span>
@@ -213,9 +213,9 @@ export const FileContextMenu = React.forwardRef<
             {file.is_folder && (
               <ContextMenuItem
                 onClick={() => onEditFolder?.(file)}
-                className="text-foreground hover:bg-accent/60 hover:text-accent-foreground cursor-pointer transition-all duration-200 group rounded-sm"
+                className="group rounded-md"
               >
-                <Edit className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
+                <Edit className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                 <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                   {t("fileExplorer.contextMenu.editFolder")}
                 </span>
@@ -223,12 +223,12 @@ export const FileContextMenu = React.forwardRef<
             )}
           </div>
 
-          <div className="p-1">
+          <div className="p-1.5">
             <ContextMenuItem
               onClick={() => onDelete(file)}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer transition-all duration-200 group rounded-sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive group rounded-md"
             >
-              <Trash2 className="h-4 w-4 mr-2 group-hover:scale-105 transition-transform duration-200" />
+              <Trash2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
               <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                 {t("fileExplorer.contextMenu.delete")}
               </span>
