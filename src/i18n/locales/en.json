@@ -22,7 +22,9 @@
     "upload": "Upload",
     "logoutError": "Failed to log out",
     "create": "Create",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "goBack": "Go Back",
+    "continue": "Continue"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -53,6 +55,7 @@
     "contextMenu": {
       "refresh": "Refresh files",
       "createFolder": "New folder",
+      "createTextFile": "New text file",
       "uploadFile": "Upload file",
       "selectAll": "Select all",
       "sortBy": "Sort by",
@@ -449,6 +452,35 @@
     "uploading": "Uploading...",
     "success": "Files uploaded successfully",
     "successCount": "{{count}} of {{total}} files uploaded successfully"
+  },
+  "fileCreate": {
+    "title": "Create Text File",
+    "description": "Create a new text file with custom content",
+    "filename": "Filename",
+    "content": "Content",
+    "contentPlaceholder": "Enter your text content here...",
+    "success": "Text file created successfully",
+    "error": "Error creating text file"
+  },
+  "share": {
+    "sharedFile": "Shared File",
+    "encrypted": "Encrypted",
+    "fileSize": "File size",
+    "scanningFile": "Scanning file...",
+    "securityNote": "This file is encrypted and has been scanned for viruses.",
+    "downloadFile": "Download File",
+    "scanAndDownload": "Scan and Download",
+    "decrypting": "Decrypting...",
+    "fileNotFound": "File not found",
+    "protectedFile": "Protected File",
+    "enterPassword": "Enter password",
+    "invalidPassword": "Invalid password",
+    "securityWarning": "Security Warning",
+    "scanError": "Error scanning file",
+    "fileNotSafe": "This file may not be safe",
+    "fileSafe": "File is safe",
+    "downloadError": "Error downloading file",
+    "downloadingAnyway": "Downloading anyway"
   },
   "landing": {
     "hero": {

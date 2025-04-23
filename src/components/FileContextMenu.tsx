@@ -57,11 +57,13 @@ export const FileContextMenu = React.forwardRef<
     const { t } = useTranslation();
     const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
 
-    const isMediaFile = (contentType: string) => {
+    const isPreviewableFile = (contentType: string) => {
       return (
         contentType.startsWith("image/") ||
         contentType.startsWith("video/") ||
-        contentType.startsWith("audio/")
+        contentType.startsWith("audio/") ||
+        contentType === "text/plain" ||
+        contentType === "application/pdf"
       );
     };
 
@@ -148,7 +150,7 @@ export const FileContextMenu = React.forwardRef<
           </div>
 
           <div className="p-1">
-            {isMediaFile(file.content_type) && (
+            {isPreviewableFile(file.content_type) && (
               <>
                 <ContextMenuItem
                   onClick={() => onPreview(file)}

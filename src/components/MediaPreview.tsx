@@ -18,11 +18,17 @@ import {
   RotateCw,
   File,
   FileText,
+  Sun,
+  Moon,
+  Copy,
 } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export interface MediaPreviewProps {
   file: FileData;
@@ -45,6 +51,8 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [canPreview, setCanPreview] = useState(false);
+  const [textContent, setTextContent] = useState<string>("");
+  const [textTheme, setTextTheme] = useState<"light" | "dark">("light");
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const loadDocument = async () => {
@@ -66,6 +74,12 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       const blob = await downloadFile(file.file_path!);
       const url = URL.createObjectURL(blob);
       setDocumentUrl(url);
+
+      // If it's a text file, read the content
+      if (file.content_type === "text/plain") {
+        const text = await blob.text();
+        setTextContent(text);
+      }
 
       // Clear interval and set to 100%
       clearInterval(interval);
@@ -93,7 +107,9 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       file.content_type.includes("officedocument") ||
       file.content_type === "application/msword";
 
-    setCanPreview(isOffice);
+    const isTextFile = file.content_type === "text/plain";
+
+    setCanPreview(isOffice || isTextFile);
 
     // Validar se temos uma URL de imagem
     if (file.content_type.startsWith("image/") && !file.url) {
@@ -104,9 +120,9 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       });
     }
 
-    // For office documents, we load the document in progress steps
+    // For office documents and text files, we load the document in progress steps
     // to show a loading indicator to the user
-    if (isOffice && !documentUrl) {
+    if ((isOffice || isTextFile) && !documentUrl) {
       loadDocument();
     }
   }, [file, documentUrl]);
@@ -158,7 +174,8 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       );
     } else if (
       file.content_type.includes("officedocument") ||
-      file.content_type === "application/msword"
+      file.content_type === "application/msword" ||
+      file.content_type === "text/plain"
     ) {
       if (isLoading) {
         return (
@@ -175,39 +192,187 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
       }
 
       return documentUrl ? (
-        <div className="h-[80vh] w-full bg-muted/20 rounded-md">
-          <Tabs defaultValue="preview" className="w-full h-full">
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="preview">Visualização</TabsTrigger>
-              <TabsTrigger value="download">Baixar</TabsTrigger>
-            </TabsList>
-            <TabsContent value="preview" className="w-full h-[calc(80vh-40px)]">
-              <iframe
-                ref={iframeRef}
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                  documentUrl
-                )}`}
-                className="w-full h-full"
-                title={`Document Preview: ${file.filename}`}
-              />
-            </TabsContent>
-            <TabsContent
-              value="download"
-              className="flex items-center justify-center h-[calc(80vh-40px)]"
-            >
-              <div className="flex flex-col items-center p-8">
-                <FileText size={64} className="text-primary mb-4" />
-                <h3 className="text-xl font-medium mb-2">{file.filename}</h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  Este documento pode ser baixado para visualização completa.
-                </p>
-                <Button onClick={onDownload} className="gap-2">
-                  <Download size={16} />
-                  Baixar documento
-                </Button>
+        <div
+          className={cn(
+            "h-[80vh] w-full",
+            file.content_type === "text/plain"
+              ? "bg-background"
+              : "bg-muted/20 rounded-md"
+          )}
+        >
+          {file.content_type === "text/plain" ? (
+            <div className="w-full h-full bg-background overflow-auto">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-2 bg-muted/30 border-b border-border/50 sticky top-0 z-10 pr-14">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleZoomOut}
+                      title="Diminuir zoom"
+                    >
+                      <ZoomOut className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setScale(1)}
+                      title="Restaurar zoom"
+                    >
+                      <span className="text-xs font-medium">
+                        {Math.round(scale * 100)}%
+                      </span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleZoomIn}
+                      title="Aumentar zoom"
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Separator orientation="vertical" className="h-4" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() =>
+                        setTextTheme(textTheme === "light" ? "dark" : "light")
+                      }
+                      title={
+                        textTheme === "light" ? "Modo escuro" : "Modo claro"
+                      }
+                    >
+                      {textTheme === "light" ? (
+                        <Moon className="h-4 w-4" />
+                      ) : (
+                        <Sun className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Separator orientation="vertical" className="h-4" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={onDownload}
+                      title="Baixar arquivo"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        navigator.clipboard.writeText(textContent);
+                        toast({
+                          title: "Texto copiado",
+                          description:
+                            "O conteúdo do arquivo foi copiado para a área de transferência.",
+                        });
+                      }}
+                      title="Copiar conteúdo"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2 max-w-[40%] overflow-hidden">
+                    <Badge
+                      variant="outline"
+                      className="text-xs font-normal flex-shrink-0"
+                    >
+                      {file.content_type}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {file.filename} - {(file.size / 1024).toFixed(2)} KB
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col flex-1 overflow-hidden relative">
+                  <div
+                    className={cn(
+                      "flex-1 p-4 pt-6 pb-8 font-mono text-sm overflow-auto",
+                      textTheme === "dark"
+                        ? "bg-zinc-900 text-zinc-100"
+                        : "bg-white text-zinc-800"
+                    )}
+                    style={{ fontSize: `${14 * scale}px` }}
+                  >
+                    {textContent.split("\n").map((line, index) => (
+                      <div key={index} className="flex hover:bg-muted/10">
+                        <div
+                          className={cn(
+                            "select-none text-right pr-4 w-12 flex-shrink-0 tabular-nums",
+                            textTheme === "dark"
+                              ? "text-zinc-500"
+                              : "text-zinc-400"
+                          )}
+                        >
+                          {index + 1}
+                        </div>
+                        <pre className="whitespace-pre-wrap flex-1">
+                          {line || " "}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    className={cn(
+                      "px-4 py-1.5 text-xs border-t flex justify-between items-center sticky bottom-0 z-10",
+                      textTheme === "dark"
+                        ? "bg-zinc-800 text-zinc-400 border-zinc-700"
+                        : "bg-zinc-100 text-zinc-500 border-zinc-200"
+                    )}
+                  >
+                    <div>
+                      {textContent.split("\n").length} linhas |{" "}
+                      {textContent.trim().split(/\s+/).length} palavras |{" "}
+                      {textContent.length} caracteres
+                    </div>
+                    <div>Codificação: UTF-8</div>
+                  </div>
+                </div>
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          ) : (
+            <Tabs defaultValue="preview" className="w-full h-full">
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="preview">Visualização</TabsTrigger>
+                <TabsTrigger value="download">Baixar</TabsTrigger>
+              </TabsList>
+              <TabsContent
+                value="preview"
+                className="w-full h-[calc(80vh-40px)]"
+              >
+                <iframe
+                  ref={iframeRef}
+                  src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                    documentUrl
+                  )}`}
+                  className="w-full h-full"
+                  title={`Document Preview: ${file.filename}`}
+                />
+              </TabsContent>
+              <TabsContent
+                value="download"
+                className="flex items-center justify-center h-[calc(80vh-40px)]"
+              >
+                <div className="flex flex-col items-center p-8">
+                  <FileText size={64} className="text-primary mb-4" />
+                  <h3 className="text-xl font-medium mb-2">{file.filename}</h3>
+                  <p className="text-muted-foreground text-center mb-4">
+                    Este documento pode ser baixado para visualização completa.
+                  </p>
+                  <Button onClick={onDownload} className="gap-2">
+                    <Download size={16} />
+                    Baixar documento
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-[80vh]">
@@ -234,7 +399,15 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
 
   return (
     <Dialog open onOpenChange={() => onClose?.()}>
-      <DialogContent className="max-w-7xl w-full bg-transparent border-none p-0">
+      <DialogContent
+        className={cn(
+          "max-w-7xl w-full border-none p-0",
+          file.content_type === "text/plain"
+            ? "bg-background"
+            : "bg-transparent"
+        )}
+        closeButtonClassName="z-50 bg-background/80 hover:bg-background/90 backdrop-blur-sm"
+      >
         <VisuallyHidden>
           <DialogTitle>Visualização: {file.filename}</DialogTitle>
           <DialogDescription>
@@ -242,49 +415,62 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           </DialogDescription>
         </VisuallyHidden>
 
-        <div className="absolute right-4 top-4 flex items-center gap-2 z-50 bg-background/30 backdrop-blur-md rounded-lg p-2">
-          {onToggleFavorite && (
+        {file.content_type === "text/plain" ? (
+          <div className="absolute right-4 top-4 z-50">
             <Button
               variant="ghost"
               size="icon"
-              onClick={onToggleFavorite}
-              className="hover:bg-background/20"
+              onClick={() => onClose?.()}
+              className="bg-background/90 hover:bg-background shadow-sm backdrop-blur-sm rounded-full h-8 w-8 flex items-center justify-center border border-border/50"
             >
-              <Star
-                className={file.is_favorite ? "fill-yellow-400" : ""}
-                size={20}
-              />
+              <X size={18} />
             </Button>
-          )}
-          {onShare && (
+          </div>
+        ) : (
+          <div className="absolute right-4 top-4 flex items-center gap-2 z-50 bg-background/30 backdrop-blur-md rounded-lg p-2">
+            {onToggleFavorite && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleFavorite}
+                className="hover:bg-background/20"
+              >
+                <Star
+                  className={file.is_favorite ? "fill-yellow-400" : ""}
+                  size={20}
+                />
+              </Button>
+            )}
+            {onShare && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onShare}
+                className="hover:bg-background/20"
+              >
+                <Share2 size={20} />
+              </Button>
+            )}
+            {onDownload && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDownload}
+                className="hover:bg-background/20"
+              >
+                <Download size={20} />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
-              onClick={onShare}
+              onClick={() => onClose?.()}
               className="hover:bg-background/20"
             >
-              <Share2 size={20} />
+              <X size={20} />
             </Button>
-          )}
-          {onDownload && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onDownload}
-              className="hover:bg-background/20"
-            >
-              <Download size={20} />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onClose?.()}
-            className="hover:bg-background/20"
-          >
-            <X size={20} />
-          </Button>
-        </div>
+          </div>
+        )}
 
         {file.content_type.startsWith("image/") && (
           <div className="absolute left-4 top-4 flex items-center gap-2 z-50 bg-background/30 backdrop-blur-md rounded-lg p-2">

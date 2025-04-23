@@ -26,6 +26,7 @@ import {
   Plus,
   FolderPlus,
   FileUp,
+  FileText,
   Grid,
   List,
   Copy,
@@ -75,6 +76,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { CreateFolderDialog } from "@/components/CreateFolderDialog";
+import { CreateTextFileDialog } from "@/components/CreateTextFileDialog";
+import FileUpload from "@/components/FileUpload";
 import { uploadFile, resetStorageProvider } from "@/utils/storage";
 
 const Index = () => {
@@ -89,6 +92,8 @@ const Index = () => {
   const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [isCreateTextFileOpen, setIsCreateTextFileOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentUpload, setCurrentUpload] = useState<{
@@ -267,13 +272,12 @@ const Index = () => {
     setIsCreateFolderOpen(true);
   };
 
+  const handleCreateTextFile = () => {
+    setIsCreateTextFileOpen(true);
+  };
+
   const handleUploadClick = () => {
-    const fileInput = document.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
+    setIsUploadDialogOpen(true);
   };
 
   const handleSelectAll = async () => {
@@ -399,285 +403,343 @@ const Index = () => {
   };
 
   return (
-    <div {...getRootProps()} className="h-screen w-full relative">
-      <input {...getInputProps()} />
-      <ContextMenu>
-        <ContextMenuTrigger className="flex h-screen w-full overflow-hidden">
-          <SidebarProvider>
-            <div className="flex h-screen w-full overflow-hidden">
-              <AppSidebar onSearch={setSearchQuery} />
-              <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
-                {/* Overlay do Dashboard */}
-                <AnimatePresence>
-                  {isDragActive && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute inset-0 bg-background/50 backdrop-blur-sm border-2 border-primary/20 border-dashed rounded-lg z-50 m-2"
-                    >
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-background/95 dark:bg-black/95 backdrop-blur-xl p-6 rounded-lg shadow-lg border border-border/50">
-                          <Upload className="h-10 w-10 mx-auto mb-3 text-primary animate-bounce" />
-                          <p className="text-base font-medium text-foreground">
-                            {t("fileExplorer.dropzone.title")}
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {t("fileExplorer.dropzone.subtitle")}
-                          </p>
+    <>
+      <div {...getRootProps()} className="h-screen w-full relative">
+        <input {...getInputProps()} />
+        <ContextMenu>
+          <ContextMenuTrigger className="flex h-screen w-full overflow-hidden">
+            <SidebarProvider>
+              <div className="flex h-screen w-full overflow-hidden">
+                <AppSidebar onSearch={setSearchQuery} />
+                <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
+                  {/* Overlay do Dashboard */}
+                  <AnimatePresence>
+                    {isDragActive && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute inset-0 bg-background/50 backdrop-blur-sm border-2 border-primary/20 border-dashed rounded-lg z-50 m-2"
+                      >
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-background/95 dark:bg-black/95 backdrop-blur-xl p-6 rounded-lg shadow-lg border border-border/50">
+                            <Upload className="h-10 w-10 mx-auto mb-3 text-primary animate-bounce" />
+                            <p className="text-base font-medium text-foreground">
+                              {t("fileExplorer.dropzone.title")}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {t("fileExplorer.dropzone.subtitle")}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                <div className="flex-1 overflow-y-auto w-full">
-                  <div className="p-6 h-full">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.3,
-                        ease: "easeOut",
-                        delay: 0.3,
-                      }}
-                    >
-                      <div ref={ref}>
-                        <FileExplorer
-                          onFolderChange={setCurrentFolderId}
-                          searchQuery={searchQuery}
-                        />
-                      </div>
-                    </motion.div>
+                  <div className="flex-1 overflow-y-auto w-full">
+                    <div className="p-6 h-full">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.3,
+                          ease: "easeOut",
+                          delay: 0.3,
+                        }}
+                      >
+                        <div ref={ref}>
+                          <FileExplorer
+                            onFolderChange={setCurrentFolderId}
+                            searchQuery={searchQuery}
+                          />
+                        </div>
+                      </motion.div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </SidebarProvider>
-        </ContextMenuTrigger>
-        <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
-          <ContextMenuItem
-            onClick={handleRefreshFiles}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <RefreshCw className="h-4 w-4" />
-            {t("dashboard.contextMenu.refresh")}
-          </ContextMenuItem>
-          <ContextMenuSeparator className="bg-border/50" />
-          <ContextMenuItem
-            onClick={handleCreateFolder}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <FolderPlus className="h-4 w-4" />
-            {t("dashboard.contextMenu.createFolder")}
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={handleUploadClick}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <FileUp className="h-4 w-4" />
-            {t("dashboard.contextMenu.uploadFile")}
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={handleSelectAll}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <MousePointerClick className="h-4 w-4" />
-            {t("dashboard.contextMenu.selectAll")}
-          </ContextMenuItem>
-          <ContextMenuSub>
-            <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-              <ArrowUpDown className="h-4 w-4" />
-              {t("dashboard.contextMenu.sortBy")}
-            </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48">
-              <ContextMenuRadioGroup value={view}>
-                <ContextMenuRadioItem
-                  onClick={() => handleSortFiles("nameAsc")}
-                  value="nameAsc"
-                >
-                  {t("fileExplorer.sortBy.nameAsc")}
-                </ContextMenuRadioItem>
-                <ContextMenuRadioItem
-                  onClick={() => handleSortFiles("nameDesc")}
-                  value="nameDesc"
-                >
-                  {t("fileExplorer.sortBy.nameDesc")}
-                </ContextMenuRadioItem>
-                <ContextMenuRadioItem
-                  onClick={() => handleSortFiles("dateDesc")}
-                  value="dateDesc"
-                >
-                  {t("fileExplorer.sortBy.dateDesc")}
-                </ContextMenuRadioItem>
-                <ContextMenuRadioItem
-                  onClick={() => handleSortFiles("dateAsc")}
-                  value="dateAsc"
-                >
-                  {t("fileExplorer.sortBy.dateAsc")}
-                </ContextMenuRadioItem>
-                <ContextMenuRadioItem
-                  onClick={() => handleSortFiles("sizeDesc")}
-                  value="sizeDesc"
-                >
-                  {t("fileExplorer.sortBy.sizeDesc")}
-                </ContextMenuRadioItem>
-                <ContextMenuRadioItem
-                  onClick={() => handleSortFiles("sizeAsc")}
-                  value="sizeAsc"
-                >
-                  {t("fileExplorer.sortBy.sizeAsc")}
-                </ContextMenuRadioItem>
-              </ContextMenuRadioGroup>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-          <ContextMenuSub>
-            <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-              {view === "grid" ? (
-                <Grid className="h-4 w-4" />
-              ) : (
-                <List className="h-4 w-4" />
-              )}
-              {t("dashboard.contextMenu.view")}
-            </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48">
-              <ContextMenuRadioGroup value={view}>
-                <ContextMenuRadioItem
-                  onClick={() => setView("grid")}
-                  value="grid"
-                >
-                  <Grid className="h-4 w-4 mr-2" />
-                  {t("dashboard.contextMenu.gridView")}
-                </ContextMenuRadioItem>
-                <ContextMenuRadioItem
-                  onClick={() => setView("list")}
-                  value="list"
-                >
-                  <List className="h-4 w-4 mr-2" />
-                  {t("dashboard.contextMenu.listView")}
-                </ContextMenuRadioItem>
-              </ContextMenuRadioGroup>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-          <ContextMenuSeparator className="bg-border/50" />
-          <ContextMenuItem
-            onClick={handleOpenInNewTab}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t("dashboard.contextMenu.newTab")}
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={handleCopyPath}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <Copy className="h-4 w-4" />
-            {t("dashboard.contextMenu.copyPath")}
-          </ContextMenuItem>
-          <ContextMenuSeparator className="bg-border/50" />
-          <ContextMenuItem
-            onClick={handleHelp}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <HelpCircle className="h-4 w-4" />
-            {t("dashboard.contextMenu.help")}
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={handleKeyboardShortcuts}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <Keyboard className="h-4 w-4" />
-            {t("dashboard.contextMenu.shortcuts")}
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={handleFeedback}
-            className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-          >
-            <MessageSquarePlus className="h-4 w-4" />
-            {t("dashboard.contextMenu.feedback")}
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
-
-      {/* Progress overlay com botão de cancelar */}
-      {uploadProgress !== null && (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="upload-progress"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-4 right-4 w-80 p-4 bg-card rounded-lg shadow-lg border z-50"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">
-                {uploadProgress >= 100 ? (
-                  <span className="text-primary">
-                    {t("dashboard.upload.complete")}
-                  </span>
-                ) : (
-                  t("dashboard.upload.uploading")
-                )}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {Math.round(uploadProgress)}%
-                </span>
-                {uploadProgress < 100 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCancelUpload}
-                    className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+            </SidebarProvider>
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
+            <ContextMenuItem
+              onClick={handleRefreshFiles}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <RefreshCw className="h-4 w-4" />
+              {t("dashboard.contextMenu.refresh")}
+            </ContextMenuItem>
+            <ContextMenuSeparator className="bg-border/50" />
+            <ContextMenuItem
+              onClick={handleCreateFolder}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <FolderPlus className="h-4 w-4" />
+              {t("dashboard.contextMenu.createFolder")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={handleCreateTextFile}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <FileText className="h-4 w-4" />
+              {t("dashboard.contextMenu.createTextFile")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={handleUploadClick}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <FileUp className="h-4 w-4" />
+              {t("dashboard.contextMenu.uploadFile")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={handleSelectAll}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <MousePointerClick className="h-4 w-4" />
+              {t("dashboard.contextMenu.selectAll")}
+            </ContextMenuItem>
+            <ContextMenuSub>
+              <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
+                <ArrowUpDown className="h-4 w-4" />
+                {t("dashboard.contextMenu.sortBy")}
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent className="w-48">
+                <ContextMenuRadioGroup value={view}>
+                  <ContextMenuRadioItem
+                    onClick={() => handleSortFiles("nameAsc")}
+                    value="nameAsc"
                   >
-                    {t("dashboard.upload.cancel")}
-                  </Button>
+                    {t("fileExplorer.sortBy.nameAsc")}
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem
+                    onClick={() => handleSortFiles("nameDesc")}
+                    value="nameDesc"
+                  >
+                    {t("fileExplorer.sortBy.nameDesc")}
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem
+                    onClick={() => handleSortFiles("dateDesc")}
+                    value="dateDesc"
+                  >
+                    {t("fileExplorer.sortBy.dateDesc")}
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem
+                    onClick={() => handleSortFiles("dateAsc")}
+                    value="dateAsc"
+                  >
+                    {t("fileExplorer.sortBy.dateAsc")}
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem
+                    onClick={() => handleSortFiles("sizeDesc")}
+                    value="sizeDesc"
+                  >
+                    {t("fileExplorer.sortBy.sizeDesc")}
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem
+                    onClick={() => handleSortFiles("sizeAsc")}
+                    value="sizeAsc"
+                  >
+                    {t("fileExplorer.sortBy.sizeAsc")}
+                  </ContextMenuRadioItem>
+                </ContextMenuRadioGroup>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSub>
+              <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
+                {view === "grid" ? (
+                  <Grid className="h-4 w-4" />
+                ) : (
+                  <List className="h-4 w-4" />
                 )}
+                {t("dashboard.contextMenu.view")}
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent className="w-48">
+                <ContextMenuRadioGroup value={view}>
+                  <ContextMenuRadioItem
+                    onClick={() => setView("grid")}
+                    value="grid"
+                  >
+                    <Grid className="h-4 w-4 mr-2" />
+                    {t("dashboard.contextMenu.gridView")}
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem
+                    onClick={() => setView("list")}
+                    value="list"
+                  >
+                    <List className="h-4 w-4 mr-2" />
+                    {t("dashboard.contextMenu.listView")}
+                  </ContextMenuRadioItem>
+                </ContextMenuRadioGroup>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSeparator className="bg-border/50" />
+            <ContextMenuItem
+              onClick={handleOpenInNewTab}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t("dashboard.contextMenu.newTab")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={handleCopyPath}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <Copy className="h-4 w-4" />
+              {t("dashboard.contextMenu.copyPath")}
+            </ContextMenuItem>
+            <ContextMenuSeparator className="bg-border/50" />
+            <ContextMenuItem
+              onClick={handleHelp}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <HelpCircle className="h-4 w-4" />
+              {t("dashboard.contextMenu.help")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={handleKeyboardShortcuts}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <Keyboard className="h-4 w-4" />
+              {t("dashboard.contextMenu.shortcuts")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={handleFeedback}
+              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
+            >
+              <MessageSquarePlus className="h-4 w-4" />
+              {t("dashboard.contextMenu.feedback")}
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+
+        {/* Progress overlay com botão de cancelar */}
+        {uploadProgress !== null && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="upload-progress"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="fixed bottom-4 right-4 w-80 p-4 bg-card rounded-lg shadow-lg border z-50"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">
+                  {uploadProgress >= 100 ? (
+                    <span className="text-primary">
+                      {t("dashboard.upload.complete")}
+                    </span>
+                  ) : (
+                    t("dashboard.upload.uploading")
+                  )}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {Math.round(uploadProgress)}%
+                  </span>
+                  {uploadProgress < 100 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelUpload}
+                      className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      {t("dashboard.upload.cancel")}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-            <Progress
-              value={uploadProgress}
-              className={cn(
-                "h-2 transition-colors",
-                uploadProgress >= 100 && "bg-primary/10"
-              )}
-            />
-          </motion.div>
-        </AnimatePresence>
-      )}
+              <Progress
+                value={uploadProgress}
+                className={cn(
+                  "h-2 transition-colors",
+                  uploadProgress >= 100 && "bg-primary/10"
+                )}
+              />
+            </motion.div>
+          </AnimatePresence>
+        )}
 
-      {/* Botão de upload manual */}
-      <Button
-        onClick={() => {
-          const fileInput = document.createElement("input");
-          fileInput.type = "file";
-          fileInput.multiple = true;
-          fileInput.accept = [
-            "image/*",
-            "video/*",
-            "audio/*",
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ].join(",");
+        {/* Botão de upload manual */}
+        <Button
+          onClick={() => {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.multiple = true;
+            fileInput.accept = [
+              "image/*",
+              "video/*",
+              "audio/*",
+              "application/pdf",
+              "application/msword",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ].join(",");
 
-          fileInput.onchange = (e) => {
-            const files = (e.target as HTMLInputElement).files;
-            if (files) {
-              onDrop(Array.from(files));
-            }
-          };
+            fileInput.onchange = (e) => {
+              const files = (e.target as HTMLInputElement).files;
+              if (files) {
+                onDrop(Array.from(files));
+              }
+            };
 
-          fileInput.click();
+            fileInput.click();
+          }}
+          className="fixed right-4 bottom-4 shadow-lg"
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          {t("dashboard.upload.button")}
+        </Button>
+      </div>
+
+      <CreateFolderDialog
+        open={isCreateFolderOpen}
+        onOpenChange={setIsCreateFolderOpen}
+        onCreateFolder={async (values) => {
+          try {
+            await supabase.from("folders").insert({
+              name: values.name,
+              icon: values.icon,
+              color: values.color,
+              user_id: session?.user.id,
+              parent_id: currentFolderId,
+            });
+
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
+            toast({
+              title: t("common.success"),
+              description: t("dashboard.folder.createSuccess"),
+            });
+          } catch (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("common.error"),
+            });
+          }
         }}
-        className="fixed right-4 bottom-4 shadow-lg"
-      >
-        <Upload className="h-4 w-4 mr-2" />
-        {t("dashboard.upload.button")}
-      </Button>
-    </div>
+      />
+
+      <CreateTextFileDialog
+        open={isCreateTextFileOpen}
+        onOpenChange={setIsCreateTextFileOpen}
+        currentFolderId={currentFolderId}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["files"] });
+        }}
+      />
+
+      <FileUpload
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["files"] });
+          toast({
+            title: t("common.success"),
+            description: t("fileUpload.success"),
+          });
+        }}
+      />
+    </>
   );
 };
 

@@ -51,6 +51,7 @@ export interface SharedFile {
   file_path: string;
   shared_by: string;
   is_public: boolean;
+  is_encrypted: boolean | null;
   password: string | null;
   expires_at: string | null;
   created_at: string;

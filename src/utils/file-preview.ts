@@ -68,6 +68,7 @@ export function isPreviewable(contentType: string): boolean {
     contentType.startsWith("audio/") ||
     contentType === "application/pdf" ||
     contentType.includes("officedocument") ||
-    contentType === "application/msword"
+    contentType === "application/msword" ||
+    contentType === "text/plain"
   );
 }

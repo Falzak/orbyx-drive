@@ -11,6 +11,7 @@ export function getFileIcon(contentType: string) {
   if (contentType.startsWith("audio/")) return "🎵";
   if (contentType.startsWith("application/pdf")) return "📄";
   if (contentType.startsWith("application/msword")) return "📝";
+  if (contentType === "text/plain") return "📝";
   return "📁";
 }
 

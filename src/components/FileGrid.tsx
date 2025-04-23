@@ -58,11 +58,13 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
   ) => {
     const { t } = useTranslation();
 
-    const isMediaFile = (contentType: string) => {
+    const isPreviewableFile = (contentType: string) => {
       return (
         contentType.startsWith("image/") ||
         contentType.startsWith("video/") ||
-        contentType.startsWith("audio/")
+        contentType.startsWith("audio/") ||
+        contentType === "text/plain" ||
+        contentType === "application/pdf"
       );
     };
 
@@ -118,11 +120,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
                 onClick={() => {
-                  if (
-                    file.is_folder ||
-                    isMediaFile(file.content_type) ||
-                    file.content_type === "application/pdf"
-                  ) {
+                  if (file.is_folder || isPreviewableFile(file.content_type)) {
                     onPreview(file);
                   }
                 }}

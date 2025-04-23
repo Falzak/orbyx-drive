@@ -47,11 +47,13 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
   ) => {
     const { t } = useTranslation();
 
-    const isMediaFile = (contentType: string) => {
+    const isPreviewableFile = (contentType: string) => {
       return (
         contentType.startsWith("image/") ||
         contentType.startsWith("video/") ||
-        contentType.startsWith("audio/")
+        contentType.startsWith("audio/") ||
+        contentType === "text/plain" ||
+        contentType === "application/pdf"
       );
     };
 
@@ -136,8 +138,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                   onClick={() => {
                     if (
                       file.is_folder ||
-                      isMediaFile(file.content_type) ||
-                      file.content_type === "application/pdf"
+                      isPreviewableFile(file.content_type)
                     ) {
                       onPreview(file);
                     }

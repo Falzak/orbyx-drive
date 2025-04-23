@@ -1,4 +1,3 @@
-
 export interface FileWithPreview extends File {
   preview?: string;
 }
@@ -28,6 +27,7 @@ export interface SharedFile {
   file_path: string;
   shared_by: string;
   is_public: boolean;
+  is_encrypted: boolean | null;
   password: string | null;
   created_at: string;
 }

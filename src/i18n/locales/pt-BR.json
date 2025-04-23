@@ -22,7 +22,9 @@
     "upload": "Upload",
     "logoutError": "Falha ao sair",
     "create": "Criar",
-    "creating": "Criando..."
+    "creating": "Criando...",
+    "goBack": "Voltar",
+    "continue": "Continuar"
   },
   "dashboard": {
     "title": "Painel",
@@ -53,6 +55,7 @@
     "contextMenu": {
       "refresh": "Atualizar arquivos",
       "createFolder": "Nova pasta",
+      "createTextFile": "Novo arquivo de texto",
       "uploadFile": "Fazer upload",
       "selectAll": "Selecionar tudo",
       "sortBy": "Ordenar por",
@@ -564,5 +567,34 @@
     "uploading": "Enviando...",
     "success": "Arquivos enviados com sucesso",
     "successCount": "{{count}} de {{total}} arquivos enviados com sucesso"
+  },
+  "fileCreate": {
+    "title": "Criar Arquivo de Texto",
+    "description": "Crie um novo arquivo de texto com conteúdo personalizado",
+    "filename": "Nome do arquivo",
+    "content": "Conteúdo",
+    "contentPlaceholder": "Digite seu conteúdo de texto aqui...",
+    "success": "Arquivo de texto criado com sucesso",
+    "error": "Erro ao criar arquivo de texto"
+  },
+  "share": {
+    "sharedFile": "Arquivo Compartilhado",
+    "encrypted": "Criptografado",
+    "fileSize": "Tamanho do arquivo",
+    "scanningFile": "Verificando arquivo...",
+    "securityNote": "Este arquivo está criptografado e foi verificado contra vírus.",
+    "downloadFile": "Baixar Arquivo",
+    "scanAndDownload": "Verificar e Baixar",
+    "decrypting": "Descriptografando...",
+    "fileNotFound": "Arquivo não encontrado",
+    "protectedFile": "Arquivo Protegido",
+    "enterPassword": "Digite a senha",
+    "invalidPassword": "Senha inválida",
+    "securityWarning": "Alerta de Segurança",
+    "scanError": "Erro ao verificar arquivo",
+    "fileNotSafe": "Este arquivo pode não ser seguro",
+    "fileSafe": "Arquivo seguro",
+    "downloadError": "Erro ao baixar arquivo",
+    "downloadingAnyway": "Baixando mesmo assim"
   }
 }

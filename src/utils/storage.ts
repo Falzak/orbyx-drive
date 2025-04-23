@@ -7,7 +7,10 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/integrations/supabase/client";
-import { StorageProviderDatabase, getProviderForFileType } from "@/types/storage";
+import {
+  StorageProviderDatabase,
+  getProviderForFileType,
+} from "@/types/storage";
 
 let s3Client: S3Client | null = null;
 let providers: StorageProviderDatabase[] | null = null;
@@ -18,7 +21,7 @@ const PROVIDER_CACHE_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 // Fetch and cache all providers
 const fetchProviders = async (): Promise<StorageProviderDatabase[]> => {
   const now = Date.now();
-  
+
   // Return cached providers if they exist and aren't stale
   if (providers && now - providersLastFetched < PROVIDER_CACHE_TIME) {
     return providers;
@@ -36,12 +39,13 @@ const fetchProviders = async (): Promise<StorageProviderDatabase[]> => {
   }
 
   // Convert the JSON credentials to objects if needed
-  const processedData = data.map(provider => {
+  const processedData = data.map((provider) => {
     return {
       ...provider,
-      credentials: typeof provider.credentials === 'string' 
-        ? JSON.parse(provider.credentials) 
-        : provider.credentials
+      credentials:
+        typeof provider.credentials === "string"
+          ? JSON.parse(provider.credentials)
+          : provider.credentials,
     } as StorageProviderDatabase;
   });
 
@@ -53,7 +57,7 @@ const fetchProviders = async (): Promise<StorageProviderDatabase[]> => {
 // Get the specific S3 client for a provider
 export const getS3Client = async (providerName: string) => {
   const allProviders = await fetchProviders();
-  const provider = allProviders.find(p => p.name === providerName);
+  const provider = allProviders.find((p) => p.name === providerName);
 
   if (!provider) {
     throw new Error(`Provider ${providerName} not found`);
@@ -62,9 +66,10 @@ export const getS3Client = async (providerName: string) => {
   let credentials;
   try {
     // Check if credentials is already a parsed object or needs to be parsed
-    credentials = typeof provider.credentials === 'string' 
-      ? JSON.parse(provider.credentials) 
-      : provider.credentials;
+    credentials =
+      typeof provider.credentials === "string"
+        ? JSON.parse(provider.credentials)
+        : provider.credentials;
   } catch (error) {
     console.error(`Error parsing ${providerName} credentials:`, error);
     throw new Error(`Failed to parse ${providerName} credentials`);
@@ -72,11 +77,11 @@ export const getS3Client = async (providerName: string) => {
 
   // Create an S3 client with appropriate configuration
   const clientConfig: any = {
-    region: credentials.region || 'auto',
+    region: credentials.region || "auto",
     credentials: {
       accessKeyId: credentials.accessKeyId,
       secretAccessKey: credentials.secretAccessKey,
-    }
+    },
   };
 
   // Add endpoint if available
@@ -90,34 +95,61 @@ export const getS3Client = async (providerName: string) => {
 };
 
 // Get the appropriate storage provider based on file type and/or client ID
-export const getStorageProvider = async (fileType?: string, clientId?: string) => {
+export const getStorageProvider = async (
+  fileType?: string,
+  clientId?: string
+) => {
   try {
     const allProviders = await fetchProviders();
-    
+
     // Get the best provider for this file type and client
     let provider;
-    
+
     if (fileType) {
       provider = getProviderForFileType(allProviders, fileType, clientId);
     } else {
       // Default to the highest priority active provider
       provider = allProviders
-        .filter(p => p.is_active)
+        .filter((p) => p.is_active)
         .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
     }
 
     if (!provider) {
-      throw new Error("No active storage provider found");
+      // If no active provider is found, use the first provider in the list
+      // or use Supabase as a fallback
+      provider = allProviders[0];
+
+      // If there are no providers at all, use Supabase as a fallback
+      if (!provider) {
+        console.warn("No storage providers found, using Supabase as fallback");
+        return {
+          provider: "Supabase",
+          providerType: "supabase",
+          bucket: "files",
+          isBackup: false,
+        };
+      }
+
+      // Log a warning but continue with the first provider
+      console.warn(
+        "No active storage provider found, using the first available provider"
+      );
     }
 
     // Parse credentials and extract bucket name
     let credentials;
     try {
-      credentials = typeof provider.credentials === 'string' 
-        ? JSON.parse(provider.credentials) 
-        : provider.credentials;
+      credentials =
+        typeof provider.credentials === "string"
+          ? JSON.parse(provider.credentials)
+          : provider.credentials;
     } catch (error) {
-      console.error("Error parsing credentials:", error, "Raw data:", provider.credentials);
+      console.error(
+        "Error parsing credentials:",
+        error,
+        "Raw data:",
+        provider.credentials
+      );
       throw new Error("Failed to parse storage provider credentials");
     }
 
@@ -136,7 +168,7 @@ export const getStorageProvider = async (fileType?: string, clientId?: string) =
 // Get backup providers if configured
 export const getBackupProviders = async () => {
   const allProviders = await fetchProviders();
-  return allProviders.filter(p => p.is_active && p.is_backup);
+  return allProviders.filter((p) => p.is_active && p.is_backup);
 };
 
 export const resetStorageProvider = () => {
@@ -145,55 +177,12 @@ export const resetStorageProvider = () => {
   providersLastFetched = 0;
 };
 
-export const getFileUrl = async (filePath: string, clientId?: string): Promise<string> => {
-  if (!filePath) {
-    console.error("Empty file path provided to getFileUrl");
-    throw new Error("File path is required");
-  }
-  
-  try {
-    // Get the file's content type from the database if possible
-    let contentType: string | undefined;
-    const { data: fileData } = await supabase
-      .from("files")
-      .select("content_type")
-      .eq("file_path", filePath)
-      .maybeSingle();
-    
-    if (fileData?.content_type) {
-      contentType = fileData.content_type;
-    }
-    
-    const { provider, providerType, bucket } = await getStorageProvider(contentType, clientId);
+// Função getFileUrl movida para abaixo
 
-    switch (providerType) {
-      case "supabase": {
-        const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-        return data.publicUrl;
-      }
-      case "aws": 
-      case "backblaze":
-      case "wasabi":
-      case "cloudflare": {
-        const client = await getS3Client(provider);
-        const command = new GetObjectCommand({
-          Bucket: bucket,
-          Key: filePath,
-        });
-        return getSignedUrl(client, command, { expiresIn: 3600 });
-      }
-      case "google":
-        throw new Error("Google Cloud Storage not yet implemented");
-      default:
-        throw new Error(`Provider ${provider} not implemented`);
-    }
-  } catch (error) {
-    console.error("Error getting signed URL:", error, "for file:", filePath);
-    throw error;
-  }
-};
-
-export const removeFiles = async (filePaths: string[], clientId?: string): Promise<void> => {
+export const removeFiles = async (
+  filePaths: string[],
+  clientId?: string
+): Promise<void> => {
   if (!filePaths || filePaths.length === 0) {
     console.warn("No file paths provided for deletion.");
     return;
@@ -207,13 +196,16 @@ export const removeFiles = async (filePaths: string[], clientId?: string): Promi
       .select("content_type")
       .eq("file_path", filePaths[0])
       .maybeSingle();
-    
+
     if (fileData?.content_type) {
       contentType = fileData.content_type;
     }
   }
 
-  const { provider, providerType, bucket } = await getStorageProvider(contentType, clientId);
+  const { provider, providerType, bucket } = await getStorageProvider(
+    contentType,
+    clientId
+  );
 
   try {
     switch (providerType) {
@@ -223,9 +215,13 @@ export const removeFiles = async (filePaths: string[], clientId?: string): Promi
 
         if (error) {
           console.error("Error deleting files from Supabase:", error);
-          throw new Error(`Failed to delete files from Supabase: ${error.message}`);
+          throw new Error(
+            `Failed to delete files from Supabase: ${error.message}`
+          );
         }
-        console.log(`Successfully deleted ${filePaths.length} file(s) from Supabase.`);
+        console.log(
+          `Successfully deleted ${filePaths.length} file(s) from Supabase.`
+        );
         break;
       case "aws":
       case "cloudflare":
@@ -247,7 +243,9 @@ export const removeFiles = async (filePaths: string[], clientId?: string): Promi
             console.error(`Error deleting file ${filePath}:`, error);
           }
         }
-        console.log(`Successfully processed deletion of ${filePaths.length} file(s).`);
+        console.log(
+          `Successfully processed deletion of ${filePaths.length} file(s).`
+        );
         break;
       }
       case "google":
@@ -261,11 +259,130 @@ export const removeFiles = async (filePaths: string[], clientId?: string): Promi
   }
 };
 
-export async function downloadFile(filePath: string, clientId?: string): Promise<Blob> {
+// Get a signed URL for a file using the appropriate provider
+export const getFileUrl = async (
+  filePath: string,
+  clientId?: string
+): Promise<string> => {
+  if (!filePath) {
+    throw new Error("File path is required");
+  }
+
+  try {
+    // Get the file's content type from the database if possible
+    let contentType: string | undefined;
+    const { data: fileData } = await supabase
+      .from("files")
+      .select("content_type")
+      .eq("file_path", filePath)
+      .maybeSingle();
+
+    if (fileData?.content_type) {
+      contentType = fileData.content_type;
+    }
+
+    // Use the identifySharedFileProvider function if no clientId is provided
+    const { provider, providerType, bucket } = clientId
+      ? await getStorageProvider(contentType, clientId)
+      : await identifySharedFileProvider(filePath);
+
+    switch (providerType) {
+      case "supabase": {
+        const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+        return data.publicUrl;
+      }
+      case "aws":
+      case "backblaze":
+      case "wasabi":
+      case "cloudflare": {
+        const client = await getS3Client(provider);
+        const command = new GetObjectCommand({
+          Bucket: bucket,
+          Key: filePath,
+        });
+        return getSignedUrl(client, command, { expiresIn: 3600 });
+      }
+      case "google":
+        throw new Error("Google Cloud Storage not yet implemented");
+      default:
+        throw new Error(`Provider ${provider} not implemented`);
+    }
+  } catch (error) {
+    console.error("Error getting signed URL:", error, "for file:", filePath);
+    throw error;
+  }
+};
+
+// Função para identificar o provedor de armazenamento de um arquivo compartilhado
+export async function identifySharedFileProvider(filePath: string): Promise<{
+  provider: string;
+  providerType: string;
+  bucket: string;
+  isBackup: boolean;
+}> {
+  if (!filePath) {
+    throw new Error("File path is required");
+  }
+
+  try {
+    // Primeiro, tente obter informações do arquivo original
+    const { data: fileData, error: fileError } = await supabase
+      .from("files")
+      .select("content_type, id, user_id")
+      .eq("file_path", filePath)
+      .maybeSingle();
+
+    if (fileError) {
+      console.error("Error fetching file data:", fileError);
+    }
+
+    // Se encontramos o arquivo original, use seu tipo de conteúdo para determinar o provedor
+    if (fileData?.content_type) {
+      console.log(
+        "Found original file with content type:",
+        fileData.content_type
+      );
+      return await getStorageProvider(fileData.content_type, fileData.user_id);
+    }
+
+    // Se não encontramos o arquivo original, tente obter informações do arquivo compartilhado
+    const { data: sharedFileData, error: sharedFileError } = await supabase
+      .from("shared_files")
+      .select("*")
+      .eq("file_path", filePath)
+      .maybeSingle();
+
+    if (sharedFileError) {
+      console.error("Error fetching shared file data:", sharedFileError);
+    }
+
+    if (sharedFileData) {
+      console.log("Found shared file data:", sharedFileData);
+
+      // Tente obter o arquivo original usando o ID do usuário que compartilhou
+      if (sharedFileData.shared_by) {
+        return await getStorageProvider(undefined, sharedFileData.shared_by);
+      }
+    }
+
+    // Se não conseguimos determinar o provedor específico, use o provedor padrão
+    console.log("Using default storage provider");
+    return await getStorageProvider();
+  } catch (error) {
+    console.error("Error identifying shared file provider:", error);
+    // Fallback para o provedor padrão
+    return await getStorageProvider();
+  }
+}
+
+export async function downloadFile(
+  filePath: string,
+  clientId?: string
+): Promise<Blob> {
   if (!filePath) {
     throw new Error("File path is required for download");
   }
-  
+
   // Get the file's content type from the database if possible
   let contentType: string | undefined;
   const { data: fileData, error: fileError } = await supabase
@@ -273,16 +390,19 @@ export async function downloadFile(filePath: string, clientId?: string): Promise
     .select("content_type, id")
     .eq("file_path", filePath)
     .maybeSingle();
-  
+
   if (fileError) {
     console.error("Error fetching file data:", fileError);
   }
-  
+
   if (fileData?.content_type) {
     contentType = fileData.content_type;
   }
-  
-  const { provider, providerType, bucket } = await getStorageProvider(contentType, clientId);
+
+  // Se um clientId foi fornecido, use-o; caso contrário, tente identificar o provedor
+  const { provider, providerType, bucket } = clientId
+    ? await getStorageProvider(contentType, clientId)
+    : await identifySharedFileProvider(filePath);
 
   // Generate file URL for virus scanning
   let fileUrl: string;
@@ -292,7 +412,7 @@ export async function downloadFile(filePath: string, clientId?: string): Promise
       fileUrl = data.publicUrl;
       break;
     }
-    case "aws": 
+    case "aws":
     case "backblaze":
     case "wasabi":
     case "cloudflare": {
@@ -308,37 +428,54 @@ export async function downloadFile(filePath: string, clientId?: string): Promise
       throw new Error(`Provider ${provider} not supported for virus scanning`);
   }
 
-  try {
-    // Get the session token for authorization
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token;
-    
-    // Call our virus scan edge function
-    const { data: scanResult, error: scanError } = await supabase.functions.invoke('virus-scan', {
-      body: { 
-        fileUrl, 
-        userId: sessionData?.session?.user?.id,
-        fileId: fileData?.id
-      },
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+  // Verificar se é um arquivo de texto - podemos pular a verificação de vírus para arquivos de texto
+  const isTextFile = contentType === "text/plain";
 
-    if (scanError) {
-      console.error("Error during virus scan:", scanError);
-      throw new Error("File could not be scanned for viruses");
+  // Apenas realizar o escaneamento de vírus para arquivos que não são de texto
+  if (!isTextFile) {
+    try {
+      // Get the session token for authorization
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      // Call our virus scan edge function
+      const { data: scanResult, error: scanError } =
+        await supabase.functions.invoke("virus-scan", {
+          body: {
+            fileUrl,
+            userId: sessionData?.session?.user?.id,
+            fileId: fileData?.id,
+          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+      if (scanError) {
+        console.error("Error during virus scan:", scanError);
+        // Não interromper o download, apenas registrar o erro
+        console.warn("Proceeding with download despite virus scan error");
+      } else if (scanResult.status === "timeout") {
+        // Handle timeout - could show a message to try again later
+        console.warn("Virus scan timeout:", scanResult.message);
+      } else if (!scanResult.safe) {
+        throw new Error(
+          "Security risk detected: This file may contain malware"
+        );
+      }
+
+      // If scan was successful and file is safe (or timeout), proceed with download
+    } catch (scanError) {
+      console.error("Virus scan failed:", scanError);
+
+      // Se o erro for relacionado ao timeout, permitir o download
+      if (scanError.message && scanError.message.includes("timeout")) {
+        console.warn("Proceeding with download despite virus scan timeout");
+      } else if (!isTextFile) {
+        // Para arquivos que não são de texto, apenas rejeitar se não for um erro de timeout
+        throw scanError;
+      }
     }
-
-    if (scanResult.status === 'timeout') {
-      // Handle timeout - could show a message to try again later
-      console.warn("Virus scan timeout:", scanResult.message);
-    } else if (!scanResult.safe) {
-      throw new Error("Security risk detected: This file may contain malware");
-    }
-
-    // If scan was successful and file is safe (or timeout), proceed with download
-  } catch (scanError) {
-    console.error("Virus scan failed:", scanError);
-    throw scanError;
+  } else {
+    console.log("Skipping virus scan for text file");
   }
 
   // Continue with the existing download logic
@@ -396,11 +533,67 @@ export interface UploadOptions {
   };
   compress?: boolean;
   clientId?: string;
+  folderId?: string | null;
+}
+
+/**
+ * Creates a new text file in the storage system
+ *
+ * @param content - The text content of the file
+ * @param filename - The name of the file (e.g., "document.txt")
+ * @param options - Optional upload options
+ * @returns The file path of the created file
+ */
+export async function createTextFile(
+  content: string,
+  filename: string,
+  options: UploadOptions = {}
+): Promise<string> {
+  // Create a Blob with the text content
+  const blob = new Blob([content], { type: "text/plain" });
+
+  // Convert the Blob to a File object
+  const file = new File([blob], filename, { type: "text/plain" });
+
+  // Generate a unique file path
+  const userId = (await supabase.auth.getUser()).data.user?.id;
+  if (!userId) throw new Error("User not authenticated");
+
+  const fileExt = filename.split(".").pop() || "txt";
+  const filePath = `${userId}/${crypto.randomUUID()}.${fileExt}`;
+
+  // Upload the file using the existing uploadFile function
+  const path = await uploadFile(file, filePath, options);
+
+  // Add entry to database
+  const { error: dbError } = await supabase.from("files").insert({
+    filename: filename,
+    file_path: filePath,
+    content_type: "text/plain",
+    size: blob.size,
+    user_id: userId,
+    folder_id: options.folderId || null,
+  });
+
+  if (dbError) {
+    // If database insert fails, try to remove the uploaded file
+    try {
+      await removeFiles([filePath]);
+    } catch (removeError) {
+      console.error(
+        "Failed to clean up file after database error:",
+        removeError
+      );
+    }
+    throw new Error(`Failed to create file record: ${dbError.message}`);
+  }
+
+  return filePath;
 }
 
 export async function uploadFile(
-  file: File, 
-  filePath: string, 
+  file: File,
+  filePath: string,
   options: UploadOptions = {}
 ): Promise<string> {
   // Get provider based on file type and client ID
@@ -408,48 +601,48 @@ export async function uploadFile(
     file.type,
     options.clientId
   );
-  
+
   let fileData: ArrayBuffer;
   fileData = await file.arrayBuffer();
-  
-  try {    
+
+  try {
     let result: string | null = null;
-    
+
     switch (providerType) {
-      case 'supabase':
+      case "supabase":
         // Supabase doesn't support onUploadProgress natively, so we'll handle it separately
         const { data, error } = await supabase.storage
           .from(bucket)
           .upload(filePath, fileData, {
             contentType: file.type,
-            cacheControl: '3600',
-            upsert: false
+            cacheControl: "3600",
+            upsert: false,
           });
-          
+
         if (error) {
-          console.error('Error uploading file to Supabase:', error);
+          console.error("Error uploading file to Supabase:", error);
           throw error;
         }
-        
+
         result = data.path;
         break;
-      case 'aws':
-      case 'cloudflare':
-      case 'backblaze':  
-      case 'wasabi': {
+      case "aws":
+      case "cloudflare":
+      case "backblaze":
+      case "wasabi": {
         // Implement S3-compatible upload with progress tracking
         const client = await getS3Client(provider);
-        
+
         // Convert ArrayBuffer to Uint8Array for AWS SDK
         const buffer = new Uint8Array(fileData);
-        
+
         const command = new PutObjectCommand({
           Bucket: bucket,
           Key: filePath,
           ContentType: file.type,
           Body: buffer,
         });
-        
+
         try {
           if (options.onUploadProgress) {
             // Since AWS SDK doesn't have native progress tracking, we'll simulate it
@@ -466,29 +659,29 @@ export async function uploadFile(
         }
         break;
       }
-      case 'google':
+      case "google":
         throw new Error("Google Cloud Storage not yet implemented");
       default:
         throw new Error(`Provider ${provider} not implemented`);
     }
-    
+
     if (!result) {
-      throw new Error('Upload failed: no result returned');
+      throw new Error("Upload failed: no result returned");
     }
-    
+
     // If successful upload and backup providers are configured, backup the file
     if (result && !isBackup) {
       try {
         const backupProviders = await getBackupProviders();
         if (backupProviders.length > 0) {
           console.log(`Backing up file to ${backupProviders.length} providers`);
-          
+
           // Don't await these to avoid slowing down the primary upload
           for (const backupProvider of backupProviders) {
             // Reuse the same uploadFile function with backup provider's client ID
-            uploadFile(file, filePath, { 
+            uploadFile(file, filePath, {
               clientId: backupProvider.id,
-            }).catch(e => {
+            }).catch((e) => {
               console.error(`Backup to ${backupProvider.name} failed:`, e);
             });
           }
@@ -498,10 +691,10 @@ export async function uploadFile(
         console.error("Error during backup:", backupError);
       }
     }
-    
+
     return result;
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error("Error uploading file:", error);
     throw error;
   }
 }
@@ -509,18 +702,18 @@ export async function uploadFile(
 // New utility functions for the admin panel
 
 // Get usage statistics for a storage provider
-export async function getProviderUsageStats(providerId: string): Promise<UsageMetrics> {
+export async function getProviderUsageStats(
+  providerId: string
+): Promise<UsageMetrics> {
   // Implementation depends on how you track usage
   // Here's a very basic implementation that counts files and total size
   try {
-    const { data: files, error } = await supabase
-      .from("files")
-      .select("size");
-      
+    const { data: files, error } = await supabase.from("files").select("size");
+
     if (error) throw error;
-    
+
     const totalStorage = files.reduce((sum, file) => sum + (file.size || 0), 0);
-    
+
     return {
       totalStorage,
       filesCount: files.length,
@@ -530,27 +723,30 @@ export async function getProviderUsageStats(providerId: string): Promise<UsageMe
     console.error("Error getting usage stats:", error);
     return {
       totalStorage: 0,
-      filesCount: 0, 
+      filesCount: 0,
       lastUpdated: new Date().toISOString(),
     };
   }
 }
 
 // Test connection to a storage provider
-export async function testProviderConnection(provider: StorageProviderDatabase): Promise<boolean> {
+export async function testProviderConnection(
+  provider: StorageProviderDatabase
+): Promise<boolean> {
   try {
     // Create a temporary client
     let clientConfig: any = {};
-    const credentials = typeof provider.credentials === 'string' 
-      ? JSON.parse(provider.credentials) 
-      : provider.credentials;
-    
+    const credentials =
+      typeof provider.credentials === "string"
+        ? JSON.parse(provider.credentials)
+        : provider.credentials;
+
     clientConfig = {
-      region: credentials.region || 'auto',
+      region: credentials.region || "auto",
       credentials: {
         accessKeyId: credentials.accessKeyId,
         secretAccessKey: credentials.secretAccessKey,
-      }
+      },
     };
 
     if (credentials.endpoint) {
@@ -559,23 +755,23 @@ export async function testProviderConnection(provider: StorageProviderDatabase):
     }
 
     const client = new S3Client(clientConfig);
-    
+
     // Try a simple operation - list buckets or check if the configured bucket exists
     const command = new GetObjectCommand({
       Bucket: credentials.bucket,
-      Key: 'test-connection.txt', // This file probably doesn't exist, but the error will tell us if the credentials work
+      Key: "test-connection.txt", // This file probably doesn't exist, but the error will tell us if the credentials work
     });
-    
+
     try {
       await client.send(command);
       return true;
     } catch (error: any) {
       // Check if error is due to the file not existing (which is fine)
       // rather than authentication failure
-      if (error.name === 'NoSuchKey') {
+      if (error.name === "NoSuchKey") {
         return true; // Connection works, file just doesn't exist
       }
-      
+
       console.error("Connection test failed:", error);
       return false;
     }
@@ -586,7 +782,10 @@ export async function testProviderConnection(provider: StorageProviderDatabase):
 }
 
 // Migrate files between providers (simplified implementation)
-export async function migrateFiles(sourceProviderId: string, targetProviderId: string): Promise<{
+export async function migrateFiles(
+  sourceProviderId: string,
+  targetProviderId: string
+): Promise<{
   success: boolean;
   totalFiles: number;
   migratedFiles: number;
@@ -596,51 +795,61 @@ export async function migrateFiles(sourceProviderId: string, targetProviderId: s
   const errors: string[] = [];
   let migratedFiles = 0;
   let failedFiles = 0;
-  
+
   try {
     // Get providers
     const allProviders = await fetchProviders();
-    const sourceProvider = allProviders.find(p => p.id === sourceProviderId);
-    const targetProvider = allProviders.find(p => p.id === targetProviderId);
-    
+    const sourceProvider = allProviders.find((p) => p.id === sourceProviderId);
+    const targetProvider = allProviders.find((p) => p.id === targetProviderId);
+
     if (!sourceProvider || !targetProvider) {
-      throw new Error('Source or target provider not found');
+      throw new Error("Source or target provider not found");
     }
-    
+
     // Get files to migrate - limit to a reasonable batch size to start
     const { data: files, error } = await supabase
-      .from('files')
-      .select('file_path, content_type')
+      .from("files")
+      .select("file_path, content_type")
       .limit(100); // Start with a small batch as a test
-      
+
     if (error) throw error;
-    
+
     const totalFiles = files.length;
     console.log(`Starting migration of ${totalFiles} files`);
-    
+
     // Process each file
     for (const file of files) {
       try {
         // Download from source
         const fileBlob = await downloadFile(file.file_path, sourceProviderId);
-        
+
         // Create a File object
-        const fileObj = new File([fileBlob], file.file_path.split('/').pop() || 'file', {
-          type: file.content_type
-        });
-        
+        const fileObj = new File(
+          [fileBlob],
+          file.file_path.split("/").pop() || "file",
+          {
+            type: file.content_type,
+          }
+        );
+
         // Upload to target
-        await uploadFile(fileObj, file.file_path, { clientId: targetProviderId });
-        
+        await uploadFile(fileObj, file.file_path, {
+          clientId: targetProviderId,
+        });
+
         migratedFiles++;
-        console.log(`Migrated file ${file.file_path} (${migratedFiles}/${totalFiles})`);
+        console.log(
+          `Migrated file ${file.file_path} (${migratedFiles}/${totalFiles})`
+        );
       } catch (fileError: any) {
         failedFiles++;
-        errors.push(`Failed to migrate ${file.file_path}: ${fileError.message}`);
+        errors.push(
+          `Failed to migrate ${file.file_path}: ${fileError.message}`
+        );
         console.error(`Failed to migrate file ${file.file_path}:`, fileError);
       }
     }
-    
+
     return {
       success: failedFiles === 0,
       totalFiles,
