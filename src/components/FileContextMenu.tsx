@@ -37,6 +37,7 @@ interface FileContextMenuProps {
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
+  isFavoritesView?: boolean;
 }
 
 export const FileContextMenu = React.forwardRef<
@@ -56,6 +57,7 @@ export const FileContextMenu = React.forwardRef<
       onToggleFavorite,
       onEditFolder,
       isTrashView,
+      isFavoritesView,
     },
     ref
   ) => {

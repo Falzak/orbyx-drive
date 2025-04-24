@@ -41,6 +41,7 @@ interface FileGridProps {
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
+  isFavoritesView?: boolean;
 }
 
 export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
@@ -57,6 +58,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       onToggleFavorite,
       onEditFolder,
       isTrashView,
+      isFavoritesView,
     },
     ref
   ) => {
@@ -119,6 +121,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
               onToggleFavorite={onToggleFavorite}
               onEditFolder={onEditFolder}
               isTrashView={isTrashView}
+              isFavoritesView={isFavoritesView}
             >
               <MotionDiv
                 initial={{ opacity: 0, scale: 0.8 }}

@@ -151,13 +151,15 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     const searchParams = new URLSearchParams(location.search);
     const filterParam = searchParams.get('filter');
 
-    // Check if we're in trash view
+    // Check if we're in trash view or favorites view
     const isTrashView = filterParam === 'trash';
+    const isFavoritesView = filterParam === 'favorites';
 
     // Log para depuração
     console.log("FileExplorer - Current location:", location.pathname, location.search);
     console.log("FileExplorer - Filter param:", filterParam);
     console.log("FileExplorer - Is trash view:", isTrashView);
+    console.log("FileExplorer - Is favorites view:", isFavoritesView);
 
     // Efeito para reagir às mudanças na URL
     useEffect(() => {
@@ -166,7 +168,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     }, [location.search, queryClient]);
 
     const { data: files = [], isLoading: isFilesLoading } = useQuery({
-      queryKey: ["files", sortBy, currentFolderId, searchQuery, isTrashView],
+      queryKey: ["files", sortBy, currentFolderId, searchQuery, isTrashView, isFavoritesView],
       queryFn: async () => {
         const [field, direction] = sortBy.split("_");
         let query = supabase
@@ -182,9 +184,15 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         } else {
           query = query.eq("is_trashed", false);
 
+          // Filter by favorites if in favorites view
+          if (isFavoritesView) {
+            query = query.eq("is_favorite", true);
+          }
+
           if (searchQuery) {
             query = query.ilike("filename", `%${searchQuery}%`);
-          } else {
+          } else if (!isFavoritesView) {
+            // Only apply folder filtering when not in favorites view
             if (currentFolderId === null) {
               query = query.is("folder_id", null);
             } else {
@@ -951,17 +959,23 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             <div className="flex flex-col items-center justify-center p-12 text-center bg-background/50 dark:bg-black/50 backdrop-blur-sm rounded-lg border border-border/50">
               {isTrashView ? (
                 <Trash2 className="h-16 w-16 text-muted-foreground/50 mb-4" />
+              ) : isFavoritesView ? (
+                <Star className="h-16 w-16 text-muted-foreground/50 mb-4" />
               ) : (
                 <FolderOpen className="h-16 w-16 text-muted-foreground/50 mb-4" />
               )}
               <h3 className="text-xl font-medium text-foreground/90 mb-2">
                 {isTrashView
                   ? t("fileExplorer.emptyState.trashEmpty")
+                  : isFavoritesView
+                  ? t("fileExplorer.emptyState.favoritesEmpty")
                   : t("fileExplorer.emptyState.title")}
               </h3>
               <p className="text-muted-foreground max-w-md">
                 {isTrashView
                   ? t("fileExplorer.emptyState.trashDescription")
+                  : isFavoritesView
+                  ? t("fileExplorer.emptyState.favoritesDescription")
                   : t("fileExplorer.emptyState.description")}
               </p>
             </div>
@@ -981,6 +995,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                 setIsEditFolderOpen(true);
               }}
               isTrashView={isTrashView}
+              isFavoritesView={isFavoritesView}
             />
           ) : (
             <FileList
@@ -998,6 +1013,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                 setIsEditFolderOpen(true);
               }}
               isTrashView={isTrashView}
+              isFavoritesView={isFavoritesView}
             />
           )}
         </div>

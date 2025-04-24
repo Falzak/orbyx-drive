@@ -30,6 +30,7 @@ interface FileListProps {
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
+  isFavoritesView?: boolean;
 }
 
 export const FileList = forwardRef<HTMLDivElement, FileListProps>(
@@ -46,6 +47,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
       onToggleFavorite,
       onEditFolder,
       isTrashView,
+      isFavoritesView,
     },
     ref
   ) => {
@@ -160,6 +162,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                       onToggleFavorite={onToggleFavorite}
                       onEditFolder={onEditFolder}
                       isTrashView={isTrashView}
+                      isFavoritesView={isFavoritesView}
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">
