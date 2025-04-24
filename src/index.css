@@ -100,39 +100,11 @@
   /* Efeito hover para botões do menu */
   [data-sidebar="menu-button"]:hover {
     @apply bg-gradient-to-r from-[hsl(var(--sidebar-hover-from))] to-[hsl(var(--sidebar-hover-to))] text-[hsl(var(--sidebar-hover-text))];
-    @apply shadow-sm border-l-2 border-[hsl(var(--sidebar-hover-border))];
-    transform: translateY(-1px);
-  }
-
-  /* Adiciona efeito de brilho ao hover */
-  [data-sidebar="menu-button"]:hover::after {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-[hsl(var(--sidebar-glow))] to-transparent opacity-10 blur-md;
-    animation: shine 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes shine {
-    0% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-    50% {
-      opacity: 0.1;
-    }
-    100% {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-  }
-
-  [data-sidebar="menu-button"]:active {
-    transform: translateY(0);
   }
 
   /* Estado ativo dos botões */
   [data-sidebar="menu-button"][data-active="true"] {
     @apply bg-gradient-to-r from-[hsl(var(--sidebar-hover-from))] to-[hsl(var(--sidebar-hover-to))] text-[hsl(var(--sidebar-hover-text))];
-    @apply border-l-2 border-[hsl(var(--sidebar-hover-border))];
     @apply font-medium;
   }
 
@@ -169,7 +141,6 @@
       hsla(0, 84.2%, 60.2%, 0.2)
     );
     color: hsl(0, 84.2%, 60.2%);
-    border-left: 2px solid hsla(0, 84.2%, 60.2%, 0.5);
   }
 
   .dark .text-destructive[data-sidebar="menu-button"]:hover {
@@ -179,7 +150,6 @@
       hsla(0, 62.8%, 30.6%, 0.3)
     );
     color: hsl(0, 0%, 98%);
-    border-left: 2px solid hsla(0, 62.8%, 30.6%, 0.6);
   }
 
   .text-destructive[data-sidebar="menu-button"]:hover svg {
