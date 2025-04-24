@@ -94,6 +94,14 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     }, [session, navigate]);
 
+    // Parse query parameters
+    const searchParams = new URLSearchParams(location.search);
+    const filterParam = searchParams.get('filter');
+
+    // Check if we're in trash view or favorites view
+    const isTrashView = filterParam === 'trash';
+    const isFavoritesView = filterParam === 'favorites';
+
     const getSignedUrlForFile = useCallback(async (filePath: string) => {
       if (!filePath) {
         console.error("getSignedUrlForFile: Empty file path provided");
@@ -120,20 +128,28 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     }, []);
 
     const { data: folders = [], isLoading: isFoldersLoading } = useQuery({
-      queryKey: ["folders", sortBy, currentFolderId, searchQuery],
+      queryKey: ["folders", sortBy, currentFolderId, searchQuery, isTrashView, isFavoritesView],
       queryFn: async () => {
         let query = supabase
           .from("folders")
-          .select("id, name, parent_id, user_id, icon, color")
+          .select("id, name, parent_id, user_id, icon, color, is_trashed, trashed_at")
           .eq("user_id", session?.user.id);
 
-        if (searchQuery) {
-          query = query.ilike("name", `%${searchQuery}%`);
+        // Filtrar por status de lixeira
+        if (isTrashView) {
+          query = query.eq("is_trashed", true);
         } else {
-          if (currentFolderId === null) {
-            query = query.is("parent_id", null);
-          } else {
-            query = query.eq("parent_id", currentFolderId);
+          query = query.eq("is_trashed", false);
+
+          if (searchQuery) {
+            query = query.ilike("name", `%${searchQuery}%`);
+          } else if (!isFavoritesView) {
+            // Aplicar filtro de pasta apenas quando não estiver na visualização de favoritos
+            if (currentFolderId === null) {
+              query = query.is("parent_id", null);
+            } else {
+              query = query.eq("parent_id", currentFolderId);
+            }
           }
         }
 
@@ -146,14 +162,6 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 5,
     });
-
-    // Parse query parameters
-    const searchParams = new URLSearchParams(location.search);
-    const filterParam = searchParams.get('filter');
-
-    // Check if we're in trash view or favorites view
-    const isTrashView = filterParam === 'trash';
-    const isFavoritesView = filterParam === 'favorites';
 
     // Log para depuração
     console.log("FileExplorer - Current location:", location.pathname, location.search);
@@ -483,35 +491,60 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
 
       try {
-        const { error } = await supabase
-          .from("files")
-          .update({
-            is_trashed: true,
-            trashed_at: new Date().toISOString()
-          })
-          .eq("id", file.id);
+        if (file.is_folder) {
+          // Mover pasta para a lixeira
+          const { error } = await supabase
+            .from("folders")
+            .update({
+              is_trashed: true,
+              trashed_at: new Date().toISOString()
+            })
+            .eq("id", file.id);
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: t("common.error"),
-            description: t("fileExplorer.actions.moveToTrashError"),
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.moveToTrashError"),
+            });
+            return;
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["folders"] });
+        } else {
+          // Mover arquivo para a lixeira
+          const { error } = await supabase
+            .from("files")
+            .update({
+              is_trashed: true,
+              trashed_at: new Date().toISOString()
+            })
+            .eq("id", file.id);
+
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.moveToTrashError"),
+            });
+            return;
+          }
+
+          setPreviewUrls((prev) => {
+            const newUrls = { ...prev };
+            delete newUrls[file.id];
+            return newUrls;
           });
-          return;
+
+          queryClient.invalidateQueries({ queryKey: ["files"] });
         }
 
-        setPreviewUrls((prev) => {
-          const newUrls = { ...prev };
-          delete newUrls[file.id];
-          return newUrls;
-        });
-
-        queryClient.invalidateQueries({ queryKey: ["files"] });
         toast({
           title: t("common.success"),
           description: t("fileExplorer.actions.moveToTrashSuccess"),
         });
       } catch (error) {
+        console.error("Erro ao mover para lixeira:", error);
         toast({
           variant: "destructive",
           title: t("common.error"),
@@ -522,29 +555,54 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     const handleRestore = async (file: FileData) => {
       try {
-        const { error } = await supabase
-          .from("files")
-          .update({
-            is_trashed: false,
-            trashed_at: null
-          })
-          .eq("id", file.id);
+        if (file.is_folder) {
+          // Restaurar pasta da lixeira
+          const { error } = await supabase
+            .from("folders")
+            .update({
+              is_trashed: false,
+              trashed_at: null
+            })
+            .eq("id", file.id);
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: t("common.error"),
-            description: t("fileExplorer.actions.restoreError"),
-          });
-          return;
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.restoreError"),
+            });
+            return;
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["folders"] });
+        } else {
+          // Restaurar arquivo da lixeira
+          const { error } = await supabase
+            .from("files")
+            .update({
+              is_trashed: false,
+              trashed_at: null
+            })
+            .eq("id", file.id);
+
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.restoreError"),
+            });
+            return;
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["files"] });
         }
 
-        queryClient.invalidateQueries({ queryKey: ["files"] });
         toast({
           title: t("common.success"),
           description: t("fileExplorer.actions.restoreSuccess"),
         });
       } catch (error) {
+        console.error("Erro ao restaurar da lixeira:", error);
         toast({
           variant: "destructive",
           title: t("common.error"),
@@ -560,17 +618,31 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
 
       try {
-        // Get all trashed files
-        const { data: trashedFiles, error: fetchError } = await supabase
+        // Obter todos os arquivos na lixeira
+        const { data: trashedFiles, error: fetchFilesError } = await supabase
           .from("files")
           .select("id, file_path")
           .eq("user_id", session?.user.id)
           .eq("is_trashed", true);
 
-        if (fetchError) throw fetchError;
+        if (fetchFilesError) throw fetchFilesError;
 
+        // Obter todas as pastas na lixeira
+        const { data: trashedFolders, error: fetchFoldersError } = await supabase
+          .from("folders")
+          .select("id")
+          .eq("user_id", session?.user.id)
+          .eq("is_trashed", true);
+
+        if (fetchFoldersError) throw fetchFoldersError;
+
+        let hasItemsToDelete = false;
+
+        // Processar arquivos
         if (trashedFiles && trashedFiles.length > 0) {
-          // Delete files from storage
+          hasItemsToDelete = true;
+
+          // Excluir arquivos do armazenamento
           const filePaths = trashedFiles
             .map((f) => f.file_path)
             .filter(Boolean);
@@ -579,16 +651,62 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             await removeFiles(filePaths);
           }
 
-          // Delete records from database
-          const { error: deleteError } = await supabase
+          // Excluir registros do banco de dados
+          const { error: deleteFilesError } = await supabase
             .from("files")
             .delete()
             .eq("is_trashed", true)
             .eq("user_id", session?.user.id);
 
-          if (deleteError) throw deleteError;
+          if (deleteFilesError) throw deleteFilesError;
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
+        }
+
+        // Processar pastas
+        if (trashedFolders && trashedFolders.length > 0) {
+          hasItemsToDelete = true;
+
+          // Para cada pasta na lixeira
+          for (const folder of trashedFolders) {
+            // Excluir arquivos dentro da pasta
+            const { data: filesInFolder, error: filesInFolderError } = await supabase
+              .from("files")
+              .select("file_path")
+              .eq("folder_id", folder.id);
+
+            if (filesInFolderError) throw filesInFolderError;
+
+            if (filesInFolder && filesInFolder.length > 0) {
+              const filePaths = filesInFolder
+                .map((f) => f.file_path)
+                .filter(Boolean);
+
+              if (filePaths.length > 0) {
+                await removeFiles(filePaths);
+              }
+
+              // Excluir registros de arquivos
+              await supabase
+                .from("files")
+                .delete()
+                .eq("folder_id", folder.id);
+            }
+          }
+
+          // Excluir todas as pastas na lixeira
+          const { error: deleteFoldersError } = await supabase
+            .from("folders")
+            .delete()
+            .eq("is_trashed", true)
+            .eq("user_id", session?.user.id);
+
+          if (deleteFoldersError) throw deleteFoldersError;
+
+          queryClient.invalidateQueries({ queryKey: ["folders"] });
+        }
+
+        if (hasItemsToDelete) {
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.emptyTrashSuccess"),
@@ -600,6 +718,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         }
       } catch (error) {
+        console.error("Erro ao esvaziar lixeira:", error);
         toast({
           variant: "destructive",
           title: t("common.error"),
