@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,6 +18,7 @@ import {
   Check,
   FileUp,
   Import,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FileUpload from "@/components/FileUpload";
@@ -76,6 +77,14 @@ const LANGUAGES = [
 export function AppSidebar({ onSearch }: AppSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Parse query parameters
+  const searchParams = new URLSearchParams(location.search);
+  const filterParam = searchParams.get('filter');
+
+  // Log para depuração
+  console.log("AppSidebar - Current location:", location.pathname, location.search);
+  console.log("AppSidebar - Filter param:", filterParam);
   const { session } = useAuth();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -150,12 +159,17 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
     {
       title: t("sidebar.mainItems.allFiles"),
       icon: FolderOpen,
-      path: "/",
+      path: "/dashboard",
     },
     {
       title: t("sidebar.mainItems.favorites"),
       icon: Star,
-      path: "/?filter=favorites",
+      path: "/dashboard?filter=favorites",
+    },
+    {
+      title: t("sidebar.mainItems.trash"),
+      icon: Trash2,
+      path: "/dashboard?filter=trash",
     },
     {
       title: t("sidebar.tools.uploadFiles"),
@@ -300,39 +314,74 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                   {menuItems.map((item) => (
                     <Tooltip key={item.title}>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size={isCollapsed ? "icon" : "default"}
-                          className={cn(
-                            "w-full justify-start gap-3 transition-all duration-200",
-                            "group relative overflow-hidden",
-                            isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3"
-                          )}
-                          onClick={item.onClick || (() => navigate(item.path!))}
-                          data-sidebar="menu-button"
-                          data-active={
-                            location.pathname + location.search === item.path
-                          }
-                        >
-                          <item.icon
+                        {item.onClick ? (
+                          <Button
+                            variant="ghost"
+                            size={isCollapsed ? "icon" : "default"}
                             className={cn(
-                              "h-4 w-4 shrink-0",
-                              location.pathname + location.search === item.path
-                                ? "text-accent-foreground"
-                                : "text-muted-foreground"
+                              "w-full justify-start gap-3 transition-all duration-200",
+                              "group relative overflow-hidden",
+                              isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3"
                             )}
-                          />
-                          {!isCollapsed && (
-                            <motion.span
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="flex-1 truncate text-sm"
-                            >
-                              {item.title}
-                            </motion.span>
-                          )}
-                        </Button>
+                            onClick={item.onClick}
+                            data-sidebar="menu-button"
+                          >
+                            <item.icon
+                              className={cn(
+                                "h-4 w-4 shrink-0",
+                                "text-muted-foreground"
+                              )}
+                            />
+                            {!isCollapsed && (
+                              <motion.span
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex-1 truncate text-sm"
+                              >
+                                {item.title}
+                              </motion.span>
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size={isCollapsed ? "icon" : "default"}
+                            className={cn(
+                              "w-full justify-start gap-3 transition-all duration-200",
+                              "group relative overflow-hidden",
+                              isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3"
+                            )}
+                            asChild
+                            data-sidebar="menu-button"
+                            data-active={
+                              (item.path === "/dashboard" && !filterParam) ||
+                              (item.path?.includes(filterParam || "") && filterParam)
+                            }
+                          >
+                            <Link to={item.path!}>
+                              <item.icon
+                                className={cn(
+                                  "h-4 w-4 shrink-0",
+                                  ((item.path === "/dashboard" && !filterParam) ||
+                                   (item.path?.includes(filterParam || "") && filterParam))
+                                    ? "text-accent-foreground"
+                                    : "text-muted-foreground"
+                                )}
+                              />
+                              {!isCollapsed && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="flex-1 truncate text-sm"
+                                >
+                                  {item.title}
+                                </motion.span>
+                              )}
+                            </Link>
+                          </Button>
+                        )}
                       </TooltipTrigger>
                       {isCollapsed && (
                         <TooltipContent

@@ -20,6 +20,8 @@ export interface FileData {
   color?: string;
   name?: string;
   parent_id?: string | null;
+  is_trashed?: boolean;
+  trashed_at?: string | null;
 }
 
 export interface ShareSettings {
@@ -44,6 +46,7 @@ export interface FileFilter {
   favorite?: boolean;
   shared?: boolean;
   recent?: boolean;
+  trashed?: boolean;
 }
 
 export interface SharedFile {

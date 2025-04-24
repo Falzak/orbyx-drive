@@ -26,6 +26,7 @@ import {
   Trash2,
   Edit,
   Copy,
+  FolderOpen,
 } from "lucide-react";
 import {
   Table,
@@ -146,24 +147,49 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       staleTime: 1000 * 60 * 5,
     });
 
+    // Parse query parameters
+    const searchParams = new URLSearchParams(location.search);
+    const filterParam = searchParams.get('filter');
+
+    // Check if we're in trash view
+    const isTrashView = filterParam === 'trash';
+
+    // Log para depuração
+    console.log("FileExplorer - Current location:", location.pathname, location.search);
+    console.log("FileExplorer - Filter param:", filterParam);
+    console.log("FileExplorer - Is trash view:", isTrashView);
+
+    // Efeito para reagir às mudanças na URL
+    useEffect(() => {
+      console.log("URL changed, revalidating queries");
+      queryClient.invalidateQueries({ queryKey: ["files"] });
+    }, [location.search, queryClient]);
+
     const { data: files = [], isLoading: isFilesLoading } = useQuery({
-      queryKey: ["files", sortBy, currentFolderId, searchQuery],
+      queryKey: ["files", sortBy, currentFolderId, searchQuery, isTrashView],
       queryFn: async () => {
         const [field, direction] = sortBy.split("_");
         let query = supabase
           .from("files")
           .select(
-            "id, filename, content_type, size, created_at, updated_at, user_id, file_path, folder_id, is_favorite, category"
+            "id, filename, content_type, size, created_at, updated_at, user_id, file_path, folder_id, is_favorite, category, is_trashed, trashed_at"
           )
           .eq("user_id", session?.user.id);
 
-        if (searchQuery) {
-          query = query.ilike("filename", `%${searchQuery}%`);
+        // Filter by trash status
+        if (isTrashView) {
+          query = query.eq("is_trashed", true);
         } else {
-          if (currentFolderId === null) {
-            query = query.is("folder_id", null);
+          query = query.eq("is_trashed", false);
+
+          if (searchQuery) {
+            query = query.ilike("filename", `%${searchQuery}%`);
           } else {
-            query = query.eq("folder_id", currentFolderId);
+            if (currentFolderId === null) {
+              query = query.is("folder_id", null);
+            } else {
+              query = query.eq("folder_id", currentFolderId);
+            }
           }
         }
 
@@ -443,9 +469,147 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }).format(new Date(date));
     };
 
+    const handleMoveToTrash = async (file: FileData) => {
+      if (selectedFile?.id === file.id) {
+        setSelectedFile(null);
+      }
+
+      try {
+        const { error } = await supabase
+          .from("files")
+          .update({
+            is_trashed: true,
+            trashed_at: new Date().toISOString()
+          })
+          .eq("id", file.id);
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: t("common.error"),
+            description: t("fileExplorer.actions.moveToTrashError"),
+          });
+          return;
+        }
+
+        setPreviewUrls((prev) => {
+          const newUrls = { ...prev };
+          delete newUrls[file.id];
+          return newUrls;
+        });
+
+        queryClient.invalidateQueries({ queryKey: ["files"] });
+        toast({
+          title: t("common.success"),
+          description: t("fileExplorer.actions.moveToTrashSuccess"),
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: t("fileExplorer.actions.moveToTrashError"),
+        });
+      }
+    };
+
+    const handleRestore = async (file: FileData) => {
+      try {
+        const { error } = await supabase
+          .from("files")
+          .update({
+            is_trashed: false,
+            trashed_at: null
+          })
+          .eq("id", file.id);
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: t("common.error"),
+            description: t("fileExplorer.actions.restoreError"),
+          });
+          return;
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["files"] });
+        toast({
+          title: t("common.success"),
+          description: t("fileExplorer.actions.restoreSuccess"),
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: t("fileExplorer.actions.restoreError"),
+        });
+      }
+    };
+
+    const handleEmptyTrash = async () => {
+      // Confirmar com o usuário antes de esvaziar a lixeira
+      if (!window.confirm(t("fileExplorer.confirmEmptyTrash"))) {
+        return;
+      }
+
+      try {
+        // Get all trashed files
+        const { data: trashedFiles, error: fetchError } = await supabase
+          .from("files")
+          .select("id, file_path")
+          .eq("user_id", session?.user.id)
+          .eq("is_trashed", true);
+
+        if (fetchError) throw fetchError;
+
+        if (trashedFiles && trashedFiles.length > 0) {
+          // Delete files from storage
+          const filePaths = trashedFiles
+            .map((f) => f.file_path)
+            .filter(Boolean);
+
+          if (filePaths.length > 0) {
+            await removeFiles(filePaths);
+          }
+
+          // Delete records from database
+          const { error: deleteError } = await supabase
+            .from("files")
+            .delete()
+            .eq("is_trashed", true)
+            .eq("user_id", session?.user.id);
+
+          if (deleteError) throw deleteError;
+
+          queryClient.invalidateQueries({ queryKey: ["files"] });
+          toast({
+            title: t("common.success"),
+            description: t("fileExplorer.actions.emptyTrashSuccess"),
+          });
+        } else {
+          toast({
+            title: t("common.info"),
+            description: t("fileExplorer.emptyState.trashEmpty"),
+          });
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: t("fileExplorer.actions.emptyTrashError"),
+        });
+      }
+    };
+
     const handleDelete = async (file: FileData) => {
       if (selectedFile?.id === file.id) {
         setSelectedFile(null);
+      }
+
+      // Se estiver na lixeira, confirmar antes de excluir permanentemente
+      if (isTrashView) {
+        if (!window.confirm(t("fileExplorer.confirmPermanentDelete"))) {
+          return;
+        }
       }
 
       if (file.is_folder) {
@@ -758,31 +922,65 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     return (
       <div className="space-y-4 w-full">
-        <FileViewOptions
-          view={view}
-          onViewChange={setView}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          totalFiles={items.length}
-          currentPath={currentPath}
-          onNavigate={handleBreadcrumbNavigate}
-        />
+        <div className="flex justify-between items-center">
+          <FileViewOptions
+            view={view}
+            onViewChange={setView}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            totalFiles={items.length}
+            currentPath={currentPath}
+            onNavigate={handleBreadcrumbNavigate}
+          />
+
+          {isTrashView && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleEmptyTrash}
+              className="ml-2"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {t("fileExplorer.contextMenu.emptyTrash")}
+            </Button>
+          )}
+        </div>
 
         <div className="w-full" ref={ref}>
-          {view === "grid" ? (
+          {items.length === 0 && !isFilesLoading && !isFoldersLoading ? (
+            <div className="flex flex-col items-center justify-center p-12 text-center bg-background/50 dark:bg-black/50 backdrop-blur-sm rounded-lg border border-border/50">
+              {isTrashView ? (
+                <Trash2 className="h-16 w-16 text-muted-foreground/50 mb-4" />
+              ) : (
+                <FolderOpen className="h-16 w-16 text-muted-foreground/50 mb-4" />
+              )}
+              <h3 className="text-xl font-medium text-foreground/90 mb-2">
+                {isTrashView
+                  ? t("fileExplorer.emptyState.trashEmpty")
+                  : t("fileExplorer.emptyState.title")}
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                {isTrashView
+                  ? t("fileExplorer.emptyState.trashDescription")
+                  : t("fileExplorer.emptyState.description")}
+              </p>
+            </div>
+          ) : view === "grid" ? (
             <FileGrid
               files={items}
               isLoading={isFoldersLoading || isFilesLoading}
               onPreview={handlePreview}
               onDownload={handleDownload}
               onShare={handleShare}
-              onDelete={handleDelete}
+              onDelete={isTrashView ? handleDelete : handleMoveToTrash}
+              onRestore={isTrashView ? handleRestore : undefined}
               onRename={handleRename}
               onToggleFavorite={handleToggleFavorite}
               onEditFolder={(folder) => {
                 setSelectedFolder(folder);
                 setIsEditFolderOpen(true);
               }}
+              isTrashView={isTrashView}
             />
           ) : (
             <FileList
@@ -791,13 +989,15 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               onPreview={handlePreview}
               onDownload={handleDownload}
               onShare={handleShare}
-              onDelete={handleDelete}
+              onDelete={isTrashView ? handleDelete : handleMoveToTrash}
+              onRestore={isTrashView ? handleRestore : undefined}
               onRename={handleRename}
               onToggleFavorite={handleToggleFavorite}
               onEditFolder={(folder) => {
                 setSelectedFolder(folder);
                 setIsEditFolderOpen(true);
               }}
+              isTrashView={isTrashView}
             />
           )}
         </div>

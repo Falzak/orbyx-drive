@@ -25,9 +25,11 @@ interface FileListProps {
   onDownload: (file: FileData) => void;
   onShare: (file: FileData) => void;
   onDelete: (file: FileData) => void;
+  onRestore?: (file: FileData) => void;
   onRename: (file: FileData, newName: string) => void;
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
+  isTrashView?: boolean;
 }
 
 export const FileList = forwardRef<HTMLDivElement, FileListProps>(
@@ -39,9 +41,11 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
       onDownload,
       onShare,
       onDelete,
+      onRestore,
       onRename,
       onToggleFavorite,
       onEditFolder,
+      isTrashView,
     },
     ref
   ) => {
@@ -151,9 +155,11 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                       onDownload={onDownload}
                       onShare={onShare}
                       onDelete={onDelete}
+                      onRestore={onRestore}
                       onRename={onRename}
                       onToggleFavorite={onToggleFavorite}
                       onEditFolder={onEditFolder}
+                      isTrashView={isTrashView}
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">

@@ -36,9 +36,11 @@ interface FileGridProps {
   onDownload: (file: FileData) => void;
   onShare: (file: FileData) => void;
   onDelete: (file: FileData) => void;
+  onRestore?: (file: FileData) => void;
   onRename: (file: FileData, newName: string) => void;
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
+  isTrashView?: boolean;
 }
 
 export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
@@ -50,9 +52,11 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       onDownload,
       onShare,
       onDelete,
+      onRestore,
       onRename,
       onToggleFavorite,
       onEditFolder,
+      isTrashView,
     },
     ref
   ) => {
@@ -110,9 +114,11 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
               onDownload={onDownload}
               onShare={onShare}
               onDelete={onDelete}
+              onRestore={onRestore}
               onRename={onRename}
               onToggleFavorite={onToggleFavorite}
               onEditFolder={onEditFolder}
+              isTrashView={isTrashView}
             >
               <MotionDiv
                 initial={{ opacity: 0, scale: 0.8 }}

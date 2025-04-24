@@ -103,6 +103,9 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
+  // Log para depuração
+  console.log("Index component - Current location:", location.pathname, location.search);
+
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       if (!session?.user?.id) return;

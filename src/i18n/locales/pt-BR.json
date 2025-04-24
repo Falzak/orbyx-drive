@@ -91,7 +91,8 @@
       "allFiles": "Todos os Arquivos",
       "recent": "Recentes",
       "shared": "Compartilhados",
-      "favorites": "Favoritos"
+      "favorites": "Favoritos",
+      "trash": "Lixeira"
     },
     "views": {
       "title": "Visualizações",
@@ -121,8 +122,12 @@
   "fileExplorer": {
     "emptyState": {
       "title": "Nenhum arquivo encontrado",
-      "description": "Comece fazendo upload de alguns arquivos"
+      "description": "Comece fazendo upload de alguns arquivos",
+      "trashEmpty": "A lixeira está vazia",
+      "trashDescription": "Itens que você mover para a lixeira aparecerão aqui"
     },
+    "confirmEmptyTrash": "Tem certeza que deseja esvaziar a lixeira? Esta ação não pode ser desfeita.",
+    "confirmPermanentDelete": "Tem certeza que deseja excluir permanentemente este item? Esta ação não pode ser desfeita.",
     "allFiles": "Todos os Arquivos",
     "sortBy": {
       "placeholder": "Ordenar por",
@@ -138,12 +143,16 @@
       "download": "Baixar",
       "share": "Compartilhar",
       "delete": "Excluir",
+      "moveToTrash": "Mover para Lixeira",
+      "restore": "Restaurar",
+      "deletePermanently": "Excluir Permanentemente",
       "rename": "Renomear",
       "properties": "Propriedades",
       "favorite": "Adicionar aos favoritos",
       "unfavorite": "Remover dos favoritos",
       "renamePrompt": "Digite o novo nome do arquivo",
-      "editFolder": "Editar pasta"
+      "editFolder": "Editar pasta",
+      "emptyTrash": "Esvaziar Lixeira"
     },
     "fileProperties": {
       "name": "Nome",
@@ -221,7 +230,13 @@
       "renameFolderError": "Erro ao renomear pasta",
       "renameFolderSuccess": "Pasta renomeada com sucesso",
       "renameFileError": "Erro ao renomear arquivo",
-      "renameFileSuccess": "Arquivo renomeado com sucesso"
+      "renameFileSuccess": "Arquivo renomeado com sucesso",
+      "moveToTrashSuccess": "Item movido para a lixeira",
+      "moveToTrashError": "Erro ao mover item para a lixeira",
+      "restoreSuccess": "Item restaurado com sucesso",
+      "restoreError": "Erro ao restaurar item",
+      "emptyTrashSuccess": "Lixeira esvaziada com sucesso",
+      "emptyTrashError": "Erro ao esvaziar lixeira"
     },
     "categories": {
       "allFiles": "Todos os Arquivos"

@@ -91,7 +91,8 @@
       "allFiles": "All Files",
       "recent": "Recent",
       "shared": "Shared",
-      "favorites": "Favorites"
+      "favorites": "Favorites",
+      "trash": "Trash Bin"
     },
     "views": {
       "title": "Views",
@@ -121,8 +122,12 @@
   "fileExplorer": {
     "emptyState": {
       "title": "No files found",
-      "description": "Start by uploading some files"
+      "description": "Start by uploading some files",
+      "trashEmpty": "Trash is empty",
+      "trashDescription": "Items you move to trash will appear here"
     },
+    "confirmEmptyTrash": "Are you sure you want to empty the trash? This action cannot be undone.",
+    "confirmPermanentDelete": "Are you sure you want to permanently delete this item? This action cannot be undone.",
     "allFiles": "All Files",
     "sortBy": {
       "placeholder": "Sort by",
@@ -138,12 +143,16 @@
       "download": "Download",
       "share": "Share",
       "delete": "Delete",
+      "moveToTrash": "Move to Trash",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
       "rename": "Rename",
       "properties": "Properties",
       "favorite": "Add to favorites",
       "unfavorite": "Remove from favorites",
       "renamePrompt": "Enter new file name",
-      "editFolder": "Edit folder"
+      "editFolder": "Edit folder",
+      "emptyTrash": "Empty Trash"
     },
     "fileProperties": {
       "name": "Name",
@@ -216,7 +225,13 @@
       "renameFolderError": "Error renaming folder",
       "renameFolderSuccess": "Folder renamed successfully",
       "renameFileError": "Error renaming file",
-      "renameFileSuccess": "File renamed successfully"
+      "renameFileSuccess": "File renamed successfully",
+      "moveToTrashSuccess": "Item moved to trash",
+      "moveToTrashError": "Error moving item to trash",
+      "restoreSuccess": "Item restored successfully",
+      "restoreError": "Error restoring item",
+      "emptyTrashSuccess": "Trash emptied successfully",
+      "emptyTrashError": "Error emptying trash"
     },
     "categories": {
       "allFiles": "All Files"

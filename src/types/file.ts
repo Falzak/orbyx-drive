@@ -16,6 +16,8 @@ export interface FileData {
   name?: string;
   parent_id?: string | null;
   provider_id?: string; // Add this to track which provider stores the file
+  is_trashed?: boolean;
+  trashed_at?: string | null;
 }
 
 export interface FolderData {

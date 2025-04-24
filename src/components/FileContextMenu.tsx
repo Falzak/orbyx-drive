@@ -19,6 +19,7 @@ import {
   Clock,
   HardDrive,
   FileType,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -31,9 +32,11 @@ interface FileContextMenuProps {
   onDownload: (file: FileData) => void;
   onShare: (file: FileData) => void;
   onDelete: (file: FileData) => void;
+  onRestore?: (file: FileData) => void;
   onRename: (file: FileData, newName: string) => void;
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
+  isTrashView?: boolean;
 }
 
 export const FileContextMenu = React.forwardRef<
@@ -48,9 +51,11 @@ export const FileContextMenu = React.forwardRef<
       onDownload,
       onShare,
       onDelete,
+      onRestore,
       onRename,
       onToggleFavorite,
       onEditFolder,
+      isTrashView,
     },
     ref
   ) => {
@@ -224,15 +229,38 @@ export const FileContextMenu = React.forwardRef<
           </div>
 
           <div className="p-1.5">
-            <ContextMenuItem
-              onClick={() => onDelete(file)}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive group rounded-md"
-            >
-              <Trash2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-              <span className="group-hover:translate-x-0.5 transition-transform duration-200">
-                {t("fileExplorer.contextMenu.delete")}
-              </span>
-            </ContextMenuItem>
+            {isTrashView ? (
+              <>
+                <ContextMenuItem
+                  onClick={() => onRestore?.(file)}
+                  className="text-primary hover:bg-primary/10 hover:text-primary group rounded-md"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                    {t("fileExplorer.contextMenu.restore")}
+                  </span>
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={() => onDelete(file)}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive group rounded-md"
+                >
+                  <Trash2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                    {t("fileExplorer.contextMenu.deletePermanently")}
+                  </span>
+                </ContextMenuItem>
+              </>
+            ) : (
+              <ContextMenuItem
+                onClick={() => onDelete(file)}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive group rounded-md"
+              >
+                <Trash2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                  {t("fileExplorer.contextMenu.moveToTrash")}
+                </span>
+              </ContextMenuItem>
+            )}
           </div>
         </ContextMenuContent>
         <RenameFileDialog
