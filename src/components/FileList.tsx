@@ -65,7 +65,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
 
     if (isLoading) {
       return (
-        <div className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full p-6">
+        <div className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full px-0 py-4">
           <Table className="w-full">
             <TableHeader>
               <TableRow className="hover:bg-transparent border-border/50">
@@ -112,7 +112,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
     return (
       <div
         ref={ref}
-        className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full p-6"
+        className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full px-0 py-4"
       >
         <Table className="w-full">
           <TableHeader>

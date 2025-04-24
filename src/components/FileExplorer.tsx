@@ -929,7 +929,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     FileContextMenu.displayName = "FileContextMenu";
 
     return (
-      <div className="space-y-4 w-full">
+      <div className="space-y-2 w-full px-0">
         <div className="flex justify-between items-center">
           <FileViewOptions
             view={view}

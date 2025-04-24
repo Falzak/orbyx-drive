@@ -83,7 +83,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
 
     if (isLoading) {
       return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 p-6 h-full">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 px-0 py-4 h-full">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i}>
               <Card className="overflow-hidden border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm">
@@ -105,7 +105,7 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       <motion.div
         ref={ref}
         layout
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 p-6 h-full"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 px-0 py-4 h-full"
       >
         <AnimatePresence mode="popLayout">
           {files.map((file) => (

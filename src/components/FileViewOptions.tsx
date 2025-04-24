@@ -50,7 +50,7 @@ export function FileViewOptions({
   const pathSegments = currentPath.split("/").filter(Boolean);
 
   return (
-    <div className="flex flex-col space-y-2 mb-2">
+    <div className="flex flex-col space-y-2 mb-4">
       <div className="flex items-center justify-between">
         <div className="flex flex-col md:flex-row md:items-center gap-2">
           <Breadcrumb>
