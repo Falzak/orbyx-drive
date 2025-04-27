@@ -94,14 +94,12 @@ export default function Settings() {
     const formData = new FormData(e.currentTarget);
     const full_name = formData.get("full_name") as string;
 
-    // Get the avatar URL from the hidden input if it exists
     const avatar_url = (formData.get("avatar_url") as string) || undefined;
 
     updateProfileMutation.mutate({ full_name, avatar_url });
   };
 
   const handleAvatarChange = (url: string) => {
-    // Update the hidden input for form submission
     const avatarInput = document.getElementById(
       "avatar_url"
     ) as HTMLInputElement;
@@ -109,7 +107,6 @@ export default function Settings() {
       avatarInput.value = url;
     }
 
-    // Save the avatar URL immediately
     const full_name = session?.user?.user_metadata?.full_name || "";
     updateProfileMutation.mutate({ full_name, avatar_url: url });
   };
@@ -291,6 +288,46 @@ export default function Settings() {
     }
   };
 
+  const SessionsList = () => {
+    return (
+      <Card className="border-primary/10 shadow-md overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <SettingsIcon className="h-5 w-5 text-primary" />
+            {t("settings.sections.sessions.title")}
+          </CardTitle>
+          <CardDescription>
+            {t("settings.sections.sessions.description")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <Label className="text-base font-medium">
+              {t("settings.sections.sessions.sessions")}
+            </Label>
+            <div className="bg-muted/30 rounded-lg p-4 max-w-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Sessions</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Manage your active sessions
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/settings/sessions")}
+                  className="ml-4"
+                >
+                  {t("settings.sections.sessions.manage")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <motion.div
       className="min-h-screen bg-gradient-to-br from-background via-background to-background/90 p-4 md:p-8"
@@ -298,7 +335,6 @@ export default function Settings() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/5 to-transparent opacity-70"></div>
         <div className="absolute -top-24 left-1/4 w-96 h-96 bg-primary/5 rounded-full filter blur-[100px] opacity-60"></div>
@@ -306,7 +342,6 @@ export default function Settings() {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header with back button and title */}
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"
@@ -326,14 +361,12 @@ export default function Settings() {
           </motion.h1>
         </div>
 
-        {/* Main content with sidebar layout */}
         <div>
           <Tabs
             value={section}
             orientation="vertical"
             className="w-full grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6 lg:gap-10"
           >
-            {/* Sidebar navigation */}
             <div className="bg-card rounded-xl border shadow-sm p-4 h-fit sticky top-8">
               <TabsList className="flex flex-col h-auto w-full bg-transparent space-y-1 p-0">
                 <TabsTrigger
@@ -363,7 +396,6 @@ export default function Settings() {
               </TabsList>
             </div>
 
-            {/* Main content area */}
             <div className="flex-1 w-full">
               <TabsContent value="profile" className="mt-0 outline-none">
                 <motion.div
@@ -625,6 +657,8 @@ export default function Settings() {
                           </div>
                         </div>
                       </div>
+
+                      <SessionsList />
                     </CardContent>
                   </Card>
                 </motion.div>

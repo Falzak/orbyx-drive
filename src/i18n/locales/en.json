@@ -362,7 +362,21 @@
         "changePassword": "Change password",
         "twoFactor": "Two-factor authentication",
         "enable2FA": "Enable two-factor authentication"
+      },
+      "sessions": {
+        "title": "Active Sessions",
+        "description": "Manage your active sessions across different devices"
       }
+    },
+    "sessions": {
+      "device": "Device",
+      "location": "Location",
+      "lastActive": "Last Active",
+      "actions": "Actions",
+      "terminate": "Terminate",
+      "terminateSuccess": "Session terminated",
+      "terminateDescription": "The session has been successfully terminated",
+      "locationUnknown": "Unknown location"
     }
   },
   "mediaPreview": {
