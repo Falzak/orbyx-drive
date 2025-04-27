@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { AvatarUpload } from "@/components/AvatarUpload";
+import { SessionsList } from "@/components/sessions/SessionsList";
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -288,46 +289,6 @@ export default function Settings() {
     }
   };
 
-  const SessionsList = () => {
-    return (
-      <Card className="border-primary/10 shadow-md overflow-hidden">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5 text-primary" />
-            {t("settings.sections.sessions.title")}
-          </CardTitle>
-          <CardDescription>
-            {t("settings.sections.sessions.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <Label className="text-base font-medium">
-              {t("settings.sections.sessions.sessions")}
-            </Label>
-            <div className="bg-muted/30 rounded-lg p-4 max-w-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Sessions</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Manage your active sessions
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/settings/sessions")}
-                  className="ml-4"
-                >
-                  {t("settings.sections.sessions.manage")}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
     <motion.div
       className="min-h-screen bg-gradient-to-br from-background via-background to-background/90 p-4 md:p-8"
@@ -392,6 +353,14 @@ export default function Settings() {
                 >
                   <Shield className="h-4 w-4 mr-3" />
                   {t("settings.sections.security.title")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="sessions"
+                  onClick={() => navigate("/settings/sessions")}
+                  className="w-full justify-start px-3 py-2 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                >
+                  <SettingsIcon className="h-4 w-4 mr-3" />
+                  {t("settings.sections.sessions.title")}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -657,10 +626,19 @@ export default function Settings() {
                           </div>
                         </div>
                       </div>
-
-                      <SessionsList />
                     </CardContent>
                   </Card>
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="sessions" className="mt-0 outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-6"
+                >
+                  <SessionsList />
                 </motion.div>
               </TabsContent>
             </div>

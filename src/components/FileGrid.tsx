@@ -1,188 +1,221 @@
-import React, { forwardRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { FileData } from "@/types";
-import { formatFileSize, getFileIcon, formatDate } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslation } from "react-i18next";
+import React from "react";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import {
-  Download,
-  Share2,
-  Star,
-  Trash2,
-  Edit,
-  FileIcon,
-  Calendar,
-  Info,
-  Clock,
-  HardDrive,
-  FileType,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileContextMenu } from "./context-menu";
+import { MoreHorizontal, Star, Trash2, LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { FileData, FolderData } from "@/types";
+import { MediaPreview } from "./MediaPreview";
+import { FileIcon } from "./FileIcon";
+import { ContextMenuButton } from "./context-menu/context-menu-button";
 
-interface FileGridProps {
+export interface FileGridProps {
   files: FileData[];
-  isLoading: boolean;
-  onPreview: (file: FileData) => void;
-  onDownload: (file: FileData) => void;
-  onShare: (file: FileData) => void;
-  onDelete: (file: FileData) => void;
-  onRestore?: (file: FileData) => void;
-  onRename: (file: FileData, newName: string) => void;
-  onToggleFavorite: (file: FileData) => void;
-  onEditFolder?: (folder: FileData) => void;
-  isTrashView?: boolean;
-  isFavoritesView?: boolean;
+  onDeleteFile: (file: FileData) => Promise<void>;
+  onRenameFile: (file: FileData, newName: string) => Promise<void>;
+  onToggleFavorite: (file: FileData) => Promise<void>;
+  onFileClick: (file: FileData) => void;
+  onFolderClick?: (folder: FolderData) => void;
+  onAddToFolder?: (files: FileData[], folderId: string | null) => void;
+  folders?: FolderData[];
+  currentFolder?: FolderData | null;
+  showContextMenuButton?: boolean;
 }
 
-export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
-  (
-    {
-      files,
-      isLoading,
-      onPreview,
-      onDownload,
-      onShare,
-      onDelete,
-      onRestore,
-      onRename,
-      onToggleFavorite,
-      onEditFolder,
-      isTrashView,
-      isFavoritesView,
-    },
-    ref
-  ) => {
-    const { t } = useTranslation();
+const FileGrid: React.FC<FileGridProps> = ({
+  files,
+  onDeleteFile,
+  onRenameFile,
+  onToggleFavorite,
+  onFileClick,
+  onFolderClick,
+  onAddToFolder,
+  folders,
+  currentFolder,
+  showContextMenuButton = true,
+}) => {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [showRenameDialog, setShowRenameDialog] = React.useState(false);
+  const [fileToDelete, setFileToDelete] = React.useState<FileData | null>(null);
+  const [fileToRename, setFileToRename] = React.useState<FileData | null>(null);
+  const [newFileName, setNewFileName] = React.useState("");
 
-    const isPreviewableFile = (contentType: string) => {
-      return (
-        contentType.startsWith("image/") ||
-        contentType.startsWith("video/") ||
-        contentType.startsWith("audio/") ||
-        contentType === "text/plain" ||
-        contentType === "application/pdf"
-      );
-    };
+  const handleDeleteClick = (file: FileData) => {
+    setFileToDelete(file);
+    setShowDeleteDialog(true);
+  };
 
-    const getFolderStyle = (file: FileData) => {
-      if (!file.is_folder) return {};
-      return {
-        backgroundColor: file.color || "#94a3b8",
-      };
-    };
+  const handleRenameClick = (file: FileData) => {
+    setFileToRename(file);
+    setNewFileName(file.name);
+    setShowRenameDialog(true);
+  };
 
-    if (isLoading) {
-      return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 px-0 py-4 h-full">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i}>
-              <Card className="overflow-hidden border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm">
-                <Skeleton className="aspect-square" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              </Card>
-            </div>
-          ))}
-        </div>
-      );
+  const confirmDeleteFile = async () => {
+    if (fileToDelete) {
+      await onDeleteFile(fileToDelete);
+      setShowDeleteDialog(false);
+      setFileToDelete(null);
     }
+  };
 
-    const MotionDiv = motion.div;
+  const handleRenameFile = async (file: FileData, newName: string) => {
+    await onRenameFile(file, newName);
+    setShowRenameDialog(false);
+    setFileToRename(null);
+  };
 
-    return (
-      <motion.div
-        ref={ref}
-        layout
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 px-0 py-4 h-full"
-      >
-        <AnimatePresence mode="popLayout">
-          {files.map((file) => (
-            <FileContextMenu
-              key={file.id}
-              file={file}
-              onPreview={onPreview}
-              onDownload={onDownload}
-              onShare={onShare}
-              onDelete={onDelete}
-              onRestore={onRestore}
-              onRename={onRename}
-              onToggleFavorite={onToggleFavorite}
-              onEditFolder={onEditFolder}
-              isTrashView={isTrashView}
-              isFavoritesView={isFavoritesView}
-            >
-              <MotionDiv
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                onClick={() => {
-                  if (file.is_folder || isPreviewableFile(file.content_type)) {
-                    onPreview(file);
-                  }
-                }}
-                className={cn("group", file.is_folder && "hover:scale-[1.02]")}
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      {files.map((file) => (
+        <Card
+          key={file.id}
+          className="border-primary/10 shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium truncate">
+              <button
+                onClick={() => onFileClick(file)}
+                className="w-full text-left"
               >
-                <Card
-                  className={cn(
-                    "overflow-hidden cursor-pointer border-border/50 transition-all duration-200 hover:shadow-lg hover:border-border bg-background/50 dark:bg-black/50 backdrop-blur-sm group-hover:bg-background/80 dark:group-hover:bg-black/80",
-                    file.is_folder && "hover:scale-[1.02]"
-                  )}
-                >
-                  <div className="aspect-square relative bg-gradient-to-b from-muted/5 to-muted/20">
-                    {file.content_type.startsWith("image/") && file.url ? (
-                      <>
-                        <img
-                          src={file.url}
-                          alt={file.filename}
-                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                      </>
-                    ) : (
-                      <div
-                        className="w-full h-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
-                        style={getFolderStyle(file)}
-                      >
-                        <span className="text-4xl drop-shadow-sm">
-                          {file.is_folder
-                            ? file.icon || "📁"
-                            : getFileIcon(file.content_type)}
-                        </span>
-                      </div>
-                    )}
-                    {file.is_favorite && (
-                      <div className="absolute top-2 right-2">
-                        <Star className="w-4 h-4 fill-yellow-400 stroke-2 drop-shadow-sm" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-3 bg-background/80 dark:bg-black/80 backdrop-blur-xl border-t border-border/50">
-                    <p className="font-medium truncate text-sm text-foreground/90">
-                      {file.filename}
-                    </p>
-                  </div>
-                </Card>
-              </MotionDiv>
-            </FileContextMenu>
-          ))}
-        </AnimatePresence>
-      </motion.div>
-    );
-  }
-);
+                {file.name}
+              </button>
+            </CardTitle>
+            {showContextMenuButton && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-7 w-7 rounded-full p-0 data-[state=open]:bg-secondary"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => onToggleFavorite(file)}>
+                    <Star className="mr-2 h-4 w-4" />
+                    <span>{t("file.favorite")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleRenameClick(file)}>
+                    <span>{t("file.rename")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleDeleteClick(file)}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>{t("file.delete")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            {!showContextMenuButton && (
+              <ContextMenuButton
+                file={file}
+                onDeleteFile={onDeleteFile}
+                onRenameFile={onRenameFile}
+                onToggleFavorite={onToggleFavorite}
+              />
+            )}
+          </CardHeader>
+          <CardContent className="p-0 pt-2">
+            <MediaPreview file={file} />
+          </CardContent>
+          <CardFooter className="text-xs text-muted-foreground justify-between items-center p-2 bg-muted/50">
+            <span>
+              {t("file.lastModified")}{" "}
+              {formatDistanceToNow(new Date(file.updated_at), {
+                addSuffix: true,
+                locale: ptBR,
+              })}
+            </span>
+            {file.is_favorite && (
+              <Badge variant="secondary">{t("file.favorite")}</Badge>
+            )}
+          </CardFooter>
+        </Card>
+      ))}
 
-FileGrid.displayName = "FileGrid";
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("file.deleteConfirmationTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("file.deleteConfirmationDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setShowDeleteDialog(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteFile}>
+              {t("file.delete")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("file.renameFile")}</DialogTitle>
+            <DialogDescription>
+              {t("file.enterNewName")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                {t("file.name")}
+              </Label>
+              <Input
+                id="name"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setShowRenameDialog(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={() => fileToRename && handleRenameFile(fileToRename, newFileName)}>
+              {t("file.rename")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default FileGrid;

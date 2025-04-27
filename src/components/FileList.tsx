@@ -1,5 +1,4 @@
-import React, { forwardRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React from "react";
 import {
   Table,
   TableBody,
@@ -8,232 +7,213 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileData } from "@/types";
-import { formatFileSize, getFileIcon, formatDate } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { Star, AlertCircle } from "lucide-react";
+import { MoreHorizontal, Star, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { FileData, FolderData } from "@/types";
 import { cn } from "@/lib/utils";
-import { FileContextMenu } from "./context-menu";
 
-const MotionTableRow = motion(TableRow);
-
-interface FileListProps {
+export interface FileListProps {
   files: FileData[];
-  isLoading: boolean;
-  onPreview: (file: FileData) => void;
-  onDownload: (file: FileData) => void;
-  onShare: (file: FileData) => void;
-  onDelete: (file: FileData) => void;
-  onRestore?: (file: FileData) => void;
-  onRename: (file: FileData, newName: string) => void;
-  onToggleFavorite: (file: FileData) => void;
-  onEditFolder?: (folder: FileData) => void;
-  isTrashView?: boolean;
-  isFavoritesView?: boolean;
+  onDeleteFile: (file: FileData) => Promise<void>;
+  onRenameFile: (file: FileData, newName: string) => Promise<void>;
+  onToggleFavorite: (file: FileData) => Promise<void>;
+  onFileClick: (file: FileData) => void;
+  onFolderClick?: (folder: FolderData) => void;
+  onAddToFolder?: (files: FileData[], folderId: string | null) => void;
+  folders?: FolderData[];
+  currentFolder?: FolderData | null;
+  showContextMenuButton?: boolean;
 }
 
-export const FileList = forwardRef<HTMLDivElement, FileListProps>(
-  (
-    {
-      files,
-      isLoading,
-      onPreview,
-      onDownload,
-      onShare,
-      onDelete,
-      onRestore,
-      onRename,
-      onToggleFavorite,
-      onEditFolder,
-      isTrashView,
-      isFavoritesView,
-    },
-    ref
-  ) => {
-    const { t } = useTranslation();
+const FileList: React.FC<FileListProps> = ({
+  files,
+  onDeleteFile,
+  onRenameFile,
+  onToggleFavorite,
+  onFileClick,
+  onFolderClick,
+  onAddToFolder,
+  folders,
+  currentFolder,
+  showContextMenuButton = true,
+}) => {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [fileToDelete, setFileToDelete] = React.useState<FileData | null>(
+    null
+  );
+  const [showRenameDialog, setShowRenameDialog] = React.useState(false);
+  const [fileToRename, setFileToRename] = React.useState<FileData | null>(
+    null
+  );
+  const [newFileName, setNewFileName] = React.useState("");
 
-    const isPreviewableFile = (contentType: string) => {
-      return (
-        contentType.startsWith("image/") ||
-        contentType.startsWith("video/") ||
-        contentType.startsWith("audio/") ||
-        contentType === "text/plain" ||
-        contentType === "application/pdf"
-      );
-    };
-
-    if (isLoading) {
-      return (
-        <div className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full px-0 py-4">
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-border/50">
-                <TableHead className="w-[60%] text-foreground/70">
-                  {t("fileExplorer.fileProperties.name")}
-                </TableHead>
-                <TableHead className="w-[20%] text-foreground/70">
-                  {t("fileExplorer.fileProperties.size")}
-                </TableHead>
-                <TableHead className="w-[20%] text-foreground/70">
-                  {t("fileExplorer.fileProperties.modified")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TableRow
-                  key={i}
-                  className="hover:bg-transparent border-border/50"
-                >
-                  <TableCell className="max-w-0">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-24" />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-16" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      );
+  const handleDeleteFile = async () => {
+    if (fileToDelete) {
+      await onDeleteFile(fileToDelete);
+      setShowDeleteDialog(false);
+      setFileToDelete(null);
     }
+  };
 
-    return (
-      <div
-        ref={ref}
-        className="rounded-lg border border-border/50 bg-background/50 dark:bg-black/50 backdrop-blur-sm w-full h-full px-0 py-4"
-      >
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-border/50">
-              <TableHead className="w-[60%] text-foreground/70">
-                {t("fileExplorer.fileProperties.name")}
-              </TableHead>
-              <TableHead className="w-[20%] text-foreground/70">
-                {t("fileExplorer.fileProperties.size")}
-              </TableHead>
-              <TableHead className="w-[20%] text-foreground/70">
-                {t("fileExplorer.fileProperties.modified")}
-              </TableHead>
+  const handleRenameFile = async (file: FileData, newName: string) => {
+    await onRenameFile(file, newName);
+    setShowRenameDialog(false);
+    setFileToRename(null);
+  };
+
+  return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("fileList.name")}</TableHead>
+            <TableHead>{t("fileList.lastModified")}</TableHead>
+            <TableHead className="text-right">{t("fileList.actions")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {files.map((file) => (
+            <TableRow key={file.id}>
+              <TableCell>
+                <Button variant="ghost" onClick={() => onFileClick(file)}>
+                  {file.name}
+                </Button>
+              </TableCell>
+              <TableCell>
+                {formatDistanceToNow(new Date(file.updated_at), {
+                  addSuffix: true,
+                })}
+              </TableCell>
+              <TableCell className="text-right">
+                {showContextMenuButton && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => onToggleFavorite(file)}
+                      >
+                        <Star className="h-4 w-4 mr-2" />
+                        {t("fileList.toggleFavorite")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setFileToRename(file);
+                          setNewFileName(file.name);
+                          setShowRenameDialog(true);
+                        }}
+                      >
+                        {t("fileList.rename")}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setFileToDelete(file);
+                          setShowDeleteDialog(true);
+                        }}
+                        className="text-red-500 focus:text-red-500"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t("fileList.delete")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            <AnimatePresence mode="popLayout" initial={false}>
-              {files.map((file) => (
-                <MotionTableRow
-                  key={file.id}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.2 }}
-                  className={cn(
-                    "group cursor-pointer transition-all hover:bg-accent/5 border-border/50",
-                    file.is_folder && "hover:bg-accent/10"
-                  )}
-                  onClick={() => {
-                    if (
-                      file.is_folder ||
-                      isPreviewableFile(file.content_type)
-                    ) {
-                      onPreview(file);
-                    }
-                  }}
-                >
-                  <TableCell className="max-w-0">
-                    <FileContextMenu
-                      file={file}
-                      onPreview={onPreview}
-                      onDownload={onDownload}
-                      onShare={onShare}
-                      onDelete={onDelete}
-                      onRestore={onRestore}
-                      onRename={onRename}
-                      onToggleFavorite={onToggleFavorite}
-                      onEditFolder={onEditFolder}
-                      isTrashView={isTrashView}
-                      isFavoritesView={isFavoritesView}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          {file.content_type.startsWith("image/") &&
-                          file.url ? (
-                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-border/50 bg-background/50 dark:bg-black/50">
-                              <img
-                                src={file.url}
-                                alt={file.filename}
-                                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
-                                onError={(e) => {
-                                  console.log(
-                                    "Image failed to load:",
-                                    file.filename
-                                  );
-                                  (e.target as HTMLImageElement).src =
-                                    "/placeholder.svg";
-                                  (e.target as HTMLImageElement).className =
-                                    "w-full h-full object-contain p-1";
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div
-                              className={cn(
-                                "w-10 h-10 rounded-lg bg-gradient-to-b from-muted/5 to-muted/20 flex items-center justify-center shrink-0 border border-border/50 transition-transform duration-200 group-hover:scale-110",
-                                file.is_folder && "bg-primary/5"
-                              )}
-                              style={
-                                file.is_folder
-                                  ? {
-                                      backgroundColor: file.color || "#94a3b8",
-                                    }
-                                  : {}
-                              }
-                            >
-                              <span className="text-2xl drop-shadow-sm">
-                                {file.is_folder
-                                  ? file.icon || "📁"
-                                  : getFileIcon(file.content_type)}
-                              </span>
-                            </div>
-                          )}
-                          {file.is_favorite && (
-                            <div className="absolute -top-1.5 -right-1.5">
-                              <Star className="w-3.5 h-3.5 fill-yellow-400 stroke-2 drop-shadow-sm" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="font-medium truncate text-sm text-foreground/90 group-hover:text-foreground transition-colors">
-                            {file.filename}
-                          </span>
-                        </div>
-                      </div>
-                    </FileContextMenu>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
-                    {formatFileSize(file.size)}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap group-hover:text-foreground/70 transition-colors">
-                    {formatDate(file.created_at)}
-                  </TableCell>
-                </MotionTableRow>
-              ))}
-            </AnimatePresence>
-          </TableBody>
-        </Table>
-      </div>
-    );
-  }
-);
+          ))}
+        </TableBody>
+      </Table>
 
-FileList.displayName = "FileList";
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("fileList.deleteConfirmation")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("fileList.deleteWarning")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFile} className="bg-red-500 text-red-50">
+              {t("fileList.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("fileList.renameFile")}</DialogTitle>
+            <DialogDescription>
+              {t("fileList.enterNewName")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Input
+                id="name"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setShowRenameDialog(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={() => {
+                if (fileToRename) {
+                  handleRenameFile(fileToRename, newFileName);
+                }
+              }}
+            >
+              {t("fileList.rename")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default FileList;

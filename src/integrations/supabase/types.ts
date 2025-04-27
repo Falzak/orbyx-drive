@@ -373,31 +373,34 @@ export type Database = {
       }
       user_sessions: {
         Row: {
-          created_at: string
+          created_at: string | null
           device_info: string | null
           id: string
           ip_address: string | null
-          last_active_at: string
+          is_current: boolean | null
+          last_active_at: string | null
           location: string | null
           user_agent: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           device_info?: string | null
           id?: string
           ip_address?: string | null
-          last_active_at?: string
+          is_current?: boolean | null
+          last_active_at?: string | null
           location?: string | null
           user_agent?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           device_info?: string | null
           id?: string
           ip_address?: string | null
-          last_active_at?: string
+          is_current?: boolean | null
+          last_active_at?: string | null
           location?: string | null
           user_agent?: string | null
           user_id?: string
