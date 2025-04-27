@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { Star, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileContextMenu } from "./FileContextMenu";
+import { FileContextMenu } from "./context-menu";
 
 const MotionTableRow = motion(TableRow);
 

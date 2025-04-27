@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { FileContextMenu } from "./FileContextMenu";
+import { FileContextMenu } from "./context-menu";
 
 interface FileGridProps {
   files: FileData[];
