@@ -32,12 +32,12 @@
     --sidebar-accent: 240 5% 90%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-ring: 240 5.9% 10%;
-    --sidebar-hover-bg: 240 5% 88%;
-    --sidebar-hover-text: 240 5.9% 0%;
-    --sidebar-hover-from: 210 20% 95%;
-    --sidebar-hover-to: 240 10% 95%;
-    --sidebar-hover-border: 240 5% 65%;
-    --sidebar-glow: 210 100% 50%;
+    --sidebar-hover-bg: 240 10% 90%;
+    --sidebar-hover-text: 240 10% 20%;
+    --sidebar-hover-from: 240 10% 90%;
+    --sidebar-hover-to: 240 10% 90%;
+    --sidebar-hover-border: 240 10% 80%;
+    --sidebar-glow: 240 10% 50%;
   }
 
   .dark {
@@ -68,12 +68,12 @@
     --sidebar-accent: 240 3.7% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-ring: 240 4.9% 83.9%;
-    --sidebar-hover-bg: 240 3.7% 22%;
+    --sidebar-hover-bg: 240 5% 25%;
     --sidebar-hover-text: 0 0% 100%;
-    --sidebar-hover-from: 240 20% 15%;
-    --sidebar-hover-to: 225 30% 18%;
-    --sidebar-hover-border: 210 30% 25%;
-    --sidebar-glow: 210 100% 30%;
+    --sidebar-hover-from: 240 5% 25%;
+    --sidebar-hover-to: 240 5% 25%;
+    --sidebar-hover-border: 240 5% 30%;
+    --sidebar-glow: 240 5% 40%;
   }
 }
 
@@ -99,56 +99,42 @@
 
   /* Efeito hover para botões do menu */
   [data-sidebar="menu-button"]:hover {
-    @apply bg-gradient-to-r from-[hsl(var(--sidebar-hover-from))] to-[hsl(var(--sidebar-hover-to))] text-[hsl(var(--sidebar-hover-text))];
+    @apply bg-[hsl(var(--sidebar-hover-bg))] text-[hsl(var(--sidebar-hover-text))];
   }
 
   /* Estado ativo dos botões */
   [data-sidebar="menu-button"][data-active="true"] {
-    @apply bg-gradient-to-r from-[hsl(var(--sidebar-hover-from))] to-[hsl(var(--sidebar-hover-to))] text-[hsl(var(--sidebar-hover-text))];
+    @apply bg-[hsl(var(--sidebar-hover-bg))] text-[hsl(var(--sidebar-hover-text))];
     @apply font-medium;
   }
 
-  /* Adiciona sutilmente o efeito de brilho também ao estado ativo */
-  [data-sidebar="menu-button"][data-active="true"]::after {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-[hsl(var(--sidebar-glow))] to-transparent opacity-5 blur-md;
-    animation: shine 3s ease-in-out infinite alternate;
-  }
+  /* Estado ativo sem efeitos adicionais */
 
   /* Estilos para ações de grupo e menu */
   [data-sidebar="group-action"]:hover,
   [data-sidebar="menu-action"]:hover {
     @apply bg-[hsl(var(--sidebar-hover-bg))] text-[hsl(var(--sidebar-hover-text))];
-    @apply shadow-sm;
-    transform: scale(1.05);
+    @apply shadow-none;
   }
 
   /* Animação sutil para ícones */
   [data-sidebar="menu-button"] svg {
-    @apply transition-transform duration-200;
+    @apply transition-all duration-200;
   }
 
-  [data-sidebar="menu-button"]:hover svg {
+  [data-sidebar="menu-button"]:hover svg,
+  [data-sidebar="menu-button"][data-active="true"] svg {
     @apply text-[hsl(var(--sidebar-hover-text))];
-    transform: scale(1.1);
   }
 
   /* Estilo específico para o botão de logout */
   .text-destructive[data-sidebar="menu-button"]:hover {
-    background-image: linear-gradient(
-      to right,
-      hsla(0, 84.2%, 60.2%, 0.1),
-      hsla(0, 84.2%, 60.2%, 0.2)
-    );
+    background-color: hsla(0, 84.2%, 95%, 1);
     color: hsl(0, 84.2%, 60.2%);
   }
 
   .dark .text-destructive[data-sidebar="menu-button"]:hover {
-    background-image: linear-gradient(
-      to right,
-      hsla(0, 62.8%, 30.6%, 0.2),
-      hsla(0, 62.8%, 30.6%, 0.3)
-    );
+    background-color: hsla(0, 62.8%, 20%, 1);
     color: hsl(0, 0%, 98%);
   }
 
@@ -160,24 +146,5 @@
     color: hsl(0, 0%, 98%);
   }
 
-  /* Efeito de brilho personalizado para o botão de logout */
-  .text-destructive[data-sidebar="menu-button"]:hover::after {
-    background-image: linear-gradient(
-      to right,
-      transparent,
-      hsla(0, 84.2%, 60.2%, 1),
-      transparent
-    );
-    opacity: 0.1;
-  }
-
-  .dark .text-destructive[data-sidebar="menu-button"]:hover::after {
-    background-image: linear-gradient(
-      to right,
-      transparent,
-      hsla(0, 62.8%, 30.6%, 1),
-      transparent
-    );
-    opacity: 0.15;
-  }
+  /* Sem efeitos adicionais para o botão de logout */
 }
