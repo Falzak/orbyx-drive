@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,8 @@ import {
   FileUp,
   Import,
   Trash2,
+  Menu,
+  PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FileUpload from "@/components/FileUpload";
@@ -30,6 +32,7 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -82,12 +85,12 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
   const searchParams = new URLSearchParams(location.search);
   const filterParam = searchParams.get('filter');
 
-  // Log para depuração
-  console.log("AppSidebar - Current location:", location.pathname, location.search);
-  console.log("AppSidebar - Filter param:", filterParam);
   const { session } = useAuth();
-  const { state } = useSidebar();
+  
+  // Usar o contexto da sidebar
+  const { state, isMobile, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
+  
   const { t, i18n } = useTranslation();
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -95,6 +98,11 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Função para alternar a sidebar em dispositivos móveis
+  const toggleMobileSidebar = () => {
+    setOpenMobile(!openMobile);
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -185,6 +193,32 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
 
   return (
     <>
+      {/* Botão de menu móvel - só aparece em dispositivos móveis */}
+      {isMobile && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed left-4 top-4 z-50 md:hidden bg-background/50 backdrop-blur-sm border shadow-sm"
+          onClick={toggleMobileSidebar}
+          aria-label="Toggle menu"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      )}
+
+      {/* Overlay para quando a sidebar está aberta no mobile */}
+      <AnimatePresence>
+        {isMobile && openMobile && (
+          <motion.div 
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpenMobile(false)}
+          />
+        )}
+      </AnimatePresence>
+
       <Sidebar
         className={cn(
           "border-r border-border/10",
