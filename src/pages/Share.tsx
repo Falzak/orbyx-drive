@@ -9,8 +9,11 @@ import {
   Lock,
   Download,
   ShieldCheck,
-  AlertCircle,
   Loader2,
+  FileIcon,
+  File,
+  Clock,
+  ArrowLeft,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -32,11 +35,6 @@ const Share = () => {
   const [password, setPassword] = useState("");
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanStatus, setScanStatus] = useState<{
-    status: "idle" | "scanning" | "safe" | "unsafe" | "error";
-    message?: string;
-  }>({ status: "idle" });
 
   const {
     data: shareData,
@@ -116,167 +114,10 @@ const Share = () => {
     }
   };
 
-  const scanFile = async () => {
-    if (!shareData?.file_path) return;
 
-    setIsScanning(true);
-    setScanStatus({ status: "scanning" });
-
-    try {
-      // Verificar se é um arquivo de texto - podemos pular a verificação de vírus
-      if (shareData.content_type === "text/plain") {
-        console.log("Skipping virus scan for text file");
-        setScanStatus({
-          status: "safe",
-          message: t("share.fileSafe"),
-        });
-        setIsScanning(false);
-        return true;
-      }
-
-      let fileUrl: string;
-
-      try {
-        const { provider, providerType, bucket } = await getStorageProvider(
-          shareData.content_type
-        );
-
-        switch (providerType) {
-          case "supabase": {
-            const { data } = supabase.storage
-              .from(bucket)
-              .getPublicUrl(shareData.file_path);
-            fileUrl = data.publicUrl;
-            break;
-          }
-          case "aws":
-          case "backblaze":
-          case "wasabi":
-          case "cloudflare": {
-            const client = await getS3Client(provider);
-            const command = new GetObjectCommand({
-              Bucket: bucket,
-              Key: shareData.file_path,
-            });
-            fileUrl = await getSignedUrl(client, command, { expiresIn: 3600 });
-            break;
-          }
-          default: {
-            // Fallback to Supabase if provider is not supported
-            console.warn(
-              `Provider ${provider} not supported, falling back to Supabase`
-            );
-            const { data } = supabase.storage
-              .from("files")
-              .getPublicUrl(shareData.file_path);
-            fileUrl = data.publicUrl;
-          }
-        }
-      } catch (providerError) {
-        console.error("Error with storage provider:", providerError);
-        // Fallback to Supabase
-        const { data } = supabase.storage
-          .from("files")
-          .getPublicUrl(shareData.file_path);
-        fileUrl = data.publicUrl;
-      }
-
-      try {
-        const { data: scanResult, error: scanError } =
-          await supabase.functions.invoke("virus-scan", {
-            body: {
-              fileUrl,
-              fileId: id,
-            },
-          });
-
-        if (scanError) {
-          console.error("Error during virus scan:", scanError);
-          throw new Error(scanError.message || "Virus scan failed");
-        }
-
-        if (scanResult.status === "timeout") {
-          setScanStatus({
-            status: "scanning",
-            message: scanResult.message,
-          });
-          return true;
-        } else if (!scanResult.safe) {
-          setScanStatus({
-            status: "unsafe",
-            message: t("share.fileNotSafe"),
-          });
-          return false;
-        }
-
-        setScanStatus({
-          status: "safe",
-          message: t("share.fileSafe"),
-        });
-        return true;
-      } catch (functionError) {
-        console.error("Function error during virus scan:", functionError);
-        setScanStatus({
-          status: "error",
-          message:
-            t("share.scanError") +
-            ": " +
-            (functionError.message || "Unknown error"),
-        });
-        // Return true to allow download despite scan error
-        return true;
-      }
-
-      // Este bloco foi movido para dentro do try/catch acima
-    } catch (error) {
-      console.error("Scan error:", error);
-      setScanStatus({
-        status: "error",
-        message: error instanceof Error ? error.message : t("share.scanError"),
-      });
-      return false;
-    } finally {
-      setIsScanning(false);
-    }
-  };
 
   const handleDownload = async () => {
     if (!shareData?.file_path) return;
-
-    // Se for um arquivo de texto, podemos pular a verificação de vírus
-    if (shareData.content_type === "text/plain") {
-      console.log("Skipping virus scan for text file");
-      setScanStatus({
-        status: "safe",
-        message: t("share.fileSafe"),
-      });
-    }
-    // Se o status não for seguro, tente escanear o arquivo
-    else if (scanStatus.status !== "safe") {
-      try {
-        const isSafe = await scanFile();
-
-        // Se o arquivo não for seguro, mostre um aviso mas permita o download
-        if (!isSafe && scanStatus.status === "unsafe") {
-          toast({
-            variant: "destructive",
-            title: t("share.securityWarning"),
-            description:
-              scanStatus.message + ". " + t("share.downloadingAnyway"),
-          });
-          // Continuamos com o download mesmo assim
-        }
-      } catch (scanError) {
-        console.error("Scan error:", scanError);
-        // Continue com o download mesmo se a verificação falhar
-        toast({
-          variant: "destructive",
-          title: t("share.securityWarning"),
-          description:
-            t("share.scanError") + ". " + t("share.downloadingAnyway"),
-        });
-      }
-    }
 
     setIsDownloading(true);
 
@@ -592,123 +433,148 @@ const Share = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-background to-muted/30">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-10 w-10 text-primary animate-spin" />
+          </div>
+          <File className="h-16 w-16 text-muted-foreground opacity-20" />
+        </div>
+        <h2 className="text-xl font-medium text-muted-foreground animate-pulse">
+          {t("common.loading")}...
+        </h2>
       </div>
     );
   }
 
   if (!shareData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">{t("share.fileNotFound")}</h1>
-        <Button onClick={() => navigate("/")}>{t("common.goBack")}</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-background to-muted/30 p-4">
+        <div className="bg-card p-8 rounded-xl shadow-lg flex flex-col items-center max-w-md w-full">
+          <div className="bg-destructive/10 p-4 rounded-full mb-4">
+            <FileIcon className="h-12 w-12 text-destructive" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">{t("share.fileNotFound")}</h1>
+          <p className="text-muted-foreground text-center mb-6">
+            {t("share.fileNotFoundDescription") || "The file you're looking for may have been removed or the link has expired."}
+          </p>
+          <Button
+            onClick={() => navigate("/")}
+            className="gap-2"
+            variant="default"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("common.goBack")}
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (shareData.password && !isPasswordCorrect) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <Lock className="h-12 w-12 text-primary mb-4" />
-        <h1 className="text-2xl font-bold mb-4">{t("share.protectedFile")}</h1>
-        <form
-          onSubmit={handlePasswordSubmit}
-          className="w-full max-w-sm space-y-4"
-        >
-          <Input
-            type="password"
-            placeholder={t("share.enterPassword")}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button type="submit" className="w-full">
-            {t("common.continue")}
-          </Button>
-        </form>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-background to-muted/30 p-4">
+        <div className="bg-card p-8 rounded-xl shadow-lg flex flex-col items-center max-w-md w-full">
+          <div className="bg-primary/10 p-4 rounded-full mb-4">
+            <Lock className="h-12 w-12 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">{t("share.protectedFile")}</h1>
+          <p className="text-muted-foreground text-center mb-6">
+            {t("share.protectedFileDescription") || "This file is password protected. Please enter the password to access it."}
+          </p>
+          <form
+            onSubmit={handlePasswordSubmit}
+            className="w-full space-y-4"
+          >
+            <div className="relative">
+              <Input
+                type="password"
+                placeholder={t("share.enterPassword")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-10"
+              />
+              <Lock className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            </div>
+            <Button type="submit" className="w-full">
+              {t("common.continue")}
+            </Button>
+          </form>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
-      <div className="max-w-lg w-full bg-card rounded-lg shadow-lg p-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-background to-muted/30 p-4">
+      <div className="max-w-lg w-full bg-card rounded-xl shadow-lg p-8">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">{t("share.sharedFile")}</h1>
-          <div className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1 text-primary bg-primary/10 px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-4 w-4" />
             <span className="text-xs font-medium">{t("share.encrypted")}</span>
           </div>
         </div>
-        <div className="space-y-4">
-          <div className="p-4 bg-muted rounded-md">
-            <p className="font-medium">{shareData.filename}</p>
-            <p className="text-sm text-muted-foreground">
-              {t("share.fileSize")}: {(shareData.size / 1024 / 1024).toFixed(2)}{" "}
-              MB
-            </p>
+
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 p-5 bg-muted rounded-lg border border-border/50">
+            <div className="bg-background p-3 rounded-md shadow-sm">
+              <FileIcon className="h-10 w-10 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-lg truncate">{shareData.filename}</p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>{(shareData.size / 1024 / 1024).toFixed(2)} MB</span>
+                {shareData.created_at && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {new Date(shareData.created_at).toLocaleDateString()}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
-          {scanStatus.status !== "idle" && (
-            <div
-              className={cn(
-                "p-3 rounded-md text-sm flex items-center gap-2",
-                scanStatus.status === "scanning"
-                  ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
-                  : scanStatus.status === "safe"
-                  ? "bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-300"
-                  : "bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300"
-              )}
-            >
-              {scanStatus.status === "scanning" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : scanStatus.status === "safe" ? (
-                <ShieldCheck className="h-4 w-4" />
-              ) : (
-                <AlertCircle className="h-4 w-4" />
-              )}
-              <span>{scanStatus.message}</span>
-            </div>
-          )}
-
           <Button
-            onClick={
-              isScanning
-                ? undefined
-                : scanStatus.status === "idle"
-                ? scanFile
-                : handleDownload
-            }
-            className="w-full gap-2"
-            disabled={isDownloading || isScanning}
+            onClick={handleDownload}
+            className="w-full gap-2 py-6 text-base"
+            disabled={isDownloading}
+            size="lg"
           >
-            {isScanning ? (
+            {isDownloading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t("share.scanningFile")}
-              </>
-            ) : isDownloading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
                 {t("share.decrypting")}
-              </>
-            ) : scanStatus.status === "idle" ? (
-              <>
-                <ShieldCheck className="h-4 w-4" />
-                {t("share.scanAndDownload")}
               </>
             ) : (
               <>
-                <Download className="h-4 w-4" />
+                <Download className="h-5 w-5" />
                 {t("share.downloadFile")}
               </>
             )}
           </Button>
-          <p className="text-xs text-center text-muted-foreground">
-            {t("share.securityNote")}
-          </p>
+
+          <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 flex items-start gap-3">
+            <ShieldCheck className="h-5 w-5 text-primary mt-0.5" />
+            <p className="text-sm text-muted-foreground">
+              {t("share.securityNote") || "This file is encrypted and secure. Only you and the sender can access its contents."}
+            </p>
+          </div>
         </div>
       </div>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate("/")}
+        className="text-muted-foreground hover:text-foreground gap-1"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        {t("common.backToHome") || "Back to Home"}
+      </Button>
     </div>
   );
 };
