@@ -1,11 +1,11 @@
 import { FileData } from "@/types";
 import { LucideIcon } from "lucide-react";
 
-export type MenuActionType = 
-  | 'preview' 
-  | 'download' 
-  | 'share' 
-  | 'favorite' 
+export type MenuActionType =
+  | 'preview'
+  | 'download'
+  | 'share'
+  | 'favorite'
   | 'unfavorite'
   | 'rename'
   | 'editFolder'
@@ -13,7 +13,7 @@ export type MenuActionType =
   | 'restore'
   | 'delete';
 
-export type MenuActionCategory = 
+export type MenuActionCategory =
   | 'primary'
   | 'secondary'
   | 'destructive';
@@ -23,7 +23,6 @@ export interface MenuAction {
   label: string;
   icon: LucideIcon;
   category: MenuActionCategory;
-  shortcut?: string;
   condition?: (file: FileData, context: MenuContext) => boolean;
   action: (file: FileData, context: MenuContext) => void;
   className?: string;

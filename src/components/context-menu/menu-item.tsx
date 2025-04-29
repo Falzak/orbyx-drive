@@ -1,5 +1,5 @@
 import React from "react";
-import { ContextMenuItem, ContextMenuShortcut } from "@/components/ui/context-menu";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
 import { MenuAction } from "./types";
 import { useTranslation } from "react-i18next";
@@ -21,13 +21,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({ action, onClick }) => {
         action.className
       )}
     >
-      <Icon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-      <span className="flex-1 group-hover:translate-x-0.5 transition-transform duration-200">
+      <Icon className="h-4 w-4 mr-2 transition-transform duration-100" />
+      <span className="flex-1 transition-colors duration-100">
         {t(action.label)}
       </span>
-      {action.shortcut && (
-        <ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
-      )}
     </ContextMenuItem>
   );
 };

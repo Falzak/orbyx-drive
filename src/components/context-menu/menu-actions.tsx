@@ -1,11 +1,11 @@
 import { FileData } from "@/types";
-import { 
-  Download, 
-  Share2, 
-  Star, 
-  Trash2, 
-  Edit, 
-  FileIcon, 
+import {
+  Download,
+  Share2,
+  Star,
+  Trash2,
+  Edit,
+  FileIcon,
   RotateCcw,
   ExternalLink,
   Copy,
@@ -33,7 +33,6 @@ export const getMenuActions = (): MenuAction[] => [
     label: 'fileExplorer.contextMenu.open',
     icon: FileIcon,
     category: 'primary',
-    shortcut: '⌘O',
     condition: (file, _) => !file.is_folder && isPreviewableFile(file.content_type),
     action: (file, context) => context.handlers.onPreview(file),
   },
@@ -42,7 +41,6 @@ export const getMenuActions = (): MenuAction[] => [
     label: 'fileExplorer.contextMenu.download',
     icon: Download,
     category: 'primary',
-    shortcut: '⌘D',
     condition: (file, _) => !file.is_folder,
     action: (file, context) => context.handlers.onDownload(file),
   },
@@ -51,17 +49,15 @@ export const getMenuActions = (): MenuAction[] => [
     label: 'fileExplorer.contextMenu.share',
     icon: Share2,
     category: 'primary',
-    shortcut: '⌘S',
     action: (file, context) => context.handlers.onShare(file),
   },
-  
+
   // Ações secundárias
   {
     id: 'favorite',
     label: 'fileExplorer.contextMenu.favorite',
     icon: Star,
     category: 'secondary',
-    shortcut: '⌘F',
     condition: (file, _) => !file.is_favorite,
     action: (file, context) => context.handlers.onToggleFavorite(file),
   },
@@ -70,7 +66,6 @@ export const getMenuActions = (): MenuAction[] => [
     label: 'fileExplorer.contextMenu.unfavorite',
     icon: Star,
     category: 'secondary',
-    shortcut: '⌘F',
     condition: (file, _) => file.is_favorite,
     action: (file, context) => context.handlers.onToggleFavorite(file),
     className: 'fill-yellow-400',
@@ -80,7 +75,6 @@ export const getMenuActions = (): MenuAction[] => [
     label: 'fileExplorer.contextMenu.rename',
     icon: Pencil,
     category: 'secondary',
-    shortcut: '⌘R',
     condition: (file, _) => !file.is_folder,
     action: (_, context) => context.openRenameDialog(),
   },
@@ -89,18 +83,16 @@ export const getMenuActions = (): MenuAction[] => [
     label: 'fileExplorer.contextMenu.editFolder',
     icon: FolderEdit,
     category: 'secondary',
-    shortcut: '⌘E',
     condition: (file, context) => file.is_folder && !!context.handlers.onEditFolder,
     action: (file, context) => context.handlers.onEditFolder?.(file),
   },
-  
+
   // Ações destrutivas
   {
     id: 'moveToTrash',
     label: 'fileExplorer.contextMenu.moveToTrash',
     icon: Trash2,
     category: 'destructive',
-    shortcut: '⌫',
     condition: (_, context) => !context.isTrashView,
     action: (file, context) => context.handlers.onDelete(file),
   },
@@ -126,7 +118,7 @@ export const getMenuActions = (): MenuAction[] => [
 
 // Função para filtrar ações com base no arquivo e contexto
 export const getFilteredActions = (
-  file: FileData, 
+  file: FileData,
   context: MenuContext
 ): MenuAction[] => {
   return getMenuActions().filter(action => {

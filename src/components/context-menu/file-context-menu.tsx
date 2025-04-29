@@ -11,13 +11,6 @@ import { getFilteredActions, getActionsByCategory } from "./menu-actions";
 import { MenuItem } from "./menu-item";
 import { MenuHeader } from "./menu-header";
 import { RenameFileDialog } from "@/components/RenameFileDialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Portal } from "@radix-ui/react-portal";
 
 interface FileContextMenuProps {
   file: FileData;
@@ -86,13 +79,12 @@ export const FileContextMenu = React.forwardRef<
     };
 
     return (
-      <TooltipProvider>
-        <ContextMenu>
-          <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-          <ContextMenuContent
-            className="w-80 divide-y divide-border/30 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 overflow-visible"
-            onCloseAutoFocus={(e) => e.preventDefault()}
-          >
+      <ContextMenu>
+        <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+        <ContextMenuContent
+          className="w-80 divide-y divide-border/30 overflow-visible"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
             {/* Cabeçalho com informações do arquivo */}
             <MenuHeader file={file} />
 
@@ -100,24 +92,11 @@ export const FileContextMenu = React.forwardRef<
             {hasActions.primary && (
               <div className="p-1.5">
                 {actionsByCategory.primary.map((action) => (
-                  <Tooltip key={action.id}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <MenuItem
-                          action={action}
-                          onClick={() => action.action(file, menuContext)}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="right"
-                      align="start"
-                      className="text-xs z-[100]"
-                      sideOffset={5}
-                    >
-                      {action.shortcut && `Atalho: ${action.shortcut}`}
-                    </TooltipContent>
-                  </Tooltip>
+                  <MenuItem
+                    key={action.id}
+                    action={action}
+                    onClick={() => action.action(file, menuContext)}
+                  />
                 ))}
               </div>
             )}
@@ -126,19 +105,11 @@ export const FileContextMenu = React.forwardRef<
             {hasActions.secondary && (
               <div className="p-1.5">
                 {actionsByCategory.secondary.map((action) => (
-                  <Tooltip key={action.id}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <MenuItem
-                          action={action}
-                          onClick={() => action.action(file, menuContext)}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" align="start" className="text-xs">
-                      {action.shortcut && `Atalho: ${action.shortcut}`}
-                    </TooltipContent>
-                  </Tooltip>
+                  <MenuItem
+                    key={action.id}
+                    action={action}
+                    onClick={() => action.action(file, menuContext)}
+                  />
                 ))}
               </div>
             )}
@@ -147,19 +118,11 @@ export const FileContextMenu = React.forwardRef<
             {hasActions.destructive && (
               <div className="p-1.5">
                 {actionsByCategory.destructive.map((action) => (
-                  <Tooltip key={action.id}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <MenuItem
-                          action={action}
-                          onClick={() => action.action(file, menuContext)}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" align="start" className="text-xs">
-                      {action.shortcut && `Atalho: ${action.shortcut}`}
-                    </TooltipContent>
-                  </Tooltip>
+                  <MenuItem
+                    key={action.id}
+                    action={action}
+                    onClick={() => action.action(file, menuContext)}
+                  />
                 ))}
               </div>
             )}
@@ -173,7 +136,6 @@ export const FileContextMenu = React.forwardRef<
             onRename={onRename}
           />
         </ContextMenu>
-      </TooltipProvider>
     );
   }
 );
