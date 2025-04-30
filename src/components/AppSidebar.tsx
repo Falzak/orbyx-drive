@@ -245,8 +245,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
           "bg-gradient-to-b from-background/80 to-background/60",
           "dark:from-black/80 dark:to-black/60",
           "backdrop-blur-2xl",
-          "shadow-[1px_0_30px_-10px_rgba(0,0,0,0.08)]",
-          "dark:shadow-[1px_0_30px_-10px_rgba(255,255,255,0.03)]",
           isCollapsed ? "w-16" : "w-64"
         )}
         variant="sidebar"
@@ -256,7 +254,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
           <motion.div layout className="flex items-center gap-3">
             <div className="relative">
               <img src="/drive.svg" alt="Orbyx Drive" className="h-6 w-6" />
-              <div className="absolute inset-0 animate-pulse-slow blur-md bg-primary/30 rounded-full" />
             </div>
             <AnimatePresence>
               {!isCollapsed && (
@@ -509,7 +506,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
               >
                 <div className="flex items-start gap-4">
                   <div className="relative group">
-                    <Avatar className="h-16 w-16 ring-2 ring-border/50 dark:ring-border/70 transition-all duration-200 group-hover:ring-border/80 dark:group-hover:ring-primary/50 group-hover:scale-105 border-2 border-background">
+                    <Avatar className="h-16 w-16 ring-2 ring-border/50 dark:ring-border/70 transition-all duration-200 group-hover:ring-border/80 dark:group-hover:ring-border/50 group-hover:scale-105 border-2 border-background">
                       <AvatarImage
                         src={session?.user?.user_metadata?.avatar_url}
                         alt={session?.user?.email || ""}
@@ -519,7 +516,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                         {session?.user?.email?.[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                   <div className="flex flex-col flex-1 min-w-0 gap-1">
                     <span className="text-base font-medium truncate text-foreground">
@@ -548,7 +544,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                   >
                     <div className="relative">
                       <Settings className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
-                      <div className="absolute inset-0 blur-sm bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                     </div>
                     <div className="flex flex-col gap-0.5 flex-1">
                       <span className="group-hover:translate-x-0.5 transition-transform duration-200">
@@ -568,7 +563,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                     >
                       <div className="relative">
                         <ShieldAlert className="h-4 w-4 group-hover:scale-105 transition-transform duration-200 text-amber-500" />
-                        <div className="absolute inset-0 blur-sm bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                       </div>
                       <div className="flex flex-col gap-0.5 flex-1">
                         <span className="group-hover:translate-x-0.5 transition-transform duration-200">
@@ -598,7 +592,6 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                 >
                   <div className="relative">
                     <LogOut className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
-                    <div className="absolute inset-0 blur-sm bg-destructive/20 dark:bg-destructive/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   </div>
                   <div className="flex flex-col gap-0.5 flex-1">
                     <span className="group-hover:translate-x-0.5 transition-transform duration-200">

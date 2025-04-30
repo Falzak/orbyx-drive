@@ -53,7 +53,6 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
           <div className="h-4 bg-muted/50 rounded-full w-3/4"></div>
           <div className="h-2 bg-muted/50 rounded-full w-full"></div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-background/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </Card>
     );
   }
@@ -79,8 +78,6 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
       className={cn(
         "p-4 bg-background/80 dark:bg-black/80 backdrop-blur-xl border-border/50",
         "relative overflow-hidden group transition-all duration-200",
-        "hover:shadow-lg hover:shadow-border/5",
-        "hover:border-border/80",
         isCollapsed && "p-2"
       )}
     >
@@ -106,17 +103,6 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
                   ? "text-yellow-500"
                   : "text-primary",
                 "transition-transform group-hover:scale-110 duration-200"
-              )}
-            />
-            <div
-              className={cn(
-                "absolute inset-0 blur-md",
-                isCritical
-                  ? "bg-destructive/30"
-                  : isNearLimit
-                  ? "bg-yellow-500/30"
-                  : "bg-primary/30",
-                "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               )}
             />
           </div>
@@ -190,17 +176,6 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
                     : "bg-primary"
                 )}
               />
-              <div
-                className={cn(
-                  "absolute inset-0 blur-md",
-                  isCritical
-                    ? "bg-destructive/20"
-                    : isNearLimit
-                    ? "bg-yellow-500/20"
-                    : "bg-primary/20",
-                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                )}
-              />
             </div>
 
             <div className="flex justify-between items-center text-xs text-muted-foreground">
@@ -210,7 +185,6 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
           </motion.div>
         )}
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-tr from-background/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </Card>
   );
 
