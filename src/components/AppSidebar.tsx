@@ -21,6 +21,7 @@ import {
   Trash2,
   Menu,
   PanelLeft,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FileUpload from "@/components/FileUpload";
@@ -55,7 +56,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -86,11 +87,11 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
   const filterParam = searchParams.get('filter');
 
   const { session } = useAuth();
-  
+
   // Usar o contexto da sidebar
   const { state, isMobile, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
-  
+
   const { t, i18n } = useTranslation();
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -98,6 +99,24 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Verificar se o usuário é administrador
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-role", session?.user?.id],
+    queryFn: async () => {
+      if (!session) return false;
+
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .single();
+
+      return !!data;
+    },
+    enabled: !!session,
+  });
 
   // Função para alternar a sidebar em dispositivos móveis
   const toggleMobileSidebar = () => {
@@ -209,8 +228,8 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
       {/* Overlay para quando a sidebar está aberta no mobile */}
       <AnimatePresence>
         {isMobile && openMobile && (
-          <motion.div 
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" 
+          <motion.div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -540,6 +559,27 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                       </span>
                     </div>
                   </DropdownMenuItem>
+
+                  {isAdmin && (
+                    <DropdownMenuItem
+                      onClick={() => navigate("/admin")}
+                      className="gap-3 p-3 cursor-pointer group transition-all duration-200 rounded-lg"
+                      data-sidebar="menu-button"
+                    >
+                      <div className="relative">
+                        <ShieldAlert className="h-4 w-4 group-hover:scale-105 transition-transform duration-200 text-amber-500" />
+                        <div className="absolute inset-0 blur-sm bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      </div>
+                      <div className="flex flex-col gap-0.5 flex-1">
+                        <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+                          {t("admin.title") || "Painel de Administração"}
+                        </span>
+                        <span className="text-xs text-muted-foreground group-hover:translate-x-0.5 transition-transform duration-200">
+                          {t("admin.description") || "Gerenciar provedores de armazenamento e configurações"}
+                        </span>
+                      </div>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
               </motion.div>
 
