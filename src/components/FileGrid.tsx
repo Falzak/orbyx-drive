@@ -42,6 +42,9 @@ interface FileGridProps {
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
   isFavoritesView?: boolean;
+  selectedFiles?: Record<string, FileData>;
+  onToggleSelect?: (file: FileData, event?: React.MouseEvent) => void;
+  isSelected?: (fileId: string) => boolean;
 }
 
 export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
@@ -59,6 +62,9 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
       onEditFolder,
       isTrashView,
       isFavoritesView,
+      selectedFiles = {},
+      onToggleSelect,
+      isSelected = () => false,
     },
     ref
   ) => {
@@ -128,8 +134,10 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
-                onClick={() => {
-                  if (file.is_folder || isPreviewableFile(file.content_type)) {
+                onClick={(e) => {
+                  if (onToggleSelect) {
+                    onToggleSelect(file, e);
+                  } else if (file.is_folder || isPreviewableFile(file.content_type)) {
                     onPreview(file);
                   }
                 }}
@@ -138,7 +146,8 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                 <Card
                   className={cn(
                     "overflow-hidden cursor-pointer border-border/50 transition-all duration-200 hover:shadow-lg hover:border-border bg-background/50 dark:bg-black/50 backdrop-blur-sm group-hover:bg-background/80 dark:group-hover:bg-black/80",
-                    file.is_folder && "hover:scale-[1.02]"
+                    file.is_folder && "hover:scale-[1.02]",
+                    isSelected(file.id) && "ring-2 ring-primary/50 bg-accent/10 hover:bg-accent/20"
                   )}
                 >
                   <div className="aspect-square relative bg-gradient-to-b from-muted/5 to-muted/20">

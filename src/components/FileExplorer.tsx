@@ -27,6 +27,7 @@ import {
   Edit,
   Copy,
   FolderOpen,
+  X,
 } from "lucide-react";
 import {
   Table,
@@ -87,6 +88,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     const { t } = useTranslation();
     const [selectedFolder, setSelectedFolder] = useState<FileData | null>(null);
     const [isEditFolderOpen, setIsEditFolderOpen] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState<Record<string, FileData>>({});
 
     useEffect(() => {
       if (!session) {
@@ -713,7 +715,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
         } else {
           toast({
-            title: t("common.info"),
+            title: "Informação",
             description: t("fileExplorer.emptyState.trashEmpty"),
           });
         }
@@ -928,6 +930,73 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     };
 
+    // Funções para gerenciar a seleção de arquivos
+    const handleToggleSelect = (file: FileData, event?: React.MouseEvent) => {
+      // Se a tecla Ctrl ou Command (Mac) estiver pressionada, adiciona/remove da seleção
+      if (event && (event.ctrlKey || event.metaKey)) {
+        setSelectedFiles(prev => {
+          const newSelection = { ...prev };
+          if (newSelection[file.id]) {
+            delete newSelection[file.id];
+          } else {
+            newSelection[file.id] = file;
+          }
+          return newSelection;
+        });
+      }
+      // Se a tecla Shift estiver pressionada, seleciona um intervalo
+      else if (event && event.shiftKey && Object.keys(selectedFiles).length > 0) {
+        // Implementação simplificada: seleciona todos os arquivos entre o último selecionado e o atual
+        const allFiles = [...items];
+        const lastSelectedId = Object.keys(selectedFiles)[Object.keys(selectedFiles).length - 1];
+        const lastSelectedIndex = allFiles.findIndex(f => f.id === lastSelectedId);
+        const currentIndex = allFiles.findIndex(f => f.id === file.id);
+
+        if (lastSelectedIndex !== -1 && currentIndex !== -1) {
+          const start = Math.min(lastSelectedIndex, currentIndex);
+          const end = Math.max(lastSelectedIndex, currentIndex);
+
+          const newSelection = { ...selectedFiles };
+          for (let i = start; i <= end; i++) {
+            newSelection[allFiles[i].id] = allFiles[i];
+          }
+
+          setSelectedFiles(newSelection);
+        }
+      }
+      // Caso contrário, limpa a seleção e seleciona apenas o arquivo atual
+      else {
+        setSelectedFiles(prev => {
+          // Se o arquivo já estiver selecionado e for o único, deseleciona
+          if (prev[file.id] && Object.keys(prev).length === 1) {
+            return {};
+          }
+          // Caso contrário, seleciona apenas este arquivo
+          return { [file.id]: file };
+        });
+      }
+    };
+
+    const clearSelection = () => {
+      setSelectedFiles({});
+    };
+
+    const selectAll = () => {
+      const newSelection: Record<string, FileData> = {};
+      items.forEach(file => {
+        newSelection[file.id] = file;
+      });
+      setSelectedFiles(newSelection);
+    };
+
+    const isSelected = (fileId: string) => {
+      return !!selectedFiles[fileId];
+    };
+
+    const getSelectedCount = () => {
+      return Object.keys(selectedFiles).length;
+    };
+
     const handleEditFolder = async (values: {
       name: string;
       icon: string;
@@ -981,17 +1050,101 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             onNavigate={handleBreadcrumbNavigate}
           />
 
-          {isTrashView && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleEmptyTrash}
-              className="ml-2"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {t("fileExplorer.contextMenu.emptyTrash")}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {getSelectedCount() > 0 && (
+              <div className="flex items-center gap-2 bg-accent/20 px-3 py-1.5 rounded-md border border-border/50">
+                <span className="text-sm font-medium">{getSelectedCount()} {getSelectedCount() === 1 ? "item selecionado" : "itens selecionados"}</span>
+
+                <div className="flex items-center gap-1 ml-2">
+                  {/* Botões de ação para os itens selecionados */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => {
+                      // Download dos arquivos selecionados
+                      Object.values(selectedFiles).forEach(file => {
+                        if (!file.is_folder) {
+                          handleDownload(file);
+                        }
+                      });
+                    }}
+                    title="Download"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => {
+                      // Mover para lixeira ou excluir permanentemente
+                      Object.values(selectedFiles).forEach(file => {
+                        if (isTrashView) {
+                          handleDelete(file);
+                        } else {
+                          handleMoveToTrash(file);
+                        }
+                      });
+                      clearSelection();
+                    }}
+                    title={isTrashView ? "Excluir permanentemente" : "Mover para lixeira"}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+
+                  {isTrashView && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => {
+                        // Restaurar arquivos
+                        Object.values(selectedFiles).forEach(file => {
+                          if (handleRestore) {
+                            handleRestore(file);
+                          }
+                        });
+                        clearSelection();
+                      }}
+                      title="Restaurar"
+                    >
+                      <motion.div
+                        initial={{ rotate: 0 }}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </motion.div>
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={clearSelection}
+                    title="Limpar seleção"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {isTrashView && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleEmptyTrash}
+                className="ml-2"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {t("fileExplorer.contextMenu.emptyTrash")}
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="w-full" ref={ref}>
@@ -1036,6 +1189,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               }}
               isTrashView={isTrashView}
               isFavoritesView={isFavoritesView}
+              selectedFiles={selectedFiles}
+              onToggleSelect={handleToggleSelect}
+              isSelected={isSelected}
             />
           ) : (
             <FileList
@@ -1054,6 +1210,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               }}
               isTrashView={isTrashView}
               isFavoritesView={isFavoritesView}
+              selectedFiles={selectedFiles}
+              onToggleSelect={handleToggleSelect}
+              isSelected={isSelected}
             />
           )}
         </div>

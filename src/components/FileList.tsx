@@ -31,6 +31,9 @@ interface FileListProps {
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
   isFavoritesView?: boolean;
+  selectedFiles?: Record<string, FileData>;
+  onToggleSelect?: (file: FileData, event?: React.MouseEvent) => void;
+  isSelected?: (fileId: string) => boolean;
 }
 
 export const FileList = forwardRef<HTMLDivElement, FileListProps>(
@@ -48,6 +51,9 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
       onEditFolder,
       isTrashView,
       isFavoritesView,
+      selectedFiles = {},
+      onToggleSelect,
+      isSelected = () => false,
     },
     ref
   ) => {
@@ -139,10 +145,13 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                   transition={{ duration: 0.2 }}
                   className={cn(
                     "group cursor-pointer transition-all hover:bg-accent/5 border-border/50",
-                    file.is_folder && "hover:bg-accent/10"
+                    file.is_folder && "hover:bg-accent/10",
+                    isSelected(file.id) && "bg-accent/20 hover:bg-accent/25"
                   )}
-                  onClick={() => {
-                    if (
+                  onClick={(e) => {
+                    if (onToggleSelect) {
+                      onToggleSelect(file, e);
+                    } else if (
                       file.is_folder ||
                       isPreviewableFile(file.content_type)
                     ) {
