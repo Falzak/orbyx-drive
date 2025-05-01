@@ -28,6 +28,7 @@ import {
   Copy,
   FolderOpen,
   X,
+  RefreshCw,
 } from "lucide-react";
 import {
   Table,
@@ -459,6 +460,16 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       },
       [previewUrls, getSignedUrlForFile, handleFolderClick, toast]
     );
+
+    const isPreviewableFile = (contentType: string) => {
+      return (
+        contentType.startsWith("image/") ||
+        contentType.startsWith("video/") ||
+        contentType.startsWith("audio/") ||
+        contentType === "text/plain" ||
+        contentType === "application/pdf"
+      );
+    };
 
     const getFileIcon = (contentType: string) => {
       if (contentType.startsWith("image/")) return "🖼️";
@@ -932,48 +943,47 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     // Funções para gerenciar a seleção de arquivos
     const handleToggleSelect = (file: FileData, event?: React.MouseEvent) => {
-      // Se a tecla Ctrl ou Command (Mac) estiver pressionada, adiciona/remove da seleção
+      // Selecionar apenas se a tecla Ctrl ou Command (Mac) estiver pressionada
       if (event && (event.ctrlKey || event.metaKey)) {
-        setSelectedFiles(prev => {
-          const newSelection = { ...prev };
-          if (newSelection[file.id]) {
-            delete newSelection[file.id];
-          } else {
-            newSelection[file.id] = file;
+        // Se a tecla Shift também estiver pressionada, seleciona um intervalo
+        if (event.shiftKey && Object.keys(selectedFiles).length > 0) {
+          // Implementação simplificada: seleciona todos os arquivos entre o último selecionado e o atual
+          const allFiles = [...items];
+          const lastSelectedId = Object.keys(selectedFiles)[Object.keys(selectedFiles).length - 1];
+          const lastSelectedIndex = allFiles.findIndex(f => f.id === lastSelectedId);
+          const currentIndex = allFiles.findIndex(f => f.id === file.id);
+
+          if (lastSelectedIndex !== -1 && currentIndex !== -1) {
+            const start = Math.min(lastSelectedIndex, currentIndex);
+            const end = Math.max(lastSelectedIndex, currentIndex);
+
+            const newSelection = { ...selectedFiles };
+            for (let i = start; i <= end; i++) {
+              newSelection[allFiles[i].id] = allFiles[i];
+            }
+
+            setSelectedFiles(newSelection);
           }
-          return newSelection;
-        });
-      }
-      // Se a tecla Shift estiver pressionada, seleciona um intervalo
-      else if (event && event.shiftKey && Object.keys(selectedFiles).length > 0) {
-        // Implementação simplificada: seleciona todos os arquivos entre o último selecionado e o atual
-        const allFiles = [...items];
-        const lastSelectedId = Object.keys(selectedFiles)[Object.keys(selectedFiles).length - 1];
-        const lastSelectedIndex = allFiles.findIndex(f => f.id === lastSelectedId);
-        const currentIndex = allFiles.findIndex(f => f.id === file.id);
-
-        if (lastSelectedIndex !== -1 && currentIndex !== -1) {
-          const start = Math.min(lastSelectedIndex, currentIndex);
-          const end = Math.max(lastSelectedIndex, currentIndex);
-
-          const newSelection = { ...selectedFiles };
-          for (let i = start; i <= end; i++) {
-            newSelection[allFiles[i].id] = allFiles[i];
-          }
-
-          setSelectedFiles(newSelection);
+        }
+        // Apenas Ctrl/Command pressionado, adiciona/remove da seleção
+        else {
+          setSelectedFiles(prev => {
+            const newSelection = { ...prev };
+            if (newSelection[file.id]) {
+              delete newSelection[file.id];
+            } else {
+              newSelection[file.id] = file;
+            }
+            return newSelection;
+          });
         }
       }
-      // Caso contrário, limpa a seleção e seleciona apenas o arquivo atual
+      // Se não tiver Ctrl/Command pressionado, apenas abre o preview
       else {
-        setSelectedFiles(prev => {
-          // Se o arquivo já estiver selecionado e for o único, deseleciona
-          if (prev[file.id] && Object.keys(prev).length === 1) {
-            return {};
-          }
-          // Caso contrário, seleciona apenas este arquivo
-          return { [file.id]: file };
-        });
+        // Não faz nada com a seleção, deixa o comportamento padrão de preview
+        if (file.is_folder || isPreviewableFile(file.content_type)) {
+          handlePreview(file);
+        }
       }
     };
 
@@ -983,9 +993,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     const selectAll = () => {
       const newSelection: Record<string, FileData> = {};
-      items.forEach(file => {
+      for (const file of items) {
         newSelection[file.id] = file;
-      });
+      }
       setSelectedFiles(newSelection);
     };
 
@@ -1040,15 +1050,20 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     return (
       <div className="space-y-2 w-full px-0">
         <div className="flex justify-between items-center">
-          <FileViewOptions
-            view={view}
-            onViewChange={setView}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            totalFiles={items.length}
-            currentPath={currentPath}
-            onNavigate={handleBreadcrumbNavigate}
-          />
+          <div className="flex flex-col">
+            <FileViewOptions
+              view={view}
+              onViewChange={setView}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              totalFiles={items.length}
+              currentPath={currentPath}
+              onNavigate={handleBreadcrumbNavigate}
+            />
+            <div className="text-xs text-muted-foreground mt-1 ml-1">
+              <span>Pressione <kbd className="px-1 py-0.5 bg-muted rounded border border-border/50">Ctrl</kbd> (ou <kbd className="px-1 py-0.5 bg-muted rounded border border-border/50">⌘</kbd> no Mac) para selecionar arquivos</span>
+            </div>
+          </div>
 
           <div className="flex items-center gap-2">
             {getSelectedCount() > 0 && (
@@ -1063,11 +1078,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                     className="h-8 px-2"
                     onClick={() => {
                       // Download dos arquivos selecionados
-                      Object.values(selectedFiles).forEach(file => {
+                      for (const file of Object.values(selectedFiles)) {
                         if (!file.is_folder) {
                           handleDownload(file);
                         }
-                      });
+                      }
                     }}
                     title="Download"
                   >
@@ -1080,13 +1095,13 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                     className="h-8 px-2"
                     onClick={() => {
                       // Mover para lixeira ou excluir permanentemente
-                      Object.values(selectedFiles).forEach(file => {
+                      for (const file of Object.values(selectedFiles)) {
                         if (isTrashView) {
                           handleDelete(file);
                         } else {
                           handleMoveToTrash(file);
                         }
-                      });
+                      }
                       clearSelection();
                     }}
                     title={isTrashView ? "Excluir permanentemente" : "Mover para lixeira"}
@@ -1101,11 +1116,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                       className="h-8 px-2"
                       onClick={() => {
                         // Restaurar arquivos
-                        Object.values(selectedFiles).forEach(file => {
+                        for (const file of Object.values(selectedFiles)) {
                           if (handleRestore) {
                             handleRestore(file);
                           }
-                        });
+                        }
                         clearSelection();
                       }}
                       title="Restaurar"

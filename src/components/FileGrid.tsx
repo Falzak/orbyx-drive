@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { FileContextMenu } from "./context-menu";
+import { FileContextMenu } from "./context-menu/file-context-menu";
 
 interface FileGridProps {
   files: FileData[];
@@ -37,7 +37,7 @@ interface FileGridProps {
   onShare: (file: FileData) => void;
   onDelete: (file: FileData) => void;
   onRestore?: (file: FileData) => void;
-  onRename: (file: FileData, newName: string) => void;
+  onRename: (file: FileData, newName: string) => Promise<void>;
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
@@ -135,7 +135,8 @@ export const FileGrid = forwardRef<HTMLDivElement, FileGridProps>(
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
                 onClick={(e) => {
-                  if (onToggleSelect) {
+                  // Chama onToggleSelect apenas se Ctrl/Command estiver pressionado
+                  if (onToggleSelect && (e.ctrlKey || e.metaKey)) {
                     onToggleSelect(file, e);
                   } else if (file.is_folder || isPreviewableFile(file.content_type)) {
                     onPreview(file);

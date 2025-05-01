@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { Star, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileContextMenu } from "./context-menu";
+import { FileContextMenu } from "./context-menu/file-context-menu";
 
 const MotionTableRow = motion(TableRow);
 
@@ -26,7 +26,7 @@ interface FileListProps {
   onShare: (file: FileData) => void;
   onDelete: (file: FileData) => void;
   onRestore?: (file: FileData) => void;
-  onRename: (file: FileData, newName: string) => void;
+  onRename: (file: FileData, newName: string) => Promise<void>;
   onToggleFavorite: (file: FileData) => void;
   onEditFolder?: (folder: FileData) => void;
   isTrashView?: boolean;
@@ -149,7 +149,8 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                     isSelected(file.id) && "bg-accent/20 hover:bg-accent/25"
                   )}
                   onClick={(e) => {
-                    if (onToggleSelect) {
+                    // Chama onToggleSelect apenas se Ctrl/Command estiver pressionado
+                    if (onToggleSelect && (e.ctrlKey || e.metaKey)) {
                       onToggleSelect(file, e);
                     } else if (
                       file.is_folder ||
