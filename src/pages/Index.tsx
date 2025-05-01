@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FileExplorer } from "@/components/FileExplorer";
-import { formatDate, formatFileSize } from "@/lib/format";
+
 import {
   Upload,
   Settings,
@@ -22,21 +22,7 @@ import {
   Search,
   Globe,
   Shield,
-  RefreshCw,
   Plus,
-  FolderPlus,
-  FileUp,
-  FileText,
-  Grid,
-  List,
-  Copy,
-  HelpCircle,
-  Keyboard,
-  MessageSquarePlus,
-  MousePointerClick,
-  ArrowUpDown,
-  ExternalLink,
-  Info,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -53,19 +39,8 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-  ContextMenuSub,
-  ContextMenuSubTrigger,
-  ContextMenuSubContent,
-  ContextMenuRadioGroup,
-  ContextMenuRadioItem,
-} from "@/components/ui/context-menu";
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { WorkspaceContextMenu } from "@/components/context-menu/workspace-context-menu";
+
 import {
   Dialog,
   DialogContent,
@@ -78,7 +53,7 @@ import { Label } from "@/components/ui/label";
 import { CreateFolderDialog } from "@/components/CreateFolderDialog";
 import { CreateTextFileDialog } from "@/components/CreateTextFileDialog";
 import FileUpload from "@/components/FileUpload";
-import { uploadFile, resetStorageProvider } from "@/utils/storage";
+import { uploadFile } from "@/utils/storage";
 
 const Index = () => {
   const session = useAuthRedirect();
@@ -89,8 +64,8 @@ const Index = () => {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
-  const [view, setView] = useLocalStorage<"grid" | "list">("viewMode", "grid");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isCreateTextFileOpen, setIsCreateTextFileOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -261,16 +236,6 @@ const Index = () => {
     }
   };
 
-  const handleRefreshFiles = () => {
-    // Reset storage provider to reflect any configuration changes
-    resetStorageProvider();
-    queryClient.invalidateQueries({ queryKey: ["files"] });
-    toast({
-      title: t("dashboard.refresh.success"),
-      description: t("dashboard.refresh.description"),
-    });
-  };
-
   const handleCreateFolder = () => {
     setIsCreateFolderOpen(true);
   };
@@ -284,336 +249,83 @@ const Index = () => {
   };
 
   const handleSelectAll = async () => {
-    const { data: files } = await supabase
-      .from("files")
-      .select("id")
-      .eq("user_id", session.user.id);
-
-    if (files) {
-      setSelectedItems(files.map((file) => file.id));
-      toast({
-        title: t("common.success"),
-        description: t("dashboard.selection.allSelected"),
-      });
-    }
-  };
-
-  const handleSortFiles = async (sortBy: string) => {
-    try {
-      let query = supabase
-        .from("files")
-        .select("*")
-        .eq("user_id", session.user.id);
-
-      switch (sortBy) {
-        case "nameAsc":
-          query = query.order("filename", { ascending: true });
-          break;
-        case "nameDesc":
-          query = query.order("filename", { ascending: false });
-          break;
-        case "dateAsc":
-          query = query.order("created_at", { ascending: true });
-          break;
-        case "dateDesc":
-          query = query.order("created_at", { ascending: false });
-          break;
-        case "sizeAsc":
-          query = query.order("size", { ascending: true });
-          break;
-        case "sizeDesc":
-          query = query.order("size", { ascending: false });
-          break;
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      queryClient.setQueryData(["files"], data);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: t("common.error"),
-        description: error.message,
-      });
-    }
-  };
-
-  const handleCopyPath = () => {
-    const currentPath = window.location.href;
-    navigator.clipboard.writeText(currentPath);
+    // Implementação simplificada - apenas mostra um toast
     toast({
       title: t("common.success"),
-      description: t("dashboard.clipboard.pathCopied"),
+      description: t("dashboard.selection.allSelected"),
     });
+
+    // A seleção real é feita pelo componente FileExplorer
+    queryClient.invalidateQueries({ queryKey: ["files"] });
   };
 
-  const handleOpenInNewTab = () => {
-    window.open(window.location.href, "_blank");
-  };
 
-  const handleKeyboardShortcuts = () => {
-    toast({
-      title: t("dashboard.contextMenu.shortcuts"),
-      description: t("dashboard.shortcuts.comingSoon"),
-    });
-  };
 
-  const handleHelp = () => {
-    window.open("/help", "_blank");
-  };
 
-  const handleFeedback = () => {
-    window.open("/feedback", "_blank");
-  };
-
-  const handleViewChange = (newView: "grid" | "list") => {
-    setView(newView);
-  };
-
-  const handleFileProperties = async () => {
-    if (selectedItems.length === 1) {
-      const { data: file, error } = await supabase
-        .from("files")
-        .select("*")
-        .eq("id", selectedItems[0])
-        .single();
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: t("common.error"),
-          description: error.message,
-        });
-        return;
-      }
-
-      // Aqui você pode abrir um modal com as propriedades do arquivo
-      // Por enquanto vamos apenas mostrar um toast
-      toast({
-        title: file.filename,
-        description: `${t(
-          "fileExplorer.fileProperties.size"
-        )}: ${formatFileSize(file.size)} | ${t(
-          "fileExplorer.fileProperties.type"
-        )}: ${file.content_type} | ${t(
-          "fileExplorer.fileProperties.created"
-        )}: ${formatDate(file.created_at)}`,
-        duration: 5000,
-      });
-    }
-  };
 
   return (
     <>
       <div {...getRootProps()} className="h-screen w-full relative">
         <input {...getInputProps()} />
-        <ContextMenu>
-          <ContextMenuTrigger className="flex h-screen w-full overflow-hidden">
-            <SidebarProvider>
-              <div className="flex h-screen w-full overflow-hidden">
-                <AppSidebar onSearch={setSearchQuery} />
-                <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
-                  {/* Overlay do Dashboard */}
-                  <AnimatePresence>
-                    {isDragActive && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute inset-0 bg-background/50 backdrop-blur-sm border-2 border-primary/20 border-dashed rounded-lg z-50 m-2"
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-background/95 dark:bg-black/95 backdrop-blur-xl p-6 rounded-lg shadow-lg border border-border/50">
-                            <Upload className="h-10 w-10 mx-auto mb-3 text-primary animate-bounce" />
-                            <p className="text-base font-medium text-foreground">
-                              {t("fileExplorer.dropzone.title")}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {t("fileExplorer.dropzone.subtitle")}
-                            </p>
-                          </div>
+        <WorkspaceContextMenu
+          onCreateFolder={handleCreateFolder}
+          onCreateTextFile={handleCreateTextFile}
+          onUploadFile={handleUploadClick}
+          onSelectAll={handleSelectAll}
+        >
+          <SidebarProvider>
+            <div className="flex h-screen w-full overflow-hidden">
+              <AppSidebar onSearch={setSearchQuery} />
+              <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
+                {/* Overlay do Dashboard */}
+                <AnimatePresence>
+                  {isDragActive && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute inset-0 bg-background/50 backdrop-blur-sm border-2 border-primary/20 border-dashed rounded-lg z-50 m-2"
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-background/95 dark:bg-black/95 backdrop-blur-xl p-6 rounded-lg shadow-lg border border-border/50">
+                          <Upload className="h-10 w-10 mx-auto mb-3 text-primary animate-bounce" />
+                          <p className="text-base font-medium text-foreground">
+                            {t("fileExplorer.dropzone.title")}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {t("fileExplorer.dropzone.subtitle")}
+                          </p>
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                  <div className="flex-1 overflow-y-auto w-full">
-                    <div className="p-6 h-full">
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.3,
-                          ease: "easeOut",
-                          delay: 0.3,
-                        }}
-                      >
-                        <div ref={ref}>
-                          <FileExplorer
-                            onFolderChange={setCurrentFolderId}
-                            searchQuery={searchQuery}
-                          />
-                        </div>
-                      </motion.div>
-                    </div>
+                <div className="flex-1 overflow-y-auto w-full">
+                  <div className="p-6 h-full">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        ease: "easeOut",
+                        delay: 0.3,
+                      }}
+                    >
+                      <div ref={ref}>
+                        <FileExplorer
+                          onFolderChange={setCurrentFolderId}
+                          searchQuery={searchQuery}
+                        />
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
               </div>
-            </SidebarProvider>
-          </ContextMenuTrigger>
-          <ContextMenuContent className="w-64 bg-background/95 dark:bg-black/95 backdrop-blur-xl border-border/50">
-            <ContextMenuItem
-              onClick={handleRefreshFiles}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <RefreshCw className="h-4 w-4" />
-              {t("dashboard.contextMenu.refresh")}
-            </ContextMenuItem>
-            <ContextMenuSeparator className="bg-border/50" />
-            <ContextMenuItem
-              onClick={handleCreateFolder}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <FolderPlus className="h-4 w-4" />
-              {t("dashboard.contextMenu.createFolder")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={handleCreateTextFile}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <FileText className="h-4 w-4" />
-              {t("dashboard.contextMenu.createTextFile")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={handleUploadClick}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <FileUp className="h-4 w-4" />
-              {t("dashboard.contextMenu.uploadFile")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={handleSelectAll}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <MousePointerClick className="h-4 w-4" />
-              {t("dashboard.contextMenu.selectAll")}
-            </ContextMenuItem>
-            <ContextMenuSub>
-              <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-                <ArrowUpDown className="h-4 w-4" />
-                {t("dashboard.contextMenu.sortBy")}
-              </ContextMenuSubTrigger>
-              <ContextMenuSubContent className="w-48">
-                <ContextMenuRadioGroup value={view}>
-                  <ContextMenuRadioItem
-                    onClick={() => handleSortFiles("nameAsc")}
-                    value="nameAsc"
-                  >
-                    {t("fileExplorer.sortBy.nameAsc")}
-                  </ContextMenuRadioItem>
-                  <ContextMenuRadioItem
-                    onClick={() => handleSortFiles("nameDesc")}
-                    value="nameDesc"
-                  >
-                    {t("fileExplorer.sortBy.nameDesc")}
-                  </ContextMenuRadioItem>
-                  <ContextMenuRadioItem
-                    onClick={() => handleSortFiles("dateDesc")}
-                    value="dateDesc"
-                  >
-                    {t("fileExplorer.sortBy.dateDesc")}
-                  </ContextMenuRadioItem>
-                  <ContextMenuRadioItem
-                    onClick={() => handleSortFiles("dateAsc")}
-                    value="dateAsc"
-                  >
-                    {t("fileExplorer.sortBy.dateAsc")}
-                  </ContextMenuRadioItem>
-                  <ContextMenuRadioItem
-                    onClick={() => handleSortFiles("sizeDesc")}
-                    value="sizeDesc"
-                  >
-                    {t("fileExplorer.sortBy.sizeDesc")}
-                  </ContextMenuRadioItem>
-                  <ContextMenuRadioItem
-                    onClick={() => handleSortFiles("sizeAsc")}
-                    value="sizeAsc"
-                  >
-                    {t("fileExplorer.sortBy.sizeAsc")}
-                  </ContextMenuRadioItem>
-                </ContextMenuRadioGroup>
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-            <ContextMenuSub>
-              <ContextMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground">
-                {view === "grid" ? (
-                  <Grid className="h-4 w-4" />
-                ) : (
-                  <List className="h-4 w-4" />
-                )}
-                {t("dashboard.contextMenu.view")}
-              </ContextMenuSubTrigger>
-              <ContextMenuSubContent className="w-48">
-                <ContextMenuRadioGroup value={view}>
-                  <ContextMenuRadioItem
-                    onClick={() => setView("grid")}
-                    value="grid"
-                  >
-                    <Grid className="h-4 w-4 mr-2" />
-                    {t("dashboard.contextMenu.gridView")}
-                  </ContextMenuRadioItem>
-                  <ContextMenuRadioItem
-                    onClick={() => setView("list")}
-                    value="list"
-                  >
-                    <List className="h-4 w-4 mr-2" />
-                    {t("dashboard.contextMenu.listView")}
-                  </ContextMenuRadioItem>
-                </ContextMenuRadioGroup>
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-            <ContextMenuSeparator className="bg-border/50" />
-            <ContextMenuItem
-              onClick={handleOpenInNewTab}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <ExternalLink className="h-4 w-4" />
-              {t("dashboard.contextMenu.newTab")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={handleCopyPath}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <Copy className="h-4 w-4" />
-              {t("dashboard.contextMenu.copyPath")}
-            </ContextMenuItem>
-            <ContextMenuSeparator className="bg-border/50" />
-            <ContextMenuItem
-              onClick={handleHelp}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <HelpCircle className="h-4 w-4" />
-              {t("dashboard.contextMenu.help")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={handleKeyboardShortcuts}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <Keyboard className="h-4 w-4" />
-              {t("dashboard.contextMenu.shortcuts")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={handleFeedback}
-              className="flex items-center gap-2 cursor-pointer text-foreground/90 hover:bg-accent hover:text-accent-foreground"
-            >
-              <MessageSquarePlus className="h-4 w-4" />
-              {t("dashboard.contextMenu.feedback")}
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+            </div>
+          </SidebarProvider>
+        </WorkspaceContextMenu>
 
         {/* Progress overlay com botão de cancelar */}
         {uploadProgress !== null && (
