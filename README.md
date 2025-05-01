@@ -1,69 +1,93 @@
-# Welcome to your Lovable project
+# Orbyx Drive
 
-## Project info
+Orbyx Drive é uma plataforma segura de armazenamento e compartilhamento de arquivos com criptografia avançada.
 
-**URL**: https://lovable.dev/projects/ee157d3f-06c0-45ee-94d1-b1e172fa8484
+## Características Principais
 
-## How can I edit this code?
+- **Armazenamento Seguro**: Armazene seus arquivos com segurança usando criptografia avançada
+- **Compartilhamento Protegido**: Compartilhe arquivos com proteção por senha e links expiráveis
+- **Organização Intuitiva**: Organize seus arquivos em pastas com cores e ícones personalizados
+- **Interface Moderna**: Interface de usuário elegante e responsiva construída com React e Tailwind CSS
+- **Autenticação de Dois Fatores**: Proteção adicional para sua conta
 
-There are several ways of editing your application.
+## Segurança
 
-**Use Lovable**
+O Orbyx Drive implementa várias camadas de segurança para proteger seus dados:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ee157d3f-06c0-45ee-94d1-b1e172fa8484) and start prompting.
+### Criptografia Avançada
 
-Changes made via Lovable will be committed automatically to this repo.
+- **AES-256**: Criptografia de padrão militar para todos os dados
+- **Criptografia em Camadas**: Múltiplas camadas de criptografia para proteção adicional
+- **Verificação de Integridade**: HMAC para detectar qualquer adulteração de dados
+- **Armazenamento Seguro de Chaves**: Chaves armazenadas com segurança usando IndexedDB
+- **Derivação Segura de Senhas**: PBKDF2 com 100.000 iterações para proteção contra ataques de força bruta
 
-**Use your preferred IDE**
+Para mais detalhes sobre a segurança, consulte nossa [Documentação de Segurança](docs/SECURITY.md).
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Tecnologias Utilizadas
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Este projeto é construído com:
 
-Follow these steps:
+- **Frontend**:
+  - React
+  - TypeScript
+  - Vite
+  - Tailwind CSS
+  - shadcn/ui
+  - Framer Motion
+  - i18next para internacionalização
+
+- **Backend**:
+  - Supabase (Autenticação, Banco de Dados, Armazenamento)
+  - Funções Serverless
+
+## Desenvolvimento
+
+### Pré-requisitos
+
+- Node.js (v18+)
+- npm ou pnpm
+
+### Instalação
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone o repositório
+git clone <URL_DO_REPOSITÓRIO>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Entre no diretório do projeto
+cd orbyx-drive
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Instale as dependências
+npm install
+# ou
+pnpm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Inicie o servidor de desenvolvimento
 npm run dev
+# ou
+pnpm dev
 ```
 
-**Edit a file directly in GitHub**
+### Scripts Disponíveis
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `npm run dev` - Inicia o servidor de desenvolvimento
+- `npm run build` - Compila o projeto para produção
+- `npm run preview` - Visualiza a versão de produção localmente
+- `npm run lint` - Executa o linter para verificar problemas de código
 
-**Use GitHub Codespaces**
+### Testes de Criptografia
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Para testar as funcionalidades de criptografia:
 
-## What technologies are used for this project?
+```sh
+# Execute o script de teste de criptografia
+npx tsx scripts/test-encryption.ts
+```
 
-This project is built with .
+## Contribuição
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Contribuições são bem-vindas! Por favor, leia nossas diretrizes de contribuição antes de enviar um pull request.
 
-## How can I deploy this project?
+## Licença
 
-Simply open [Lovable](https://lovable.dev/projects/ee157d3f-06c0-45ee-94d1-b1e172fa8484) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.

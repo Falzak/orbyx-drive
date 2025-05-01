@@ -64,7 +64,8 @@ const Share = () => {
 
       try {
         if (shareData.encrypted_password) {
-          shareData.password = decryptData(shareData.encrypted_password);
+          // Use the async version of decryptData
+          shareData.password = await decryptData(shareData.encrypted_password);
           delete shareData.encrypted_password;
         }
       } catch (decryptError) {

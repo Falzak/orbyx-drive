@@ -9,7 +9,9 @@
     "build:dev": "tsc --project tsconfig.build.json && vite build --mode development",
     "build:force": "CI=false tsc --project tsconfig.build.json --noEmit false && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:encryption": "tsx scripts/test-encryption.ts",
+    "migrate:encryption": "tsx scripts/migrate-encryption.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.799.0",

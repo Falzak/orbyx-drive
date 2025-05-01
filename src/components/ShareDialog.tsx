@@ -54,7 +54,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       if (data && data.encrypted_password) {
         try {
           // Decrypt password for UI display
-          data.password = decryptData(data.encrypted_password);
+          data.password = await decryptData(data.encrypted_password);
         } catch (decryptError) {
           console.error("Error decrypting password:", decryptError);
         }
@@ -83,16 +83,24 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
       if (!user) throw new Error("User not authenticated");
 
       // Encrypt the password if provided
-      const shareData: any = {
+      const shareData: {
+        file_path: string;
+        shared_by: string;
+        is_public: boolean;
+        is_encrypted: boolean;
+        encrypted_password?: string;
+        password?: null;
+      } = {
         file_path: file.file_path,
         shared_by: user.id,
         is_public: isPublic,
         is_encrypted: isEncrypted,
       };
-      
+
       // Only store encrypted password in the database
       if (password) {
-        shareData.encrypted_password = encryptData(password);
+        // Use the async version of encryptData
+        shareData.encrypted_password = await encryptData(password);
         shareData.password = null; // Don't store plaintext password
       } else {
         shareData.encrypted_password = null;
@@ -184,12 +192,12 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
             <ShieldCheck className="h-4 w-4 text-primary" />
           </DialogTitle>
           <DialogDescription>
-            {existingShare 
+            {existingShare
               ? "Gerencie as configurações de compartilhamento do seu arquivo criptografado."
               : "Configure as opções de compartilhamento seguro do seu arquivo."}
           </DialogDescription>
         </DialogHeader>
-        
+
         {existingShare ? (
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
@@ -217,7 +225,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
                 <p className="text-sm">• Acesso: {isPublic ? "Público" : "Protegido"}</p>
                 {existingShare.encrypted_password && <p className="text-sm">• Protegido por senha criptografada</p>}
                 <p className="text-sm flex items-center gap-1">
-                  • Criptografia: 
+                  • Criptografia:
                   <span className="text-primary flex items-center">
                     Ativada <ShieldCheck className="h-3 w-3 inline ml-1" />
                   </span>
@@ -254,7 +262,7 @@ export function ShareDialog({ file, open, onOpenChange }: ShareDialogProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="encrypted" className="flex items-center gap-1">
-                Criptografia AES 
+                Criptografia AES
                 <span className="text-xs text-muted-foreground">(recomendado)</span>
               </Label>
               <Switch
