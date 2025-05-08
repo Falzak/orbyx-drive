@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --project tsconfig.build.json && vite build",
@@ -17,6 +21,7 @@
     "@aws-sdk/client-s3": "^3.799.0",
     "@aws-sdk/s3-request-presigner": "^3.799.0",
     "@hookform/resolvers": "^3.10.0",
+    "@hugeicons/react": "^1.0.5",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-alert-dialog": "^1.1.11",
     "@radix-ui/react-aspect-ratio": "^1.1.4",
@@ -94,6 +99,7 @@
     "globals": "^16.0.0",
     "lovable-tagger": "^1.1.8",
     "postcss": "^8.5.3",
+    "rimraf": "^5.0.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1",
