@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -176,10 +176,10 @@ export function CreateTextFileEditor({
                   {t("fileCreate.content")}
                 </FormLabel>
                 <FormControl>
-                  <RichTextEditor
+                  <Textarea
                     {...field}
                     placeholder={t("fileCreate.contentPlaceholder")}
-                    className="h-full"
+                    className="h-full min-h-[300px]" // Added min-h for better default size
                   />
                 </FormControl>
                 <FormMessage />
