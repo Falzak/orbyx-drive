@@ -68,6 +68,7 @@
     "react-error-boundary": "^5.0.0",
     "react-hook-form": "^7.56.1",
     "react-i18next": "^15.5.1",
+    "react-quill": "^2.0.0",
     "react-resizable-panels": "^2.1.9",
     "react-router-dom": "^6.30.0",
     "recharts": "^2.15.3",

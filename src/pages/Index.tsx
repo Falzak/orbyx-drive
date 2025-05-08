@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { CreateFolderDialog } from "@/components/CreateFolderDialog";
-import { CreateTextFileDialog } from "@/components/CreateTextFileDialog";
+import { CreateTextFileEditor } from "@/components/CreateTextFileEditor";
 import FileUpload from "@/components/FileUpload";
 import { uploadFile } from "@/utils/storage";
 
@@ -64,7 +64,6 @@ const Index = () => {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
-
 
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isCreateTextFileOpen, setIsCreateTextFileOpen] = useState(false);
@@ -79,7 +78,11 @@ const Index = () => {
   const ref = useRef<HTMLDivElement>(null);
 
   // Log para depuração
-  console.log("Index component - Current location:", location.pathname, location.search);
+  console.log(
+    "Index component - Current location:",
+    location.pathname,
+    location.search
+  );
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -259,10 +262,6 @@ const Index = () => {
     queryClient.invalidateQueries({ queryKey: ["files"] });
   };
 
-
-
-
-
   return (
     <>
       <div {...getRootProps()} className="h-screen w-full relative">
@@ -304,22 +303,49 @@ const Index = () => {
 
                 <div className="flex-1 overflow-y-auto w-full">
                   <div className="p-6 h-full">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.3,
-                        ease: "easeOut",
-                        delay: 0.3,
-                      }}
-                    >
-                      <div ref={ref}>
-                        <FileExplorer
-                          onFolderChange={setCurrentFolderId}
-                          searchQuery={searchQuery}
-                        />
-                      </div>
-                    </motion.div>
+                    <AnimatePresence mode="wait">
+                      {isCreateTextFileOpen ? (
+                        <motion.div
+                          key="text-editor"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{
+                            duration: 0.3,
+                            ease: "easeOut",
+                          }}
+                        >
+                          <CreateTextFileEditor
+                            onClose={() => setIsCreateTextFileOpen(false)}
+                            currentFolderId={currentFolderId}
+                            onSuccess={() => {
+                              queryClient.invalidateQueries({
+                                queryKey: ["files"],
+                              });
+                              setIsCreateTextFileOpen(false);
+                            }}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="file-explorer"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{
+                            duration: 0.3,
+                            ease: "easeOut",
+                          }}
+                        >
+                          <div ref={ref}>
+                            <FileExplorer
+                              onFolderChange={setCurrentFolderId}
+                              searchQuery={searchQuery}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
@@ -431,15 +457,6 @@ const Index = () => {
               description: t("common.error"),
             });
           }
-        }}
-      />
-
-      <CreateTextFileDialog
-        open={isCreateTextFileOpen}
-        onOpenChange={setIsCreateTextFileOpen}
-        currentFolderId={currentFolderId}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["files"] });
         }}
       />
 
