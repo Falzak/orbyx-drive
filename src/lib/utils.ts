@@ -24,7 +24,7 @@ export function formatFileSize(bytes: number) {
 }
 
 export function formatDate(date: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",

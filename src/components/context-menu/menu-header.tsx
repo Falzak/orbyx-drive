@@ -1,6 +1,6 @@
 import React from "react";
 import { FileData } from "@/types";
-import { Star } from "lucide-react";
+import { Star, Calendar, FileType, HardDrive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatFileSize, formatDate, getFileIcon } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,8 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ file }) => {
                 className="w-full h-full object-cover transition-all duration-300 group-hover:scale-110"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
-                  (e.target as HTMLImageElement).className = "w-full h-full object-contain p-2";
+                  (e.target as HTMLImageElement).className =
+                    "w-full h-full object-contain p-2";
                 }}
               />
             </div>
@@ -59,8 +60,8 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ file }) => {
               variant="secondary"
               className="h-5 px-2 text-[10px] font-medium bg-accent/40 hover:bg-accent/50 backdrop-blur-xl transition-colors duration-200"
             >
-              {file.is_folder 
-                ? t("fileExplorer.fileProperties.folder") 
+              {file.is_folder
+                ? t("fileExplorer.fileProperties.folder")
                 : file.content_type.split("/").pop()?.toUpperCase()}
             </Badge>
             {!file.is_folder && (
@@ -71,29 +72,42 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ file }) => {
           </div>
         </div>
       </div>
-      <div className="space-y-2 bg-background/30 dark:bg-black/20 backdrop-blur-xl p-2.5 rounded-lg border border-border/20">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
-          <span className="font-medium">
-            {t("fileExplorer.fileProperties.details.created")}:
-          </span>
-          <span>{formatDate(file.created_at)}</span>
+      <div className="bg-background/30 dark:bg-black/20 backdrop-blur-xl p-2.5 rounded-lg border border-border/20">
+        <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-xs">
+          <div className="flex items-center text-muted-foreground/70">
+            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+            <span className="font-medium">
+              {t("fileExplorer.fileProperties.created")}:
+            </span>
+          </div>
+          <div className="text-right text-muted-foreground/90">
+            {formatDate(file.created_at)}
+          </div>
+
+          {!file.is_folder && (
+            <>
+              <div className="flex items-center text-muted-foreground/70">
+                <FileType className="h-3.5 w-3.5 mr-1.5" />
+                <span className="font-medium">
+                  {t("fileExplorer.fileProperties.type")}:
+                </span>
+              </div>
+              <div className="text-right text-muted-foreground/90">
+                {file.content_type.split("/").pop()?.toUpperCase()}
+              </div>
+
+              <div className="flex items-center text-muted-foreground/70">
+                <HardDrive className="h-3.5 w-3.5 mr-1.5" />
+                <span className="font-medium">
+                  {t("fileExplorer.fileProperties.size")}:
+                </span>
+              </div>
+              <div className="text-right text-muted-foreground/90">
+                {formatFileSize(file.size)}
+              </div>
+            </>
+          )}
         </div>
-        {!file.is_folder && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
-            <span className="font-medium">
-              {t("fileExplorer.fileProperties.details.type")}:
-            </span>
-            <span>{file.content_type}</span>
-          </div>
-        )}
-        {!file.is_folder && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
-            <span className="font-medium">
-              {t("fileExplorer.fileProperties.details.size")}:
-            </span>
-            <span>{formatFileSize(file.size)}</span>
-          </div>
-        )}
       </div>
     </div>
   );

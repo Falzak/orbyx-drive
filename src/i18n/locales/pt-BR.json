@@ -165,6 +165,7 @@
       "created": "Criado em",
       "location": "Localização",
       "added": "Adicionado em",
+      "folder": "Pasta",
       "details": {
         "name": "Nome do Arquivo",
         "title": "Detalhes do Arquivo",

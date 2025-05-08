@@ -165,6 +165,7 @@
       "created": "Created on",
       "location": "Location",
       "added": "Added on",
+      "folder": "Folder",
       "details": {
         "name": "File Name",
         "title": "File Details",
