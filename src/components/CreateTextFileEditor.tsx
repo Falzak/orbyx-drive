@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, X, ArrowLeft, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Save } from "lucide-react";
 import { useAuth } from "@/App";
 import { useToast } from "@/hooks/use-toast";
 import { createTextFile } from "@/utils/storage";
@@ -12,20 +12,11 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 // Schema for form validation
 const textFileSchema = z.object({
@@ -115,74 +106,79 @@ export function CreateTextFileEditor({
   };
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="mr-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold">{t("fileCreate.title")}</h1>
-        </div>
-        <Button
-          onClick={form.handleSubmit(handleSubmit)}
-          disabled={isCreating}
-          className="px-4"
-        >
-          {isCreating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t("common.creating")}
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              {t("common.create")}
-            </>
-          )}
-        </Button>
-      </div>
-
-      <Separator className="mb-6" />
-
+    <div className="w-full h-full flex flex-col absolute inset-0">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="filename"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base">
-                  {t("fileCreate.filename")}
-                </FormLabel>
-                <FormControl>
-                  <Input {...field} className="text-base" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="flex flex-col h-full"
+        >
+          <div className="flex items-center justify-between p-4 border-b shrink-0">
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="mr-2"
+                type="button" // Prevent form submission
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <FormField
+                control={form.control}
+                name="filename"
+                render={({ field }) => (
+                  <FormItem className="flex-grow mr-4">
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t(
+                          "fileCreate.filenamePlaceholder",
+                          "Enter filename..."
+                        )}
+                        className="text-lg font-semibold border-none focus-visible:ring-0 shadow-none p-0"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button
+              type="submit" // Explicitly set type
+              disabled={isCreating}
+              className="px-4"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("common.creating")}
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  {t("common.create")}
+                </>
+              )}
+            </Button>
+          </div>
 
           <FormField
             control={form.control}
             name="content"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel className="text-base">
-                  {t("fileCreate.content")}
-                </FormLabel>
-                <FormControl>
+              <FormItem className="flex-1 flex flex-col overflow-hidden">
+                {/* FormLabel removed for notepad style */}
+                <FormControl className="flex-1 overflow-auto">
                   <Textarea
                     {...field}
-                    placeholder={t("fileCreate.contentPlaceholder")}
-                    className="h-full min-h-[300px]" // Added min-h for better default size
+                    placeholder={t(
+                      "fileCreate.contentPlaceholder",
+                      "Start typing your notes here..."
+                    )}
+                    className="h-full w-full resize-none border-none focus-visible:ring-0 shadow-none text-base p-4 min-h-full"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="p-2 text-xs shrink-0" />
               </FormItem>
             )}
           />
