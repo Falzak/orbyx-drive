@@ -89,7 +89,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     const { t } = useTranslation();
     const [selectedFolder, setSelectedFolder] = useState<FileData | null>(null);
     const [isEditFolderOpen, setIsEditFolderOpen] = useState(false);
-    const [selectedFiles, setSelectedFiles] = useState<Record<string, FileData>>({});
+    const [selectedFiles, setSelectedFiles] = useState<
+      Record<string, FileData>
+    >({});
 
     useEffect(() => {
       if (!session) {
@@ -99,11 +101,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
 
     // Parse query parameters
     const searchParams = new URLSearchParams(location.search);
-    const filterParam = searchParams.get('filter');
+    const filterParam = searchParams.get("filter");
 
     // Check if we're in trash view or favorites view
-    const isTrashView = filterParam === 'trash';
-    const isFavoritesView = filterParam === 'favorites';
+    const isTrashView = filterParam === "trash";
+    const isFavoritesView = filterParam === "favorites";
 
     const getSignedUrlForFile = useCallback(async (filePath: string) => {
       if (!filePath) {
@@ -131,11 +133,20 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     }, []);
 
     const { data: folders = [], isLoading: isFoldersLoading } = useQuery({
-      queryKey: ["folders", sortBy, currentFolderId, searchQuery, isTrashView, isFavoritesView],
+      queryKey: [
+        "folders",
+        sortBy,
+        currentFolderId,
+        searchQuery,
+        isTrashView,
+        isFavoritesView,
+      ],
       queryFn: async () => {
         let query = supabase
           .from("folders")
-          .select("id, name, parent_id, user_id, icon, color, is_trashed, trashed_at")
+          .select(
+            "id, name, parent_id, user_id, icon, color, is_trashed, trashed_at"
+          )
           .eq("user_id", session?.user.id);
 
         // Filtrar por status de lixeira
@@ -167,7 +178,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     });
 
     // Log para depuração
-    console.log("FileExplorer - Current location:", location.pathname, location.search);
+    console.log(
+      "FileExplorer - Current location:",
+      location.pathname,
+      location.search
+    );
     console.log("FileExplorer - Filter param:", filterParam);
     console.log("FileExplorer - Is trash view:", isTrashView);
     console.log("FileExplorer - Is favorites view:", isFavoritesView);
@@ -179,7 +194,14 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
     }, [location.search, queryClient]);
 
     const { data: files = [], isLoading: isFilesLoading } = useQuery({
-      queryKey: ["files", sortBy, currentFolderId, searchQuery, isTrashView, isFavoritesView],
+      queryKey: [
+        "files",
+        sortBy,
+        currentFolderId,
+        searchQuery,
+        isTrashView,
+        isFavoritesView,
+      ],
       queryFn: async () => {
         const [field, direction] = sortBy.split("_");
         let query = supabase
@@ -510,7 +532,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             .from("folders")
             .update({
               is_trashed: true,
-              trashed_at: new Date().toISOString()
+              trashed_at: new Date().toISOString(),
             })
             .eq("id", file.id);
 
@@ -524,13 +546,15 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
+          // Atualizar contagem da lixeira
+          queryClient.invalidateQueries({ queryKey: ["trash-count"] });
         } else {
           // Mover arquivo para a lixeira
           const { error } = await supabase
             .from("files")
             .update({
               is_trashed: true,
-              trashed_at: new Date().toISOString()
+              trashed_at: new Date().toISOString(),
             })
             .eq("id", file.id);
 
@@ -550,6 +574,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
+          // Atualizar contagem da lixeira
+          queryClient.invalidateQueries({ queryKey: ["trash-count"] });
         }
 
         toast({
@@ -574,7 +600,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
             .from("folders")
             .update({
               is_trashed: false,
-              trashed_at: null
+              trashed_at: null,
             })
             .eq("id", file.id);
 
@@ -588,13 +614,15 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
+          // Atualizar contagem da lixeira
+          queryClient.invalidateQueries({ queryKey: ["trash-count"] });
         } else {
           // Restaurar arquivo da lixeira
           const { error } = await supabase
             .from("files")
             .update({
               is_trashed: false,
-              trashed_at: null
+              trashed_at: null,
             })
             .eq("id", file.id);
 
@@ -608,6 +636,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
+          // Atualizar contagem da lixeira
+          queryClient.invalidateQueries({ queryKey: ["trash-count"] });
         }
 
         toast({
@@ -641,11 +671,12 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         if (fetchFilesError) throw fetchFilesError;
 
         // Obter todas as pastas na lixeira
-        const { data: trashedFolders, error: fetchFoldersError } = await supabase
-          .from("folders")
-          .select("id")
-          .eq("user_id", session?.user.id)
-          .eq("is_trashed", true);
+        const { data: trashedFolders, error: fetchFoldersError } =
+          await supabase
+            .from("folders")
+            .select("id")
+            .eq("user_id", session?.user.id)
+            .eq("is_trashed", true);
 
         if (fetchFoldersError) throw fetchFoldersError;
 
@@ -683,10 +714,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           // Para cada pasta na lixeira
           for (const folder of trashedFolders) {
             // Excluir arquivos dentro da pasta
-            const { data: filesInFolder, error: filesInFolderError } = await supabase
-              .from("files")
-              .select("file_path")
-              .eq("folder_id", folder.id);
+            const { data: filesInFolder, error: filesInFolderError } =
+              await supabase
+                .from("files")
+                .select("file_path")
+                .eq("folder_id", folder.id);
 
             if (filesInFolderError) throw filesInFolderError;
 
@@ -700,10 +732,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               }
 
               // Excluir registros de arquivos
-              await supabase
-                .from("files")
-                .delete()
-                .eq("folder_id", folder.id);
+              await supabase.from("files").delete().eq("folder_id", folder.id);
             }
           }
 
@@ -719,7 +748,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           queryClient.invalidateQueries({ queryKey: ["folders"] });
         }
 
+        // Atualizar contagem da lixeira após esvaziar
         if (hasItemsToDelete) {
+          // Invalidar a query de contagem da lixeira
+          queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.emptyTrashSuccess"),
@@ -810,6 +843,10 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           if (folderError) throw folderError;
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
+          // Atualizar contagem da lixeira se estiver na visualização da lixeira
+          if (isTrashView) {
+            queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          }
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.deleteFolderSuccess"),
@@ -846,6 +883,10 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
+          // Atualizar contagem da lixeira se estiver na visualização da lixeira
+          if (isTrashView) {
+            queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          }
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.deleteSuccess"),
@@ -860,7 +901,10 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     };
 
-    const handleRename = async (file: FileData, newName: string): Promise<void> => {
+    const handleRename = async (
+      file: FileData,
+      newName: string
+    ): Promise<void> => {
       try {
         if (file.is_folder) {
           const { error } = await supabase
@@ -944,9 +988,12 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         if (event.shiftKey && Object.keys(selectedFiles).length > 0) {
           // Implementação simplificada: seleciona todos os arquivos entre o último selecionado e o atual
           const allFiles = [...items];
-          const lastSelectedId = Object.keys(selectedFiles)[Object.keys(selectedFiles).length - 1];
-          const lastSelectedIndex = allFiles.findIndex(f => f.id === lastSelectedId);
-          const currentIndex = allFiles.findIndex(f => f.id === file.id);
+          const lastSelectedId =
+            Object.keys(selectedFiles)[Object.keys(selectedFiles).length - 1];
+          const lastSelectedIndex = allFiles.findIndex(
+            (f) => f.id === lastSelectedId
+          );
+          const currentIndex = allFiles.findIndex((f) => f.id === file.id);
 
           if (lastSelectedIndex !== -1 && currentIndex !== -1) {
             const start = Math.min(lastSelectedIndex, currentIndex);
@@ -962,7 +1009,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
         }
         // Apenas Ctrl/Command pressionado, adiciona/remove da seleção
         else {
-          setSelectedFiles(prev => {
+          setSelectedFiles((prev) => {
             const newSelection = { ...prev };
             if (newSelection[file.id]) {
               delete newSelection[file.id];
@@ -1056,14 +1103,29 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
               onNavigate={handleBreadcrumbNavigate}
             />
             <div className="text-xs text-muted-foreground mt-1 ml-1">
-              <span>Pressione <kbd className="px-1 py-0.5 bg-muted rounded border border-border/50">Ctrl</kbd> (ou <kbd className="px-1 py-0.5 bg-muted rounded border border-border/50">⌘</kbd> no Mac) para selecionar arquivos</span>
+              <span>
+                Pressione{" "}
+                <kbd className="px-1 py-0.5 bg-muted rounded border border-border/50">
+                  Ctrl
+                </kbd>{" "}
+                (ou{" "}
+                <kbd className="px-1 py-0.5 bg-muted rounded border border-border/50">
+                  ⌘
+                </kbd>{" "}
+                no Mac) para selecionar arquivos
+              </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {getSelectedCount() > 0 && (
               <div className="flex items-center gap-2 bg-accent/20 px-3 py-1.5 rounded-md border border-border/50">
-                <span className="text-sm font-medium">{getSelectedCount()} {getSelectedCount() === 1 ? "item selecionado" : "itens selecionados"}</span>
+                <span className="text-sm font-medium">
+                  {getSelectedCount()}{" "}
+                  {getSelectedCount() === 1
+                    ? "item selecionado"
+                    : "itens selecionados"}
+                </span>
 
                 <div className="flex items-center gap-1 ml-2">
                   {/* Botões de ação para os itens selecionados */}
@@ -1099,7 +1161,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                       }
                       clearSelection();
                     }}
-                    title={isTrashView ? "Excluir permanentemente" : "Mover para lixeira"}
+                    title={
+                      isTrashView
+                        ? "Excluir permanentemente"
+                        : "Mover para lixeira"
+                    }
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -1274,16 +1340,18 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           onOpenChange={setIsEditFolderOpen}
           onSubmit={handleEditFolder}
           mode="edit"
-          editFolder={React.useMemo(() => (
-            selectedFolder
-              ? {
-                  id: selectedFolder.id,
-                  name: selectedFolder.name || selectedFolder.filename,
-                  icon: selectedFolder.icon,
-                  color: selectedFolder.color,
-                }
-              : null
-          ), [selectedFolder])}
+          editFolder={React.useMemo(
+            () =>
+              selectedFolder
+                ? {
+                    id: selectedFolder.id,
+                    name: selectedFolder.name || selectedFolder.filename,
+                    icon: selectedFolder.icon,
+                    color: selectedFolder.color,
+                  }
+                : null,
+            [selectedFolder]
+          )}
         />
       </div>
     );

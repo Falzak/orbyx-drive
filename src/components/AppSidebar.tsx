@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -120,6 +121,44 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
     enabled: !!session,
   });
 
+  // Obter contagem de itens na lixeira
+  const { data: trashCount = 0 } = useQuery({
+    queryKey: ["trash-count", session?.user?.id],
+    queryFn: async () => {
+      if (!session) return 0;
+
+      // Contar arquivos na lixeira
+      const { count: filesCount, error: filesError } = await supabase
+        .from("files")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .eq("is_trashed", true);
+
+      if (filesError) {
+        console.error("Erro ao contar arquivos na lixeira:", filesError);
+        return 0;
+      }
+
+      // Contar pastas na lixeira
+      const { count: foldersCount, error: foldersError } = await supabase
+        .from("folders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .eq("is_trashed", true);
+
+      if (foldersError) {
+        console.error("Erro ao contar pastas na lixeira:", foldersError);
+        return filesCount || 0;
+      }
+
+      return (filesCount || 0) + (foldersCount || 0);
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 1000 * 10, // 10 segundos
+    refetchInterval: 1000 * 30, // Revalidar a cada 30 segundos
+    enabled: !!session,
+  });
+
   // Função para alternar a sidebar em dispositivos móveis
   const toggleMobileSidebar = () => {
     setOpenMobile(!openMobile);
@@ -138,6 +177,7 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
 
   const handleRefreshFiles = () => {
     queryClient.invalidateQueries({ queryKey: ["files"] });
+    queryClient.invalidateQueries({ queryKey: ["trash-count"] });
   };
 
   const handleCreateFolder = async (values: {
@@ -421,7 +461,11 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                             className={cn(
                               "w-full justify-start gap-3 transition-all duration-200",
                               "group relative overflow-hidden",
-                              isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3"
+                              isCollapsed ? "h-10 w-10 p-0" : "h-10 px-3",
+                              // Adicionar efeito de active mais visível para o item selecionado
+                              item.path?.includes("trash") &&
+                                filterParam === "trash" &&
+                                "bg-[hsl(var(--sidebar-hover-bg))] text-[hsl(var(--sidebar-hover-text))] font-medium"
                             )}
                             asChild
                             data-sidebar="menu-button"
@@ -432,17 +476,25 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                             }
                           >
                             <Link to={item.path!}>
-                              <item.icon
-                                className={cn(
-                                  "h-4 w-4 shrink-0",
-                                  (item.path === "/dashboard" &&
-                                    !filterParam) ||
-                                    (item.path?.includes(filterParam || "") &&
-                                      filterParam)
-                                    ? "text-accent-foreground"
-                                    : "text-muted-foreground"
-                                )}
-                              />
+                              <div className="relative">
+                                <item.icon
+                                  className={cn(
+                                    "h-4 w-4 shrink-0",
+                                    (item.path === "/dashboard" &&
+                                      !filterParam) ||
+                                      (item.path?.includes(filterParam || "") &&
+                                        filterParam)
+                                      ? "text-accent-foreground"
+                                      : "text-muted-foreground"
+                                  )}
+                                />
+                                {/* Indicador de itens na lixeira quando a sidebar está recolhida */}
+                                {item.path?.includes("trash") &&
+                                  trashCount > 0 &&
+                                  isCollapsed && (
+                                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                  )}
+                              </div>
                               {!isCollapsed && (
                                 <motion.span
                                   initial={{ opacity: 0, x: -10 }}
@@ -453,6 +505,22 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                                   {item.title}
                                 </motion.span>
                               )}
+
+                              {/* Adicionar badge para contagem de itens na lixeira */}
+                              {item.path?.includes("trash") &&
+                                trashCount > 0 &&
+                                !isCollapsed && (
+                                  <Badge
+                                    variant="secondary"
+                                    className={cn(
+                                      "ml-1 bg-muted/50 hover:bg-muted/70 text-xs px-1.5 py-0 h-5 min-w-5 flex items-center justify-center",
+                                      filterParam === "trash" &&
+                                        "bg-primary/10 text-primary"
+                                    )}
+                                  >
+                                    {trashCount}
+                                  </Badge>
+                                )}
                             </Link>
                           </Button>
                         )}
@@ -462,7 +530,21 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                           side="right"
                           className="bg-background/60 backdrop-blur-xl border-border/50"
                         >
-                          {item.title}
+                          <div className="flex items-center gap-2">
+                            {item.title}
+                            {item.path?.includes("trash") && trashCount > 0 && (
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "bg-muted/50 text-xs px-1.5 py-0 h-5 min-w-5 flex items-center justify-center",
+                                  filterParam === "trash" &&
+                                    "bg-primary/10 text-primary"
+                                )}
+                              >
+                                {trashCount}
+                              </Badge>
+                            )}
+                          </div>
                         </TooltipContent>
                       )}
                     </Tooltip>
