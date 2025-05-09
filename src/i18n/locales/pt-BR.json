@@ -25,7 +25,8 @@
     "create": "Criar",
     "creating": "Criando...",
     "goBack": "Voltar",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "processing": "Processando..."
   },
   "dashboard": {
     "title": "Painel",

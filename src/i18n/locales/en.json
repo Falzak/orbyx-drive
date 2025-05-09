@@ -25,7 +25,8 @@
     "create": "Create",
     "creating": "Creating...",
     "goBack": "Go Back",
-    "continue": "Continue"
+    "continue": "Continue",
+    "processing": "Processing..."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -601,5 +602,39 @@
       "new": "New",
       "released": "Beta released"
     }
+  },
+  "createFolderDialog": {
+    "validation": {
+      "nameRequired": "Folder name is required"
+    },
+    "defaultFolderName": "New folder",
+    "titleCreate": "New Folder",
+    "titleEdit": "Edit Folder",
+    "descriptionCreate": "Create a new folder to organize your files",
+    "descriptionEdit": "Edit the folder information",
+    "folderNameLabel": "Folder name",
+    "folderNamePlaceholder": "Enter folder name",
+    "tabs": {
+      "emojis": "Emojis",
+      "colors": "Colors"
+    },
+    "iconLabel": "Icon",
+    "colorLabel": "Color",
+    "createButton": "Create folder",
+    "saveButton": "Save changes"
+  },
+  "colors": {
+    "gray": "Gray",
+    "blue": "Blue",
+    "green": "Green",
+    "orange": "Orange",
+    "purple": "Purple",
+    "pink": "Pink",
+    "red": "Red",
+    "yellow": "Yellow",
+    "teal": "Teal",
+    "indigo": "Indigo",
+    "lightGreen": "Light Green",
+    "magenta": "Magenta"
   }
 }

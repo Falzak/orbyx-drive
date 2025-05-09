@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import {
   Dialog,
@@ -27,13 +28,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-const folderSchema = z.object({
-  name: z.string().min(1, { message: "Nome da pasta é obrigatório" }),
+// Schema definition moved inside the component to use the 't' function
+type FolderFormValues = z.infer<ReturnType<typeof createFolderSchema>>;
+
+const createFolderSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(1, { message: t("createFolderDialog.validation.nameRequired") }),
   icon: z.string().optional(),
   color: z.string().optional(),
 });
-
-type FolderFormValues = z.infer<typeof folderSchema>;
 
 export interface CreateFolderDialogProps {
   open: boolean;
@@ -58,11 +60,14 @@ export function CreateFolderDialog({
   editFolder = null,
 }: CreateFolderDialogProps) {
 
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>("emoji");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const memoizedFolderSchema = React.useMemo(() => createFolderSchema(t), [t]);
+
   const form = useForm<FolderFormValues>({
-    resolver: zodResolver(folderSchema),
+    resolver: zodResolver(memoizedFolderSchema),
     defaultValues: {
       name: editFolder?.name || "",
       icon: editFolder?.icon || "📁",
@@ -106,37 +111,37 @@ export function CreateFolderDialog({
   ];
 
   // Enhanced color palette with names
-  const COLORS = [
-    { value: "#94a3b8", name: "Cinza" },
-    { value: "#3b82f6", name: "Azul" },
-    { value: "#10b981", name: "Verde" },
-    { value: "#f97316", name: "Laranja" },
-    { value: "#8b5cf6", name: "Roxo" },
-    { value: "#ec4899", name: "Rosa" },
-    { value: "#f43f5e", name: "Vermelho" },
-    { value: "#eab308", name: "Amarelo" },
-    { value: "#14b8a6", name: "Turquesa" },
-    { value: "#6366f1", name: "Índigo" },
-    { value: "#84cc16", name: "Verde Claro" },
-    { value: "#d946ef", name: "Magenta" },
-  ];
+  const COLORS = React.useMemo(() => [
+    { value: "#94a3b8", name: t("colors.gray") },
+    { value: "#3b82f6", name: t("colors.blue") },
+    { value: "#10b981", name: t("colors.green") },
+    { value: "#f97316", name: t("colors.orange") },
+    { value: "#8b5cf6", name: t("colors.purple") },
+    { value: "#ec4899", name: t("colors.pink") },
+    { value: "#f43f5e", name: t("colors.red") },
+    { value: "#eab308", name: t("colors.yellow") },
+    { value: "#14b8a6", name: t("colors.teal") },
+    { value: "#6366f1", name: t("colors.indigo") },
+    { value: "#84cc16", name: t("colors.lightGreen") },
+    { value: "#d946ef", name: t("colors.magenta") },
+  ], [t]);
 
   // Get current values for preview
   const currentIcon = form.watch("icon") || "📁";
   const currentColor = form.watch("color") || "#94a3b8";
-  const currentName = form.watch("name") || "Nova pasta";
+  const currentName = form.watch("name") || t("createFolderDialog.defaultFolderName");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] overflow-hidden">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Nova Pasta" : "Editar Pasta"}
+            {mode === "create" ? t("createFolderDialog.titleCreate") : t("createFolderDialog.titleEdit")}
           </DialogTitle>
           <DialogDescription>
             {mode === "create"
-              ? "Crie uma nova pasta para organizar seus arquivos"
-              : "Edite as informações da pasta"}
+              ? t("createFolderDialog.descriptionCreate")
+              : t("createFolderDialog.descriptionEdit")}
           </DialogDescription>
         </DialogHeader>
 
@@ -167,10 +172,10 @@ export function CreateFolderDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome da pasta</FormLabel>
+                  <FormLabel>{t("createFolderDialog.folderNameLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Digite o nome da pasta"
+                      placeholder={t("createFolderDialog.folderNamePlaceholder")}
                       {...field}
                       autoFocus
                       className="transition-all duration-200"
@@ -183,8 +188,8 @@ export function CreateFolderDialog({
 
             <Tabs defaultValue="emoji" value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger value="emoji">Emojis</TabsTrigger>
-                <TabsTrigger value="color">Cores</TabsTrigger>
+                <TabsTrigger value="emoji">{t("createFolderDialog.tabs.emojis")}</TabsTrigger>
+                <TabsTrigger value="color">{t("createFolderDialog.tabs.colors")}</TabsTrigger>
               </TabsList>
 
               <AnimatePresence mode="wait">
@@ -197,7 +202,7 @@ export function CreateFolderDialog({
                 >
                   <TabsContent value="emoji" className="mt-0">
                     <div className="space-y-2">
-                      <Label>Ícone</Label>
+                      <Label>{t("createFolderDialog.iconLabel")}</Label>
                       <div className="grid grid-cols-6 gap-2 max-h-[180px] overflow-y-auto p-1 rounded-md border border-input/50">
                         {ICONS.map((icon) => (
                           <Button
@@ -222,7 +227,7 @@ export function CreateFolderDialog({
 
                   <TabsContent value="color" className="mt-0">
                     <div className="space-y-2">
-                      <Label>Cor</Label>
+                      <Label>{t("createFolderDialog.colorLabel")}</Label>
                       <div className="grid grid-cols-4 gap-3 max-h-[180px] overflow-y-auto p-1 rounded-md border border-input/50">
                         {COLORS.map((color) => (
                           <Button
@@ -257,7 +262,7 @@ export function CreateFolderDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
-                Cancelar
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -270,10 +275,10 @@ export function CreateFolderDialog({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Processando...
+                    {t("common.processing")}
                   </span>
                 ) : (
-                  mode === "create" ? "Criar pasta" : "Salvar alterações"
+                  mode === "create" ? t("createFolderDialog.createButton") : t("createFolderDialog.saveButton")
                 )}
               </Button>
             </DialogFooter>
