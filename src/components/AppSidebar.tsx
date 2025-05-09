@@ -22,6 +22,7 @@ import {
   Menu,
   PanelLeft,
   ShieldAlert,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FileUpload from "@/components/FileUpload";
@@ -84,12 +85,13 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
 
   // Parse query parameters
   const searchParams = new URLSearchParams(location.search);
-  const filterParam = searchParams.get('filter');
+  const filterParam = searchParams.get("filter");
 
   const { session } = useAuth();
 
   // Usar o contexto da sidebar
-  const { state, isMobile, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
+  const { state, isMobile, openMobile, setOpenMobile, toggleSidebar } =
+    useSidebar();
   const isCollapsed = state === "collapsed";
 
   const { t, i18n } = useTranslation();
@@ -127,6 +129,11 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
     const value = e.target.value;
     setSearchQuery(value);
     onSearch?.(value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    onSearch?.("");
   };
 
   const handleRefreshFiles = () => {
@@ -272,13 +279,27 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
 
           {!isCollapsed && (
             <div className="space-y-2">
-              <Input
-                type="search"
-                placeholder={t("common.search")}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="h-9"
-              />
+              <div className="relative group">
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none group-focus-within:text-primary/70 transition-colors duration-200">
+                  <Search className="h-4 w-4" />
+                </div>
+                <Input
+                  type="search"
+                  placeholder={t("common.search")}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="h-9 pl-9 pr-8 bg-muted/30 hover:bg-muted/50 focus:bg-muted/50 transition-colors duration-200 border-muted-foreground/20 focus-visible:border-primary/30 focus-visible:ring-primary/20"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground transition-colors duration-200"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
 
               <div className="flex items-center gap-1">
                 <Button
@@ -406,15 +427,18 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                             data-sidebar="menu-button"
                             data-active={
                               (item.path === "/dashboard" && !filterParam) ||
-                              (item.path?.includes(filterParam || "") && filterParam)
+                              (item.path?.includes(filterParam || "") &&
+                                filterParam)
                             }
                           >
                             <Link to={item.path!}>
                               <item.icon
                                 className={cn(
                                   "h-4 w-4 shrink-0",
-                                  ((item.path === "/dashboard" && !filterParam) ||
-                                   (item.path?.includes(filterParam || "") && filterParam))
+                                  (item.path === "/dashboard" &&
+                                    !filterParam) ||
+                                    (item.path?.includes(filterParam || "") &&
+                                      filterParam)
                                     ? "text-accent-foreground"
                                     : "text-muted-foreground"
                                 )}
@@ -569,7 +593,8 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
                           {t("admin.title") || "Painel de Administração"}
                         </span>
                         <span className="text-xs text-muted-foreground group-hover:translate-x-0.5 transition-transform duration-200">
-                          {t("admin.description") || "Gerenciar provedores de armazenamento e configurações"}
+                          {t("admin.description") ||
+                            "Gerenciar provedores de armazenamento e configurações"}
                         </span>
                       </div>
                     </DropdownMenuItem>
