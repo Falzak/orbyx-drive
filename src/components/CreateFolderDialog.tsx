@@ -133,7 +133,7 @@ export function CreateFolderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] overflow-hidden">
+      <DialogContent className="sm:max-w-[550px] overflow-hidden">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? t("createFolderDialog.titleCreate") : t("createFolderDialog.titleEdit")}
@@ -146,20 +146,20 @@ export function CreateFolderDialog({
         </DialogHeader>
 
         {/* Folder Preview */}
-        <div className="flex justify-center mb-4">
+        <div className="flex flex-col items-center mb-6 p-4 rounded-lg bg-muted/50 border border-border/50">
           <motion.div
-            className="relative"
+            className="relative text-center"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             <div
-              className="w-24 h-24 rounded-xl flex items-center justify-center shadow-md transition-all duration-300"
+              className="w-28 h-28 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300"
               style={{ backgroundColor: currentColor }}
             >
-              <span className="text-4xl">{currentIcon}</span>
+              <span className="text-5xl">{currentIcon}</span>
             </div>
-            <div className="mt-2 text-center text-sm font-medium text-foreground/80 max-w-[100px] truncate">
+            <div className="mt-3 text-md font-semibold text-foreground max-w-[150px] truncate">
               {currentName}
             </div>
           </motion.div>
@@ -172,7 +172,7 @@ export function CreateFolderDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("createFolderDialog.folderNameLabel")}</FormLabel>
+                  <FormLabel className="text-base">{t("createFolderDialog.folderNameLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder={t("createFolderDialog.folderNamePlaceholder")}
@@ -203,18 +203,18 @@ export function CreateFolderDialog({
                   <TabsContent value="emoji" className="mt-0">
                     <div className="space-y-2">
                       <Label>{t("createFolderDialog.iconLabel")}</Label>
-                      <div className="grid grid-cols-6 gap-2 max-h-[180px] overflow-y-auto p-1 rounded-md border border-input/50">
+                      <div className="grid grid-cols-7 gap-2 max-h-[150px] overflow-y-auto p-2 rounded-md border border-border/70 bg-background">
                         {ICONS.map((icon) => (
                           <Button
                             key={icon}
                             type="button"
-                            variant={form.watch("icon") === icon ? "default" : "outline"}
+                            variant="outline"
                             size="icon"
                             className={cn(
-                              "h-10 w-10 transition-all duration-200",
+                              "h-11 w-11 text-lg transition-all duration-200 focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2",
                               form.watch("icon") === icon
-                                ? "scale-110 shadow-md"
-                                : "hover:scale-105"
+                                ? "bg-primary text-primary-foreground scale-110 shadow-lg"
+                                : "hover:bg-muted/80 hover:scale-105"
                             )}
                             onClick={() => form.setValue("icon", icon)}
                           >
@@ -228,25 +228,29 @@ export function CreateFolderDialog({
                   <TabsContent value="color" className="mt-0">
                     <div className="space-y-2">
                       <Label>{t("createFolderDialog.colorLabel")}</Label>
-                      <div className="grid grid-cols-4 gap-3 max-h-[180px] overflow-y-auto p-1 rounded-md border border-input/50">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[180px] overflow-y-auto p-2 rounded-md border border-border/70 bg-background">
                         {COLORS.map((color) => (
-                          <Button
-                            key={color.value}
-                            type="button"
-                            variant="outline"
-                            className={cn(
-                              "h-14 relative group transition-all duration-200",
-                              form.watch("color") === color.value
-                                ? "ring-2 ring-primary scale-105"
-                                : "hover:scale-105"
-                            )}
-                            style={{ backgroundColor: color.value }}
-                            onClick={() => form.setValue("color", color.value)}
-                          >
-                            <span className="absolute inset-x-0 bottom-0 bg-black/20 text-white text-xs py-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-b-md">
-                              {color.name}
-                            </span>
-                          </Button>
+                          <div key={color.value} className="flex flex-col items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className={cn(
+                                "h-12 w-full rounded-md relative group transition-all duration-200 focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2",
+                                form.watch("color") === color.value
+                                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 shadow-lg"
+                                  : "hover:scale-105"
+                              )}
+                              style={{ backgroundColor: color.value }}
+                              onClick={() => form.setValue("color", color.value)}
+                            >
+                              {form.watch("color") === color.value && (
+                                <span className="absolute inset-0 flex items-center justify-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isLightColor(color.value) ? "black" : "white"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check"><path d="M20 6L9 17l-5-5"/></svg>
+                                </span>
+                              )}
+                            </Button>
+                            <span className="mt-1.5 text-xs text-muted-foreground">{color.name}</span>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -287,4 +291,14 @@ export function CreateFolderDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+// Helper function to determine if a color is light or dark for checkmark contrast
+function isLightColor(hexColor: string): boolean {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 155; // Threshold can be adjusted
 }
