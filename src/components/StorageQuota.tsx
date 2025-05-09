@@ -34,10 +34,14 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
       if (error) throw error;
       return data;
     },
-    // Adicionar refetch automático a cada 30 segundos
-    refetchInterval: 30000,
-    // Refetch quando a janela recuperar foco
-    refetchOnWindowFocus: true
+    // Configurações otimizadas para atualização em tempo real
+    refetchInterval: 10000, // Atualizar a cada 10 segundos
+    refetchOnWindowFocus: true, // Atualizar quando a janela ganhar foco
+    refetchOnMount: true, // Atualizar quando o componente for montado
+    refetchOnReconnect: true, // Atualizar quando a conexão for restabelecida
+    staleTime: 5000, // Considerar os dados obsoletos após 5 segundos
+    // Usar cache para evitar flickering durante atualizações
+    keepPreviousData: true,
   });
 
   if (isLoading) {
@@ -168,7 +172,7 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
                     : "bg-primary/20"
                 )}
                 indicatorClassName={cn(
-                  "transition-all duration-500",
+                  "transition-all duration-700 ease-in-out",
                   isCritical
                     ? "bg-destructive"
                     : isNearLimit
@@ -176,11 +180,32 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
                     : "bg-primary"
                 )}
               />
+              {/* Overlay para animação suave */}
+              <motion.div
+                className={cn(
+                  "absolute top-0 left-0 h-full rounded-full",
+                  isCritical
+                    ? "bg-destructive/30"
+                    : isNearLimit
+                    ? "bg-yellow-500/30"
+                    : "bg-primary/30"
+                )}
+                initial={{ width: "0%" }}
+                animate={{ width: `${usedPercentage}%` }}
+                transition={{
+                  duration: 0.7,
+                  ease: "easeInOut",
+                  delay: 0.1,
+                }}
+              />
             </div>
 
             <div className="flex justify-between items-center text-xs text-muted-foreground">
               <span>{formatFileSize(quotaInfo.used_quota)}</span>
-              <span>{usedPercentage.toFixed(1)}%</span>
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
+                <span>{usedPercentage.toFixed(1)}%</span>
+              </div>
             </div>
           </motion.div>
         )}
@@ -207,24 +232,45 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
               />
             )}
           </div>
-          <Progress
-            value={usedPercentage}
-            className={cn(
-              "h-1.5",
-              isCritical
-                ? "bg-destructive/20"
-                : isNearLimit
-                ? "bg-yellow-500/20"
-                : "bg-primary/20"
-            )}
-            indicatorClassName={cn(
-              isCritical
-                ? "bg-destructive"
-                : isNearLimit
-                ? "bg-yellow-500"
-                : "bg-primary"
-            )}
-          />
+          <div className="relative">
+            <Progress
+              value={usedPercentage}
+              className={cn(
+                "h-1.5",
+                isCritical
+                  ? "bg-destructive/20"
+                  : isNearLimit
+                  ? "bg-yellow-500/20"
+                  : "bg-primary/20"
+              )}
+              indicatorClassName={cn(
+                "transition-all duration-700 ease-in-out",
+                isCritical
+                  ? "bg-destructive"
+                  : isNearLimit
+                  ? "bg-yellow-500"
+                  : "bg-primary"
+              )}
+            />
+            {/* Overlay para animação suave */}
+            <motion.div
+              className={cn(
+                "absolute top-0 left-0 h-full rounded-full",
+                isCritical
+                  ? "bg-destructive/30"
+                  : isNearLimit
+                  ? "bg-yellow-500/30"
+                  : "bg-primary/30"
+              )}
+              initial={{ width: "0%" }}
+              animate={{ width: `${usedPercentage}%` }}
+              transition={{
+                duration: 0.7,
+                ease: "easeInOut",
+                delay: 0.1,
+              }}
+            />
+          </div>
           <div className="text-sm space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Usado:</span>
@@ -236,7 +282,10 @@ const StorageQuota = ({ collapsed = false }: StorageQuotaProps) => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Porcentagem:</span>
-              <span>{usedPercentage.toFixed(1)}%</span>
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
+                <span>{usedPercentage.toFixed(1)}%</span>
+              </div>
             </div>
           </div>
         </TooltipContent>

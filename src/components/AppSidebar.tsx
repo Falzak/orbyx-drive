@@ -725,7 +725,10 @@ export function AppSidebar({ onSearch }: AppSidebarProps) {
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
         onSuccess={() => {
+          // Invalidar todas as queries relacionadas a arquivos e armazenamento
           queryClient.invalidateQueries({ queryKey: ["files"] });
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
+          queryClient.invalidateQueries({ queryKey: ["trash-count"] });
           toast({
             title: t("common.success"),
             description: t("fileUpload.success"),

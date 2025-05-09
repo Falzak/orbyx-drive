@@ -546,8 +546,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
-          // Atualizar contagem da lixeira
+          // Atualizar contagem da lixeira e quota de armazenamento
           queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
         } else {
           // Mover arquivo para a lixeira
           const { error } = await supabase
@@ -574,8 +575,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
-          // Atualizar contagem da lixeira
+          // Atualizar contagem da lixeira e quota de armazenamento
           queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
         }
 
         toast({
@@ -614,8 +616,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
-          // Atualizar contagem da lixeira
+          // Atualizar contagem da lixeira e quota de armazenamento
           queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
         } else {
           // Restaurar arquivo da lixeira
           const { error } = await supabase
@@ -636,8 +639,9 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
-          // Atualizar contagem da lixeira
+          // Atualizar contagem da lixeira e quota de armazenamento
           queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
         }
 
         toast({
@@ -748,10 +752,11 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           queryClient.invalidateQueries({ queryKey: ["folders"] });
         }
 
-        // Atualizar contagem da lixeira após esvaziar
+        // Atualizar contagem da lixeira e quota de armazenamento após esvaziar
         if (hasItemsToDelete) {
-          // Invalidar a query de contagem da lixeira
+          // Invalidar as queries relacionadas
           queryClient.invalidateQueries({ queryKey: ["trash-count"] });
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
 
           toast({
             title: t("common.success"),
@@ -843,10 +848,12 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           if (folderError) throw folderError;
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
-          // Atualizar contagem da lixeira se estiver na visualização da lixeira
+          // Atualizar contagem da lixeira e quota de armazenamento
           if (isTrashView) {
             queryClient.invalidateQueries({ queryKey: ["trash-count"] });
           }
+          // Sempre atualizar a quota de armazenamento
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.deleteFolderSuccess"),
@@ -883,10 +890,12 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           });
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
-          // Atualizar contagem da lixeira se estiver na visualização da lixeira
+          // Atualizar contagem da lixeira e quota de armazenamento
           if (isTrashView) {
             queryClient.invalidateQueries({ queryKey: ["trash-count"] });
           }
+          // Sempre atualizar a quota de armazenamento
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.deleteSuccess"),
@@ -922,6 +931,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["folders"] });
+          // Atualizar quota de armazenamento
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.renameFolderSuccess"),
@@ -942,6 +953,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           }
 
           queryClient.invalidateQueries({ queryKey: ["files"] });
+          // Atualizar quota de armazenamento
+          queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
           toast({
             title: t("common.success"),
             description: t("fileExplorer.actions.renameFileSuccess"),
@@ -977,6 +990,8 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           is_favorite: !file.is_favorite,
         });
         queryClient.invalidateQueries({ queryKey: ["files"] });
+        // Atualizar quota de armazenamento
+        queryClient.invalidateQueries({ queryKey: ["storage-quota"] });
       }
     };
 
@@ -1321,6 +1336,10 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                     is_favorite: !selectedFile.is_favorite,
                   });
                   queryClient.invalidateQueries({ queryKey: ["files"] });
+                  // Atualizar quota de armazenamento
+                  queryClient.invalidateQueries({
+                    queryKey: ["storage-quota"],
+                  });
                 }
               }}
             />
