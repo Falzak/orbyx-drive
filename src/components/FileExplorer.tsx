@@ -860,63 +860,58 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
       }
     };
 
-    const handleRename = async (file: FileData, newName: string) => {
-      return new Promise<void>(async (resolve, reject) => {
-        try {
-          if (file.is_folder) {
-            const { error } = await supabase
-              .from("folders")
-              .update({ name: newName })
-              .eq("id", file.id);
+    const handleRename = async (file: FileData, newName: string): Promise<void> => {
+      try {
+        if (file.is_folder) {
+          const { error } = await supabase
+            .from("folders")
+            .update({ name: newName })
+            .eq("id", file.id);
 
-            if (error) {
-              toast({
-                variant: "destructive",
-                title: t("common.error"),
-                description: t("fileExplorer.actions.renameFolderError"),
-              });
-              reject(error);
-              return;
-            }
-
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
+          if (error) {
             toast({
-              title: t("common.success"),
-              description: t("fileExplorer.actions.renameFolderSuccess"),
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.renameFolderError"),
             });
-          } else {
-            const { error } = await supabase
-              .from("files")
-              .update({ filename: newName })
-              .eq("id", file.id);
-
-            if (error) {
-              toast({
-                variant: "destructive",
-                title: t("common.error"),
-                description: t("fileExplorer.actions.renameFileError"),
-              });
-              reject(error);
-              return;
-            }
-
-            queryClient.invalidateQueries({ queryKey: ["files"] });
-            toast({
-              title: t("common.success"),
-              description: t("fileExplorer.actions.renameFileSuccess"),
-            });
+            throw error; // Propagate the error
           }
-          resolve();
-        } catch (error) {
-          console.error("Error renaming file:", error);
+
+          queryClient.invalidateQueries({ queryKey: ["folders"] });
           toast({
-            variant: "destructive",
-            title: t("common.error"),
-            description: t("fileExplorer.actions.renameFileError"),
+            title: t("common.success"),
+            description: t("fileExplorer.actions.renameFolderSuccess"),
           });
-          reject(error);
+        } else {
+          const { error } = await supabase
+            .from("files")
+            .update({ filename: newName })
+            .eq("id", file.id);
+
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: t("fileExplorer.actions.renameFileError"),
+            });
+            throw error; // Propagate the error
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["files"] });
+          toast({
+            title: t("common.success"),
+            description: t("fileExplorer.actions.renameFileSuccess"),
+          });
         }
-      });
+      } catch (error) {
+        console.error("Error renaming item:", error); // Generic error message
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: t("fileExplorer.actions.renameErrorGeneral"), // A more general error message might be needed in translations
+        });
+        throw error; // Re-throw to ensure the promise from async function rejects
+      }
     };
 
     const handleShare = (file: FileData) => {
@@ -1279,7 +1274,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
           onOpenChange={setIsEditFolderOpen}
           onSubmit={handleEditFolder}
           mode="edit"
-          editFolder={
+          editFolder={React.useMemo(() => (
             selectedFolder
               ? {
                   id: selectedFolder.id,
@@ -1288,7 +1283,7 @@ export const FileExplorer = React.forwardRef<HTMLDivElement, FileExplorerProps>(
                   color: selectedFolder.color,
                 }
               : null
-          }
+          ), [selectedFolder])}
         />
       </div>
     );

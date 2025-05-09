@@ -38,7 +38,7 @@ type FolderFormValues = z.infer<typeof folderSchema>;
 export interface CreateFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: FolderFormValues) => void;
+  onSubmit?: (values: FolderFormValues) => Promise<void> | void;
   onCreateFolder?: (values: FolderFormValues) => Promise<void>;
   mode?: "create" | "edit";
   editFolder?: {
@@ -85,14 +85,14 @@ export function CreateFolderDialog({
     try {
       setIsSubmitting(true);
       if (onSubmit) {
-        onSubmit(values);
+        await onSubmit(values);
       } else if (onCreateFolder) {
         await onCreateFolder(values);
       }
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error creating folder:", error);
+      console.error(`Error during folder ${mode === "create" ? "creation" : "update"}:`, error);
     } finally {
       setIsSubmitting(false);
     }
